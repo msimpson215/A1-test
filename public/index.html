@@ -26,12 +26,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .nav-links a:hover{color:var(--yellow);}
 .nav-cta{display:flex;align-items:center;gap:12px;}
 .nav-phone{display:none;}
-.btn-nav-call{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:2px solid var(--yellow);}
+.btn-nav-call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;white-space:nowrap;}
 .btn-nav-call:hover{opacity:0.85;}
 .btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;}
 .btn-nav-ai:hover{opacity:0.85;}
 .btn-nav{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;}
 .btn-nav:hover{opacity:0.85;}
+.has-drop{position:relative;}
+.drop{display:none;position:absolute;top:100%;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:210px;list-style:none;padding:6px 0;z-index:1000;}
+.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.75);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;transition:color 0.15s,background 0.15s;}
+.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
+.has-drop:hover .drop{display:block;}
 
 /* ── HERO ── */
 .hero{position:relative;height:100vh;min-height:640px;display:flex;align-items:center;overflow:hidden;}
@@ -54,10 +59,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 
 /* ── TICKER ── */
 .ticker-wrap{background:var(--yellow);padding:14px 0;overflow:hidden;white-space:nowrap;}
-.ticker-track{display:inline-flex;animation:ticker 28s linear infinite;}
+.ticker-track{display:inline-flex;align-items:center;animation:ticker 28s linear infinite;}
 .ticker-track:hover{animation-play-state:paused;}
 .ticker-item{display:inline-flex;align-items:center;gap:12px;margin-right:60px;font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--black);}
 .ticker-dot{width:6px;height:6px;background:var(--black);border-radius:50%;opacity:0.4;}
+.ticker-logo{height:24px;width:auto;max-width:90px;object-fit:contain;filter:brightness(0);opacity:0.7;}
 @keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 
 /* ── SECTION SHARED ── */
@@ -186,16 +192,33 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-logo">
-    <img src="A1_logo.webp" alt="A1 Professional Asphalt & Sealing"/>
+    <img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt & Sealing"/>
   </a>
   <ul class="nav-links">
-    <li><a href="#services">Services</a></li>
-    <li><a href="#about">About</a></li>
+    <li class="has-drop"><a href="#services">Services ▾</a>
+      <ul class="drop">
+        <li><a href="sealcoating.html">Sealcoating</a></li>
+        <li><a href="crack-filling.html">Crack Filling</a></li>
+        <li><a href="parking-lot-striping.html">Parking Lot Striping</a></li>
+        <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
+        <li><a href="ada-compliance.html">ADA Compliance</a></li>
+        <li><a href="concrete-work.html">Concrete Work</a></li>
+        <li><a href="bollard-installation.html">Bollard Installation</a></li>
+      </ul>
+    </li>
+    <li class="has-drop"><a href="#about">About ▾</a>
+      <ul class="drop">
+        <li><a href="about.html">Meet Joe</a></li>
+        <li><a href="#podcast">Owner Podcast</a></li>
+        <li><a href="#ai">AI Team Member</a></li>
+        <li><a href="#reviews">Google Reviews</a></li>
+      </ul>
+    </li>
     <li><a href="#contact">Contact</a></li>
   </ul>
   <div class="nav-cta">
-    <a href="tel:6189293301" class="btn-nav-call">Call</a>
-    <a href="#ai" class="btn-nav-ai">Talk with Our A.I. Team Member</a>
+    <a href="tel:6189293301" class="btn-nav-call">Call Now</a>
+    <a href="#ai" class="btn-nav-ai" id="navAiBtn">Talk with Our A.I. Team Member</a>
   </div>
 </nav>
 
@@ -211,7 +234,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <p class="hero-sub">Commercial sealcoating, striping, paving, and concrete — done right the first time.</p>
     <div class="hero-btns">
       <a href="https://a1asphaltpro.com/contact-us/" class="btn-primary">Get a Free Estimate</a>
-      <a href="tel:8882233797" class="btn-outline">📞 888-223-3797</a>
     </div>
   </div>
 </section>
@@ -219,31 +241,61 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 <!-- TICKER -->
 <div class="ticker-wrap">
   <div class="ticker-track">
-    <span class="ticker-item"><span class="ticker-dot"></span>Sam's Club</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Walgreens</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Target</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Cracker Barrel</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Trader Joe's</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Home Depot</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Walmart</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>CVS Pharmacy</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Dollar General</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>AutoZone</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Lowe's</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Aldi</span>
-    <!-- repeat -->
-    <span class="ticker-item"><span class="ticker-dot"></span>Sam's Club</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Walgreens</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Target</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Cracker Barrel</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Trader Joe's</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Home Depot</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Walmart</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>CVS Pharmacy</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Dollar General</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>AutoZone</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Lowe's</span>
-    <span class="ticker-item"><span class="ticker-dot"></span>Aldi</span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/samsclub.com" alt="Sam's Club" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/walgreens.com" alt="Walgreens" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/walmart.com" alt="Walmart" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/lowes.com" alt="Lowe's" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/homedepot.com" alt="Home Depot" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/target.com" alt="Target" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/crackerbarrel.com" alt="Cracker Barrel" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/autozone.com" alt="AutoZone" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/dollargeneral.com" alt="Dollar General" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/cvs.com" alt="CVS" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/kohls.com" alt="Kohl's" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/tjmaxx.com" alt="TJ Maxx" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/costco.com" alt="Costco" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/traderjoes.com" alt="Trader Joe's" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/samsclub.com" alt="Sam's Club" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/walgreens.com" alt="Walgreens" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/walmart.com" alt="Walmart" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/lowes.com" alt="Lowe's" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/homedepot.com" alt="Home Depot" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/target.com" alt="Target" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/crackerbarrel.com" alt="Cracker Barrel" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/autozone.com" alt="AutoZone" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/dollargeneral.com" alt="Dollar General" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/cvs.com" alt="CVS" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/kohls.com" alt="Kohl's" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/tjmaxx.com" alt="TJ Maxx" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/costco.com" alt="Costco" onerror="this.parentElement.style.display='none'"/></span>
+    <span class="ticker-dot"></span>
+    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/traderjoes.com" alt="Trader Joe's" onerror="this.parentElement.style.display='none'"/></span>
   </div>
 </div>
 
@@ -294,7 +346,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
       </a>
     </div>
     <div class="national-btn-wrap">
-      <a href="#contact" class="national-btn">National General Contractors — Request a Bid</a>
+      <a href="#contact" class="national-btn">National General Contractors — Speak With a Project Specialist</a>
     </div>
   </div>
 </section>
@@ -356,19 +408,15 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
         <div class="section-label">Owner Podcast</div>
         <h2 class="section-title">Hear It Straight<br/><span>From Joe</span></h2>
         <p style="color:var(--muted);line-height:1.7;font-size:1rem;">Joe talks about A1, how the company grew to a national level, and why incorporating AI into the customer experience sets A1 apart from every other asphalt company in the region.</p>
-        <a href="#" class="podcast-btn">
-          <span class="podcast-icon">🎙️</span>
-          <div class="podcast-btn-text">
-            <strong>Listen to the Podcast</strong>
-            <span>A conversation with Joe — Owner, A1 Professional Asphalt & Sealing</span>
-          </div>
-        </a>
       </div>
       <div class="podcast-player">
-        <div class="audio-placeholder">
-          <div class="play-circle">▶</div>
-          <p>Podcast coming soon — Joe on the mic</p>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:0.8rem;font-weight:800;color:var(--yellow);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">🎙️ Scaling an Asphalt Empire with AI</div>
+          <div style="font-size:0.8rem;color:var(--muted);">Joe Schanz — Owner, A1 Professional Asphalt & Sealing LLC</div>
         </div>
+        <audio controls preload="metadata" style="width:100%;border-radius:4px;">
+          <source src="Scaling_an_asphalt_empire_with_AI.mp3" type="audio/mpeg"/>
+        </audio>
       </div>
     </div>
   </div>
@@ -424,7 +472,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 <footer>
   <div class="footer-grid">
     <div>
-      <div class="footer-logo"><img src="A1_logo.webp" alt="A1 Professional Asphalt & Sealing"/></div>
+      <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt & Sealing"/></div>
       <p class="footer-about">A1 Professional Asphalt & Sealing LLC is a full-service asphalt and concrete company serving the St. Louis area and commercial clients nationwide. Sealcoating, striping, patching, and pavement maintenance done right.</p>
       <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
       <div class="footer-contact-item"><strong>National</strong><span>888-223-3797 · 1-800-ASPHALT</span></div>
@@ -435,30 +483,30 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <div>
       <div class="footer-heading">Services</div>
       <ul class="footer-links">
-        <li><a href="#">Sealcoating</a></li>
-        <li><a href="#">Crack Filling</a></li>
-        <li><a href="#">Parking Lot Striping</a></li>
-        <li><a href="#">Asphalt Patching</a></li>
-        <li><a href="#">ADA Compliance</a></li>
-        <li><a href="#">Concrete Work</a></li>
-        <li><a href="#">Bollard Installation</a></li>
+        <li><a href="sealcoating.html">Sealcoating</a></li>
+        <li><a href="crack-filling.html">Crack Filling</a></li>
+        <li><a href="parking-lot-striping.html">Parking Lot Striping</a></li>
+        <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
+        <li><a href="ada-compliance.html">ADA Compliance</a></li>
+        <li><a href="concrete-work.html">Concrete Work</a></li>
+        <li><a href="bollard-installation.html">Bollard Installation</a></li>
       </ul>
     </div>
     <div>
       <div class="footer-heading">Markets</div>
       <ul class="footer-links">
-        <li><a href="#">Commercial Properties</a></li>
-        <li><a href="#">Churches & Institutions</a></li>
-        <li><a href="#">Strip Malls</a></li>
-        <li><a href="#">Roads & Municipalities</a></li>
-        <li><a href="#">General Contractors</a></li>
-        <li><a href="#">Industrial & Warehouse</a></li>
+        <li><a href="commercial.html">Commercial Properties</a></li>
+        <li><a href="churches.html">Churches & Institutions</a></li>
+        <li><a href="strip-malls.html">Strip Malls</a></li>
+        <li><a href="municipalities.html">Roads & Municipalities</a></li>
+        <li><a href="general-contractors.html">General Contractors</a></li>
+        <li><a href="industrial.html">Industrial & Warehouse</a></li>
       </ul>
     </div>
     <div>
       <div class="footer-heading">Company</div>
       <ul class="footer-links">
-        <li><a href="#">About A1</a></li>
+        <li><a href="about.html">About A1</a></li>
         <li><a href="#">Owner Podcast</a></li>
         <li><a href="#">AI Estimator</a></li>
         <li><a href="#">Google Reviews</a></li>
