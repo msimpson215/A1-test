@@ -55,7 +55,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .btn-outline:hover{border-color:var(--yellow);color:var(--yellow);}
 .hero-stats{display:flex;gap:48px;margin-top:56px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.12);justify-content:flex-start;}
 .stat-num{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--yellow);line-height:1;}
-.stat-label{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;}
+.stat-label{font-size:0.78rem;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;}
 
 /* ── TICKER ── */
 .ticker-label{background:var(--black);text-align:center;padding:10px;font-size:0.7rem;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--yellow);}
@@ -76,7 +76,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 /* ── SERVICES ── */
 .services-section{background:var(--dark);}
 .services-intro{max-width:560px;margin-bottom:56px;}
-.services-intro p{color:var(--muted);line-height:1.7;font-size:1rem;}
+.services-intro p{color:rgba(255,255,255,0.85);line-height:1.7;font-size:1rem;}
 .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:32px;}
 .service-card{background:var(--gray);padding:36px 28px;position:relative;overflow:hidden;transition:background 0.25s;text-decoration:none;display:block;}
 .service-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--yellow);transform:scaleX(0);transform-origin:left;transition:transform 0.3s;}
@@ -90,7 +90,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .service-card:hover .service-arrow{opacity:1;transform:translateX(4px);}
 /* Photo backgrounds on service cards */
 .service-card.has-photo{background-size:cover;background-position:center;background-repeat:no-repeat;}
-.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.72);z-index:0;transition:background 0.3s;}
+.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.55);z-index:0;transition:background 0.3s;}
 .service-card.has-photo:hover::after{background:rgba(10,10,10,0.58);}
 .service-card.has-photo .service-icon,.service-card.has-photo .service-name,.service-card.has-photo .service-desc,.service-card.has-photo .service-arrow{position:relative;z-index:1;}
 .service-card.has-photo .service-num{position:relative;z-index:1;}
@@ -123,7 +123,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .map-flag-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.72);transition:background 0.4s;}
 .map-placeholder{margin-top:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:4px;height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
 .map-placeholder .map-icon{font-size:3rem;opacity:0.3;}
-.map-placeholder p{color:var(--muted);font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;}
+.map-placeholder p{color:rgba(255,255,255,0.85);font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;}
 .map-placeholder .map-badge{background:var(--yellow);color:var(--black);font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:5px 12px;border-radius:2px;}
 /* Video/Joe section flag */
 .video-section{background:var(--black);padding:96px 40px;position:relative;overflow:hidden;}
@@ -135,11 +135,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .stars-header{display:flex;align-items:center;gap:20px;margin-bottom:48px;}
 .big-stars{font-size:1.8rem;color:var(--yellow);letter-spacing:2px;}
 .big-score{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--yellow);line-height:1;}
-.score-label{font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.score-label{font-size:0.8rem;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:0.08em;}
 .reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
 .review-card{background:var(--gray);padding:32px 28px;}
 .review-stars{color:var(--yellow);font-size:1rem;letter-spacing:2px;margin-bottom:16px;}
-.review-text{color:rgba(255,255,255,0.75);font-size:0.9rem;line-height:1.7;margin-bottom:20px;font-style:italic;}
+.review-text{color:rgba(255,255,255,0.95);font-size:0.9rem;line-height:1.7;margin-bottom:20px;font-style:italic;}
 .review-author{font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--yellow);}
 
 /* ── PODCAST ── */
@@ -154,7 +154,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .podcast-btn-text span{font-size:0.8rem;opacity:0.7;}
 .audio-placeholder{text-align:center;padding:20px 0;}
 .audio-placeholder .play-circle{width:64px;height:64px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.4rem;color:var(--black);}
-.audio-placeholder p{color:var(--muted);font-size:0.85rem;}
+.audio-placeholder p{color:rgba(255,255,255,0.85);font-size:0.85rem;}
 
 /* ── VIDEO ── */
 .video-section{background:var(--black);padding:96px 40px;}
@@ -165,11 +165,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 /* ── AI SECTION ── */
 .ai-section{background:var(--dark);padding:96px 40px;}
 .ai-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
-.ai-text p{color:var(--muted);line-height:1.75;font-size:1rem;margin-bottom:16px;}
+.ai-text p{color:rgba(255,255,255,0.85);line-height:1.75;font-size:1rem;margin-bottom:16px;}
 .ai-orb-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;}
 .ai-orb{width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#F5C518,#C49A00 50%,#7a5f00);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);animation:pulse 3s ease-in-out infinite;cursor:pointer;}
 @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
-.orb-label{font-size:0.8rem;color:var(--muted);text-align:center;letter-spacing:0.08em;text-transform:uppercase;}
+.orb-label{font-size:0.8rem;color:#ffffff;text-align:center;letter-spacing:0.08em;text-transform:uppercase;}
 
 /* ── CTA ── */
 .cta-section{background:var(--yellow);padding:80px 40px;text-align:center;}
@@ -185,17 +185,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yellow);}
 .footer-grid{display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;gap:48px;max-width:1400px;margin:0 auto 48px;}
 .footer-logo img{height:56px;width:auto;margin-bottom:16px;}
-.footer-about{color:var(--muted);font-size:0.85rem;line-height:1.7;margin-bottom:20px;}
-.footer-contact-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:rgba(255,255,255,0.65);font-size:0.85rem;}
+.footer-about{color:rgba(255,255,255,0.8);font-size:0.85rem;line-height:1.7;margin-bottom:20px;}
+.footer-contact-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:#ffffff;font-size:0.85rem;}
 .footer-contact-item strong{color:var(--yellow);min-width:80px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
 .footer-hq-label{font-size:0.68rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin:16px 0 8px;}
-.footer-sat-label{font-size:0.68rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:14px 0 8px;}
-.footer-sat-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;color:rgba(255,255,255,0.4);font-size:0.78rem;}
-.footer-sat-item strong{color:rgba(255,255,255,0.35);min-width:80px;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
+.footer-sat-label{font-size:0.68rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin:14px 0 8px;}
+.footer-sat-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;color:rgba(255,255,255,0.75);font-size:0.78rem;}
+.footer-sat-item strong{color:rgba(255,255,255,0.6);min-width:80px;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
 .footer-heading{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px;}
 .footer-links{list-style:none;}
 .footer-links li{margin-bottom:10px;}
-.footer-links a{color:var(--muted);text-decoration:none;font-size:0.85rem;transition:color 0.2s;}
+.footer-links a{color:rgba(255,255,255,0.85);text-decoration:none;font-size:0.85rem;transition:color 0.2s;}
 .footer-links a:hover{color:var(--yellow);}
 .footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .footer-bottom p{color:rgba(255,255,255,0.25);font-size:0.75rem;}
@@ -382,12 +382,12 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
       <div class="podcast-text">
         <div class="section-label">Owner Podcast</div>
         <h2 class="section-title">Hear It Straight<br/><span>From Joe</span></h2>
-        <p style="color:var(--muted);line-height:1.7;font-size:1rem;">Joe talks about A1, how the company grew to a national level, and why incorporating AI into the customer experience sets A1 apart from every other asphalt company in the region.</p>
+        <p style="color:rgba(255,255,255,0.85);line-height:1.7;font-size:1rem;">Joe talks about A1, how the company grew to a national level, and why incorporating AI into the customer experience sets A1 apart from every other asphalt company in the region.</p>
       </div>
       <div class="podcast-player">
         <div style="margin-bottom:12px;">
           <div style="font-size:0.8rem;font-weight:800;color:var(--yellow);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">🎙️ Scaling an Asphalt Empire with AI</div>
-          <div style="font-size:0.8rem;color:var(--muted);">Joe Schanz — Owner, A1 Professional Asphalt & Sealing LLC</div>
+          <div style="font-size:0.8rem;color:rgba(255,255,255,0.85);">Joe Schanz — Owner, A1 Professional Asphalt & Sealing LLC</div>
         </div>
         <audio controls preload="metadata" style="width:100%;border-radius:4px;">
           <source src="Scaling_an_asphalt_empire_with_AI.mp3" type="audio/mpeg"/>
@@ -405,7 +405,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <div class="video-wrap">
       <div style="text-align:center">
         <div class="play-btn">▶</div>
-        <p style="margin-top:16px;color:var(--muted);font-size:0.85rem;">Owner video — coming soon</p>
+        <p style="margin-top:16px;color:rgba(255,255,255,0.85);font-size:0.85rem;">Owner video — coming soon</p>
       </div>
     </div>
   </div>
