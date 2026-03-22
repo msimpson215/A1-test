@@ -20,15 +20,15 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
 
 /* ── NAV ── */
 nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;}
-.nav-logo img{height:52px;width:auto;}
+.nav-logo img{height:52px;width:auto;border-radius:4px;}
 .nav-links{display:flex;gap:32px;list-style:none;}
 .nav-links a{color:#ffffff;text-decoration:none;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
 .nav-links a:hover{color:var(--yellow);}
 .nav-cta{display:flex;align-items:center;gap:12px;}
 .nav-phone{display:none;}
-.btn-nav-call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;white-space:nowrap;}
+.btn-nav-call{background:#16a34a;color:#fff;padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;white-space:nowrap;cursor:pointer;}
 .btn-nav-call:hover{opacity:0.85;}
-.btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;}
+.btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;white-space:nowrap;cursor:pointer;}
 .btn-nav-ai:hover{opacity:0.85;}
 .btn-nav{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;}
 .btn-nav:hover{opacity:0.85;}
@@ -58,13 +58,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .stat-label{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;}
 
 /* ── TICKER ── */
-.ticker-wrap{background:var(--yellow);padding:14px 0;overflow:hidden;white-space:nowrap;}
-.ticker-track{display:inline-flex;align-items:center;animation:ticker 28s linear infinite;}
-.ticker-track:hover{animation-play-state:paused;}
-.ticker-item{display:inline-flex;align-items:center;gap:12px;margin-right:60px;font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--black);}
-.ticker-dot{width:6px;height:6px;background:var(--black);border-radius:50%;opacity:0.4;}
-.ticker-logo{height:24px;width:auto;max-width:90px;object-fit:contain;filter:brightness(0);opacity:0.7;}
-@keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.ticker-wrap{background:var(--yellow);padding:14px 0;overflow:hidden;position:relative;}
+.ticker-track{display:flex;align-items:center;width:max-content;}
+.ticker-item{display:inline-flex;align-items:center;margin-right:64px;flex-shrink:0;}
+.ticker-item img{height:28px;width:auto;max-width:100px;object-fit:contain;filter:brightness(0);opacity:0.65;}
+.ticker-dot{width:5px;height:5px;background:var(--black);border-radius:50%;opacity:0.3;margin-right:64px;flex-shrink:0;}
 
 /* ── SECTION SHARED ── */
 .section{padding:96px 40px;}
@@ -89,6 +87,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .service-desc{font-size:0.85rem;color:var(--muted);line-height:1.6;}
 .service-arrow{position:absolute;bottom:20px;right:20px;color:var(--yellow);font-size:1.1rem;opacity:0;transition:opacity 0.2s,transform 0.2s;}
 .service-card:hover .service-arrow{opacity:1;transform:translateX(4px);}
+/* Photo backgrounds on service cards */
+.service-card.has-photo{background-size:cover;background-position:center;background-repeat:no-repeat;}
+.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.72);z-index:0;transition:background 0.3s;}
+.service-card.has-photo:hover::after{background:rgba(10,10,10,0.58);}
+.service-card.has-photo .service-icon,.service-card.has-photo .service-name,.service-card.has-photo .service-desc,.service-card.has-photo .service-arrow{position:relative;z-index:1;}
+.service-card.has-photo .service-num{position:relative;z-index:1;}
 
 /* National GC Button */
 .national-btn-wrap{margin:8px 0 0 0;}
@@ -185,6 +189,13 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 .footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .footer-bottom p{color:rgba(255,255,255,0.25);font-size:0.75rem;}
 .footer-seo{color:rgba(255,255,255,0.18);font-size:0.72rem;}
+
+/* ── VOX TALK OVERLAY ── */
+#vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;}
+#vox-overlay.open{display:block;animation:voxIn 0.25s ease forwards;}
+@keyframes voxIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+#vox-overlay iframe{width:100%;height:100%;border:none;}
+#vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;line-height:1;}
 </style>
 </head>
 <body>
@@ -192,7 +203,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-logo">
-    <img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt & Sealing"/>
+    <img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt & Sealing" onerror="this.src='A1_asphalt_logo.jpeg'"/>
   </a>
   <ul class="nav-links">
     <li class="has-drop"><a href="#services">Services ▾</a>
@@ -215,10 +226,10 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
       </ul>
     </li>
     <li><a href="#contact">Contact</a></li>
+    <li><button class="btn-nav-ai" id="navAiBtn" onclick="openVox()">Talk with Our A.I. Team Member</button></li>
   </ul>
   <div class="nav-cta">
     <a href="tel:6189293301" class="btn-nav-call">Call Now</a>
-    <a href="#ai" class="btn-nav-ai" id="navAiBtn">Talk with Our A.I. Team Member</a>
   </div>
 </nav>
 
@@ -240,65 +251,44 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 
 <!-- TICKER -->
 <div class="ticker-wrap">
-  <div class="ticker-track">
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/samsclub.com" alt="Sam's Club" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/walgreens.com" alt="Walgreens" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/walmart.com" alt="Walmart" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/lowes.com" alt="Lowe's" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/homedepot.com" alt="Home Depot" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/target.com" alt="Target" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/crackerbarrel.com" alt="Cracker Barrel" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/autozone.com" alt="AutoZone" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/dollargeneral.com" alt="Dollar General" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/cvs.com" alt="CVS" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/kohls.com" alt="Kohl's" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/tjmaxx.com" alt="TJ Maxx" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/costco.com" alt="Costco" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/traderjoes.com" alt="Trader Joe's" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/samsclub.com" alt="Sam's Club" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/walgreens.com" alt="Walgreens" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/walmart.com" alt="Walmart" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/lowes.com" alt="Lowe's" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/homedepot.com" alt="Home Depot" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/target.com" alt="Target" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/crackerbarrel.com" alt="Cracker Barrel" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/autozone.com" alt="AutoZone" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/dollargeneral.com" alt="Dollar General" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/cvs.com" alt="CVS" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/kohls.com" alt="Kohl's" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/tjmaxx.com" alt="TJ Maxx" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/costco.com" alt="Costco" onerror="this.parentElement.style.display='none'"/></span>
-    <span class="ticker-dot"></span>
-    <span class="ticker-item"><img class="ticker-logo" src="https://logo.clearbit.com/traderjoes.com" alt="Trader Joe's" onerror="this.parentElement.style.display='none'"/></span>
+  <div class="ticker-track" id="tickerTrack">
+    <span class="ticker-item"><img src="images/sams-club.png" alt="Sam's Club"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/walmart.jpg" alt="Walmart"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/lowes.png" alt="Lowe's"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/target.png" alt="Target"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/walgreens.png" alt="Walgreens"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/kohls.png" alt="Kohl's"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/trader-joes.png" alt="Trader Joe's"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/bandanasbbq.jpg" alt="Bandana's BBQ"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/manards.jpg" alt="Menards"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/panarabread.png" alt="Panera Bread"/></span><span class="ticker-dot"></span>
   </div>
 </div>
-
+<script>
+(function(){
+  var track = document.getElementById('tickerTrack');
+  var imgs = track.querySelectorAll('img');
+  var loaded = 0;
+  function start(){
+    // duplicate items for seamless loop
+    var items = track.innerHTML;
+    track.innerHTML = items + items;
+    var pos = 0;
+    var half = track.scrollWidth / 2;
+    function step(){
+      pos += 0.5;
+      if(pos >= half) pos = 0;
+      track.style.transform = 'translateX(-' + pos + 'px)';
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  imgs.forEach(function(img){
+    if(img.complete){ loaded++; if(loaded===imgs.length) start(); }
+    else { img.addEventListener('load', function(){ loaded++; if(loaded===imgs.length) start(); }); img.addEventListener('error', function(){ loaded++; if(loaded===imgs.length) start(); }); }
+  });
+})();
+</script>
 <!-- SERVICES -->
 <section class="section services-section" id="services">
   <div class="container">
@@ -308,38 +298,38 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
       <p>From single driveways to national retail chains — A1 delivers professional results on every project, every time.</p>
     </div>
     <div class="services-grid">
-      <a href="#contact" class="service-card">
-        <div class="service-icon">🏢</div>
+      <a href="commercial.html" class="service-card has-photo" style="background-image:url('images/sealing-39-400x284.jpg');">
+
         <div class="service-name">Commercial Properties</div>
         <div class="service-desc">Retail centers, office parks, and commercial facilities. Full sealcoat and restripe programs.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="#contact" class="service-card">
-        <div class="service-icon">⛪</div>
+      <a href="churches.html" class="service-card has-photo" style="background-image:url('images/sealing-28-400x284.jpg');">
+
         <div class="service-name">Churches & Institutions</div>
         <div class="service-desc">Parking lot maintenance for houses of worship, schools, and community facilities.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="#contact" class="service-card">
-        <div class="service-icon">🏪</div>
+      <a href="strip-malls.html" class="service-card has-photo" style="background-image:url('images/sealing-striping-27-400x284.jpg');">
+
         <div class="service-name">Strip Malls & Retail</div>
         <div class="service-desc">Multi-tenant retail properties. ADA compliance, fire lanes, full striping packages.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="#contact" class="service-card">
-        <div class="service-icon">🛣️</div>
+      <a href="municipalities.html" class="service-card has-photo" style="background-image:url('images/sealing-21-400x284.jpg');">
+
         <div class="service-name">Roads & Municipalities</div>
         <div class="service-desc">Municipal roads, private communities, and access roads. Crack fill, patch, and seal programs.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="#contact" class="service-card">
-        <div class="service-icon">🔨</div>
+      <a href="general-contractors.html" class="service-card has-photo" style="background-image:url('images/126690-400x284.jpg');">
+
         <div class="service-name">General Contractors</div>
         <div class="service-desc">Subcontract pavement work for GC projects. Reliable, professional, on schedule.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="#contact" class="service-card">
-        <div class="service-icon">🏭</div>
+      <a href="industrial.html" class="service-card has-photo" style="background-image:url('images/sealing-32-400x284.jpg');">
+
         <div class="service-name">Industrial & Warehouse</div>
         <div class="service-desc">Heavy-duty pavement maintenance for distribution centers, warehouses, and industrial facilities.</div>
         <div class="service-arrow">→</div>
@@ -445,10 +435,10 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
         <h2 class="section-title">Incorporating AI to<br/><span>Elevate Your Experience</span></h2>
         <p>A1 Professional Asphalt & Sealing is incorporating AI into the customer experience unlike any other asphalt company in the region. Our AI team member is available around the clock — ready to answer your questions, walk you through our services, and connect you with the right people.</p>
         <p>No hold times. No voicemail. Just fast, accurate answers — any time of day or night.</p>
-        <a href="#" class="btn-primary" style="display:inline-block;margin-top:24px;">Talk to Our AI Now →</a>
+        <a href="#" class="btn-primary" style="display:inline-block;margin-top:24px;" onclick="event.preventDefault();openVox()">Talk to Our AI Now →</a>
       </div>
       <div class="ai-orb-wrap">
-        <div class="ai-orb" id="aiOrb"></div>
+        <div class="ai-orb" id="aiOrb" onclick="openVox()" title="Click to talk with our AI"></div>
         <span class="orb-label">Click to start a conversation</span>
       </div>
     </div>
@@ -517,4 +507,32 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
   <div class="footer-bottom">
     <p>© 2025 A1 Professional Asphalt & Sealing LLC · All Rights Reserved · a1asphaltpro.com</p>
-    <p class="footer-seo">Asphalt sealcoating St. Louis · Parking lot 
+    <p class="footer-seo">Asphalt sealcoating St. Louis · Parking lot striping Illinois · Crack filling commercial · Asphalt patching St. Louis · Commercial paving nationwide</p>
+  </div>
+</footer>
+
+<!-- VOX TALK OVERLAY -->
+<div id="vox-overlay">
+  <button id="vox-close-btn" onclick="closeVox()">✕</button>
+  <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
+</div>
+
+<script>
+function openVox(){
+  var o=document.getElementById('vox-overlay');
+  o.classList.add('open');
+  o.style.display='block';
+}
+function closeVox(){
+  var o=document.getElementById('vox-overlay');
+  o.style.display='none';
+  o.classList.remove('open');
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
+document.addEventListener('click',function(e){
+  var o=document.getElementById('vox-overlay');
+  if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('.vox-float-orb')&&!e.target.closest('#navAiBtn')&&!e.target.closest('#aiOrb')&&!e.target.closest('.btn-primary')){closeVox();}
+});
+</script>
+</body>
+</html>
