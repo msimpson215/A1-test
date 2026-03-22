@@ -6,50 +6,59 @@
 <title>General Contractors — A1 Professional Asphalt & Sealing LLC</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
-:root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--muted:rgba(255,255,255,0.75);}
+:root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;}
-nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;}
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px;}
 .logo img{height:52px;width:auto;}
-.back{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.back{color:#ffffff;text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
 .back:hover{color:var(--yellow);}
-.call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;}
+.btn-ai{background:var(--yellow);color:var(--black);padding:10px 16px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
+.call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
 .hero{position:relative;height:420px;display:flex;align-items:center;overflow:hidden;margin-top:72px;}
 .hero-bg{position:absolute;inset:0;background:url('images/generalcontractor.jpg') center/cover no-repeat;filter:brightness(0.35);}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.2) 100%);}
 .hero-content{position:relative;z-index:2;padding:0 60px;max-width:1200px;margin:0 auto;width:100%;}
 .lbl{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
 .lbl::before{content:'';width:28px;height:2px;background:var(--yellow);}
-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);line-height:0.95;margin-bottom:16px;}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);line-height:0.95;margin-bottom:16px;color:#fff;}
 h1 span{color:var(--yellow);}
-.hero-sub{font-size:1.1rem;color:rgba(255,255,255,0.8);max-width:600px;}
+.hero-sub{font-size:1.1rem;color:#ffffff;max-width:600px;}
 .wrap{max-width:1200px;margin:0 auto;padding:80px 60px;}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;}
-.body-text p{color:var(--muted);font-size:1rem;line-height:1.8;margin-bottom:20px;}
+.body-text p{color:#ffffff;font-size:1rem;line-height:1.8;margin-bottom:20px;}
 .body-text h2{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#fff;margin-bottom:20px;}
 .body-text h2 span{color:var(--yellow);}
 .checklist{list-style:none;margin:24px 0;}
-.checklist li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#fff;font-size:0.95rem;}
+.checklist li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.12);color:#ffffff;font-size:0.95rem;}
 .checklist li::before{content:'✓';color:var(--yellow);font-weight:900;flex-shrink:0;margin-top:2px;}
-.box{background:#111;border:1px solid rgba(255,255,255,0.08);border-left:4px solid var(--yellow);padding:32px;border-radius:4px;}
-.box h3{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--yellow);margin-bottom:16px;}
-.box p{color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:16px;}
+.box{background:#111;border:1px solid rgba(255,255,255,0.1);border-left:4px solid var(--yellow);padding:32px;border-radius:4px;}
+.box h3{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;margin-bottom:16px;}
+.box h3 .white{color:#ffffff;}
+.box h3 .gold{color:var(--yellow);}
+.box p{color:#ffffff;font-size:0.95rem;line-height:1.7;margin-bottom:16px;}
 .cta-strip{background:var(--yellow);padding:60px;text-align:center;}
 .cta-strip h2{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--black);margin-bottom:12px;}
-.cta-strip p{color:rgba(0,0,0,0.7);font-size:1rem;margin-bottom:28px;}
+.cta-strip p{color:rgba(0,0,0,0.75);font-size:1rem;margin-bottom:28px;}
 .btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-.btn-y{background:var(--black);color:#fff;padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;}
-.btn-o{background:transparent;color:var(--black);padding:16px 36px;border-radius:4px;font-weight:700;font-size:0.9rem;text-transform:uppercase;text-decoration:none;border:2px solid var(--black);}
+.btn-dark{background:var(--black);color:#fff;padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;}
+.btn-outline{background:transparent;color:var(--black);padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;text-transform:uppercase;text-decoration:none;border:2px solid var(--black);}
 footer{background:#050505;border-top:3px solid var(--yellow);padding:32px 60px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
-footer p{color:rgba(255,255,255,0.3);font-size:0.78rem;}
+footer p{color:#ffffff;font-size:0.78rem;}
 footer a{color:var(--yellow);text-decoration:none;}
+footer a:hover{color:#fff;}
 </style>
 </head>
 <body>
 <nav>
   <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
-  <a href="index.html" class="back">← Back to Home</a>
-  <a href="tel:6189293301" class="call">Call Now</a>
+  <div class="nav-right">
+    <a href="index.html" class="back">← Back to Home</a>
+  <button onclick="openVox()" style="background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;border:none;cursor:pointer;">Talk with Our A.I. Team Member</button>
+    <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" class="btn-ai">Talk with Our A.I. Team Member</a>
+    <a href="tel:6189293301" class="call">📞 (618) 929-3301</a>
+  </div>
 </nav>
 <div class="hero">
   <div class="hero-bg"></div>
@@ -63,23 +72,26 @@ footer a{color:var(--yellow);text-decoration:none;}
 <div class="wrap">
   <div class="two-col">
     <div class="body-text">
-      <h2>General Contractors <span>By A1</span></h2>
-      <p>If you're a GC who needs a reliable asphalt subcontractor, you've found one. A1 shows up, does the work right, and doesn't create problems on your jobsite. We know how commercial construction schedules work and we coordinate accordingly.</p>
+      <h2>A Sub You Can <span>Count On</span></h2>
+      <p>If you're a GC who needs a reliable asphalt subcontractor, you've found one. A1 shows up, does the work right, and doesn't create problems on your jobsite. We know how commercial construction schedules work.</p>
       <p>We handle the full scope of exterior pavement work — new asphalt paving, sealcoating, striping, crack filling, concrete curb and gutter, bollards, and ADA compliance. One sub for everything below the building.</p>
-      <p>We're bonded and insured for commercial work. We provide certificates of insurance in your required format, comply with your safety programs, and attend pre-construction meetings when needed. We operate like a professional subcontractor because we are one.</p>
+      <p>We're bonded and insured for commercial work. We provide certificates of insurance in your required format, comply with your safety programs, and attend pre-construction meetings when needed.</p>
+      
       <ul class="checklist">
         <li>Full scope asphalt and concrete subcontracting</li>
         <li>Bonded and insured for commercial projects</li>
         <li>COI provided in any required format</li>
         <li>Safety program compliance</li>
         <li>Nationwide — we work where your projects are</li>
+        
       </ul>
     </div>
     <div>
       <div class="box">
-        <h3>Preferred Sub Relationships</h3>
-        <p>Several national GCs use A1 as their preferred asphalt sub across multiple states. If you're managing a national retail rollout or a multi-site construction program, we can handle the pavement scope across all locations.</p>
+        <h3><span class="white">Preferred Sub</span> <span class="gold">Relationships</span></h3>
+        <p>Several national GCs use A1 as their preferred asphalt sub across multiple states. If you're managing a national retail rollout or multi-site construction program, we can handle the pavement scope across all locations.</p>
         <p>Call Joe directly to talk about getting set up as a preferred partner.</p>
+        
       </div>
     </div>
   </div>
@@ -88,13 +100,13 @@ footer a{color:var(--yellow);text-decoration:none;}
   <h2>Ready to Get Started?</h2>
   <p>Call Joe directly or request a free estimate. We respond fast.</p>
   <div class="btns">
-    <a href="tel:6189293301" class="btn-y">Call (618) 929-3301</a>
-    <a href="https://a1asphaltpro.com/contact-us/" class="btn-o">Get a Free Estimate</a>
+    <a href="tel:6189293301" class="btn-dark">Call (618) 929-3301</a>
+    <a href="https://a1asphaltpro.com/contact-us/" class="btn-dark">Get a Free Estimate</a>
   </div>
 </div>
 <footer>
   <p>© 2025 A1 Professional Asphalt & Sealing LLC · St. Louis, IL · Nationwide</p>
   <p><a href="index.html">← Home</a> &nbsp;·&nbsp; <a href="tel:6189293301">(618) 929-3301</a> &nbsp;·&nbsp; <a href="tel:8882233797">888-223-3797</a></p>
 </footer>
-</body>
+<div id="vox-overlay" style="display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid #F5C518;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;"><button onclick="closeVox()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;">✕</button><iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="width:100%;height:100%;border:none;"></iframe></div><script>function openVox(){document.getElementById("vox-overlay").style.display="block";}function closeVox(){document.getElementById("vox-overlay").style.display="none";}document.addEventListener("keydown",function(e){if(e.key==="Escape")closeVox();});</script></body>
 </html>
