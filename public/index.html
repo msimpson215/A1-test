@@ -61,7 +61,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .ticker-wrap{background:var(--yellow);padding:14px 0;overflow:hidden;position:relative;}
 .ticker-track{display:flex;align-items:center;width:max-content;}
 .ticker-item{display:inline-flex;align-items:center;margin-right:64px;flex-shrink:0;}
-.ticker-item img{height:28px;width:auto;max-width:100px;object-fit:contain;opacity:0.9;}
+.ticker-item img{height:42px;width:auto;max-width:140px;object-fit:contain;opacity:0.9;}
 .ticker-dot{width:5px;height:5px;background:var(--black);border-radius:50%;opacity:0.3;margin-right:64px;flex-shrink:0;}
 
 /* ── SECTION SHARED ── */
@@ -521,7 +521,7 @@ window.addEventListener('load', function(){
   var pos = 0;
   var half = track.scrollWidth / 2;
   function step(){
-    pos += 0.6;
+    pos += 1.2;
     if(pos >= half) pos = 0;
     track.style.transform = 'translateX(-' + pos + 'px)';
     requestAnimationFrame(step);
