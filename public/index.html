@@ -90,8 +90,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .service-card:hover .service-arrow{opacity:1;transform:translateX(4px);}
 /* Photo backgrounds on service cards */
 .service-card.has-photo{background-size:cover;background-position:center;background-repeat:no-repeat;}
-.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.55);z-index:0;transition:background 0.3s;}
-.service-card.has-photo:hover::after{background:rgba(10,10,10,0.58);}
+.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.75);z-index:0;transition:background 0.3s;}
+.service-card.has-photo:hover::after{background:rgba(10,10,10,0.45);}
 .service-card.has-photo .service-icon,.service-card.has-photo .service-name,.service-card.has-photo .service-desc,.service-card.has-photo .service-arrow{position:relative;z-index:1;}
 .service-card.has-photo .service-num{position:relative;z-index:1;}
 
@@ -183,7 +183,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 
 /* ── FOOTER ── */
 footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yellow);}
-.footer-grid{display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;gap:48px;max-width:1400px;margin:0 auto 48px;}
+.footer-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;max-width:1400px;margin:0 auto 48px;}.footer-address-row{max-width:1400px;margin:0 auto 40px;padding-bottom:32px;border-bottom:1px solid rgba(255,255,255,0.08);display:grid;grid-template-columns:repeat(4,1fr);gap:32px;}
 .footer-logo img{height:56px;width:auto;margin-bottom:16px;}
 .footer-about{color:rgba(255,255,255,0.8);font-size:0.85rem;line-height:1.7;margin-bottom:20px;}
 .footer-contact-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:#ffffff;font-size:0.85rem;}
@@ -445,21 +445,33 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-grid">
+  <!-- Address row - full width -->
+  <div class="footer-address-row">
     <div>
       <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt & Sealing"/></div>
-      <p class="footer-about">A1 Professional Asphalt & Sealing LLC is a full-service asphalt and concrete company serving the St. Louis area and commercial clients nationwide. Sealcoating, striping, patching, and pavement maintenance done right.</p>
+      <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
       <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
       <div class="footer-contact-item"><strong>National</strong><span>888-223-3797 · 1-800-ASPHALT</span></div>
       <div class="footer-contact-item"><strong>Owner</strong><span>Joe Schanz</span></div>
+    </div>
+    <div>
       <div class="footer-hq-label">Main Office</div>
       <div class="footer-contact-item"><strong>HQ</strong><span>107 Southern Dr, Lebanon, IL 62254</span></div>
+    </div>
+    <div>
       <div class="footer-sat-label">Satellite Offices</div>
       <div class="footer-sat-item"><strong>St. Louis</strong><span>11772 Westline Industrial Dr, Maryland Heights, MO 63146</span></div>
       <div class="footer-sat-item"><strong>St. Peters</strong><span>1600 Heritage Landing, St Peters, MO 63303 · (314) 356-1142</span></div>
       <div class="footer-sat-item"><strong>South County</strong><span>St. Louis, MO — Coming Soon</span></div>
-      <div class="footer-contact-item"><strong>Email</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="076e6961684766366674776f666b737775682964686a">[email&#160;protected]</a></span></div>
     </div>
+    <div>
+      <div class="footer-sat-label">Contact</div>
+      <div class="footer-contact-item"><strong>Email</strong><span>info@a1asphaltpro.com</span></div>
+      <div class="footer-contact-item"><strong>Web</strong><span>a1asphaltpro.com</span></div>
+    </div>
+  </div>
+  <!-- Links grid -->
+  <div class="footer-grid">
     <div>
       <div class="footer-heading">Services</div>
       <ul class="footer-links">
@@ -488,10 +500,10 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
       <ul class="footer-links">
         <li><a href="about.html">About A1</a></li>
         <li><a href="#">Owner Podcast</a></li>
-        <li><a href="#">AI Estimator</a></li>
+        <li><a href="#ai">AI Team Member</a></li>
         <li><a href="#">Google Reviews</a></li>
         <li><a href="https://a1asphaltpro.com/contact-us/">Contact Us</a></li>
-        <li><a href="#">Free Estimate</a></li>
+        <li><a href="https://a1asphaltpro.com/contact-us/">Free Estimate</a></li>
       </ul>
     </div>
   </div>
