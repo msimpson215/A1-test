@@ -40,14 +40,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 
 /* ── HERO ── */
 .hero{position:relative;height:100vh;min-height:640px;display:flex;align-items:center;overflow:hidden;}
-.hero-bg{position:absolute;inset:0;background:url('Sams-Club-Parking-Lot-Painting-980x429.jpg') center/cover no-repeat;filter:brightness(0.82);}
+.hero-bg{position:absolute;inset:0;background:url('Sams-Club-Parking-Lot-Painting-980x429.jpg') center/cover no-repeat;filter:brightness(0.9);}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.6) 0%,rgba(0,0,0,0.15) 100%);}
 .hero-stripe{position:absolute;bottom:0;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--yellow) 0px,var(--yellow) 60px,transparent 60px,transparent 90px);}
 .hero-content{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 40px;padding-top:72px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;}.hero-tagline{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,11vw,10rem);color:#ffffff;line-height:0.9;letter-spacing:0.01em;margin-bottom:24px;text-align:left;}
-.hero-badge{display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--yellow);font-size:0.9rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:20px;}.hero-badge::before{content:"";width:28px;height:2px;background:var(--yellow);}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;background:transparent;color:#ffffff;font-size:0.9rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:20px;}.hero-badge::before{content:"";width:28px;height:2px;background:var(--yellow);}
 .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,7rem);line-height:0.95;letter-spacing:0.02em;margin-bottom:24px;text-align:center;}
 .hero h1 span{color:var(--yellow);}
-.hero-sub{font-size:1.1rem;color:rgba(255,255,255,0.75);max-width:700px;line-height:1.6;margin-bottom:36px;text-align:left;}
+.hero-sub{font-size:1.1rem;color:#ffffff;max-width:700px;line-height:1.6;margin-bottom:36px;text-align:left;}
 .hero-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-start;}
 .btn-primary{background:var(--yellow);color:var(--black);padding:16px 32px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:transform 0.2s,opacity 0.2s;}
 .btn-primary:hover{transform:translateY(-2px);opacity:0.9;}
@@ -60,7 +60,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 /* ── TICKER ── */
 .ticker-label{background:var(--black);text-align:center;padding:10px;font-size:0.7rem;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--yellow);}
 .ticker-wrap{background:var(--yellow);padding:16px 0;overflow:hidden;position:relative;}
-.ticker-track{display:flex;align-items:center;width:max-content;}
+.ticker-track{display:flex;align-items:center;width:max-content;animation:tickerMove 30s linear infinite;}
 .ticker-item{display:inline-flex;align-items:center;margin-right:80px;flex-shrink:0;}
 .ticker-item img{height:48px;width:auto;max-width:130px;object-fit:contain;opacity:0.85;}
 .ticker-dot{width:5px;height:5px;background:var(--black);border-radius:50%;opacity:0.3;margin-right:80px;flex-shrink:0;}
@@ -90,8 +90,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .service-card:hover .service-arrow{opacity:1;transform:translateX(4px);}
 /* Photo backgrounds on service cards */
 .service-card.has-photo{background-size:cover;background-position:center;background-repeat:no-repeat;}
-.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.75);z-index:0;transition:background 0.3s;}
-.service-card.has-photo:hover::after{background:rgba(10,10,10,0.45);}
+.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.5);z-index:0;transition:background 0.3s;}
+.service-card.has-photo:hover::after{background:rgba(10,10,10,0.2);}
 .service-card.has-photo .service-icon,.service-card.has-photo .service-name,.service-card.has-photo .service-desc,.service-card.has-photo .service-arrow{position:relative;z-index:1;}
 .service-card.has-photo .service-num{position:relative;z-index:1;}
 
@@ -168,11 +168,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .ai-text p{color:rgba(255,255,255,0.85);line-height:1.75;font-size:1rem;margin-bottom:16px;}
 .ai-orb-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;}
 .ai-orb{width:200px;height:200px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center center/contain no-repeat;background-color:#F5C518;box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);animation:pulse 3s ease-in-out infinite;cursor:pointer;}
-@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
+@keyframes tickerMove{0%{transform:translateX(0);}100%{transform:translateX(-50%);}} @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
 .orb-label{font-size:0.8rem;color:#ffffff;text-align:center;letter-spacing:0.08em;text-transform:uppercase;}
 
 /* ── CTA ── */
-.cta-section{background:var(--black);padding:80px 40px;text-align:center;position:relative;overflow:hidden;} .cta-section::before{content:'';position:absolute;inset:0;background:url('images/unitedstatesflag.jpg') center/cover no-repeat;opacity:0.15;z-index:0;} .cta-section .container{position:relative;z-index:1;}
+.cta-section{background:#0a0a0a;padding:80px 40px;text-align:center;border-top:3px solid var(--yellow);}
 .cta-section h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4.5rem);color:var(--yellow);margin-bottom:16px;}
 .cta-section p{color:rgba(255,255,255,0.85);font-size:1.1rem;margin-bottom:36px;}
 .cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
@@ -329,8 +329,8 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 
 
 <!-- MAP -->
-<section class="map-section" style="background-image:url('images/unitedstatesflag.jpg');background-size:cover;background-position:center;position:relative;">
-  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.72);"></div>
+<section class="map-section" style="background:#111;position:relative;">
+
   <div class="container" style="position:relative;z-index:1;">
     <div class="section-label">Coverage</div>
     <h2 class="section-title">Serving the Midwest<br/><span>& Beyond</span></h2>
@@ -437,7 +437,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <p>Call us or request a free estimate online. We respond fast.</p>
     <div class="cta-btns">
       <a href="tel:6189293301" class="btn-dark">📞 (618) 929-3301</a>
-      <a href="tel:8882233797" class="btn-dark">📞 888-223-3797</a>
       <a href="https://a1asphaltpro.com/contact-us/" class="btn-dark-outline">Request a Free Estimate</a>
     </div>
   </div>
@@ -445,62 +444,57 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 
 <!-- FOOTER -->
 <footer>
-  <!-- Links grid on top -->
-  <div class="footer-grid">
+  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);">
+    <!-- Col 1: Logo + contact -->
+    <div>
+      <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt & Sealing"/></div>
+      <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide. Sealcoating, striping, patching, and pavement maintenance done right.</p>
+      <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
+      <div class="footer-contact-item"><strong>Toll Free</strong><span>1-800-ASPHALT</span></div>
+      <div class="footer-contact-item"><strong>Owner</strong><span>Joe Schanz</span></div>
+      <div class="footer-contact-item"><strong>Email</strong><span>info@a1asphaltpro.com</span></div>
+      <div style="display:flex;gap:16px;margin-top:20px;">
+        <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="color:rgba(255,255,255,0.5);font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#F5C518'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Facebook</a>
+        <a href="https://twitter.com/A1AsphaltPros" target="_blank" style="color:rgba(255,255,255,0.5);font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#F5C518'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">X / Twitter</a>
+        <a href="https://www.linkedin.com/company/a-1-asphalt-pros/" target="_blank" style="color:rgba(255,255,255,0.5);font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#F5C518'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">LinkedIn</a>
+      </div>
+    </div>
+    <!-- Col 2: Services -->
     <div>
       <div class="footer-heading">Services</div>
       <ul class="footer-links">
         <li><a href="sealcoating.html">Sealcoating</a></li>
         <li><a href="crack-filling.html">Crack Filling</a></li>
-        <li><a href="parking-lot-striping.html">Parking Lot Striping</a></li>
+        <li><a href="parking-lot-striping.html">Lot Striping</a></li>
         <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
         <li><a href="ada-compliance.html">ADA Compliance</a></li>
         <li><a href="concrete-work.html">Concrete Work</a></li>
-        <li><a href="bollard-installation.html">Bollard Installation</a></li>
+        <li><a href="bollard-installation.html">Bollards</a></li>
       </ul>
     </div>
+    <!-- Col 3: Markets -->
     <div>
       <div class="footer-heading">Markets</div>
       <ul class="footer-links">
-        <li><a href="commercial.html">Commercial Properties</a></li>
-        <li><a href="churches.html">Churches & Institutions</a></li>
+        <li><a href="commercial.html">Commercial</a></li>
+        <li><a href="churches.html">Churches</a></li>
         <li><a href="strip-malls.html">Strip Malls</a></li>
-        <li><a href="municipalities.html">Roads & Municipalities</a></li>
+        <li><a href="municipalities.html">Municipalities</a></li>
         <li><a href="general-contractors.html">General Contractors</a></li>
-        <li><a href="industrial.html">Industrial & Warehouse</a></li>
+        <li><a href="industrial.html">Industrial</a></li>
       </ul>
     </div>
+    <!-- Col 4: Offices -->
     <div>
-      <div class="footer-heading">Company</div>
-      <ul class="footer-links">
-        <li><a href="about.html">About A1</a></li>
-        <li><a href="#">Owner Podcast</a></li>
-        <li><a href="#ai">AI Team Member</a></li>
-        <li><a href="#">Google Reviews</a></li>
-        <li><a href="https://a1asphaltpro.com/contact-us/">Contact Us</a></li>
-        <li><a href="https://a1asphaltpro.com/contact-us/">Free Estimate</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-address-row">
-    <div>
-      <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt & Sealing"/></div>
-      <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
-      <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
-      <div class="footer-contact-item"><strong>National</strong><span>888-223-3797</span></div>
-      <div class="footer-contact-item"><strong>Email</strong><span>info@a1asphaltpro.com</span></div>
-    </div>
-    <div>
-      <div class="footer-hq-label">Main Office</div>
-      <div class="footer-contact-item"><strong>HQ</strong><span>Lebanon, IL 62254</span></div>
-      <div class="footer-hq-label" style="margin-top:20px;">Auxiliary Offices</div>
-      <div class="footer-contact-item"><strong>St. Louis</strong><span>Maryland Heights, MO 63146</span></div>
-      <div class="footer-contact-item"><strong>St. Peters</strong><span>St. Peters, MO 63303 · (314) 356-1142</span></div>
-      <div class="footer-contact-item"><strong>South County</strong><span>Coming Soon</span></div>
+      <div class="footer-heading">Offices</div>
+      <div class="footer-contact-item"><strong>HQ</strong><span>107 Southern Dr<br/>Lebanon, IL 62254<br/>(618) 929-3301</span></div>
+      <div class="footer-contact-item" style="margin-top:16px;"><strong>St. Louis</strong><span>Maryland Heights, MO 63146<br/>(314) 949-5660</span></div>
+      <div class="footer-contact-item" style="margin-top:12px;"><strong>St. Peters</strong><span>St. Peters, MO 63303<br/>(314) 356-1142</span></div>
+      <div class="footer-contact-item" style="margin-top:12px;"><strong>South County</strong><span>Coming Soon</span></div>
     </div>
   </div>
   <div class="footer-bottom">
-    <p>© 2025 A1 Professional Asphalt & Sealing LLC · All Rights Reserved · a1asphaltpro.com</p>
+    <p>© 2025 A1 Professional Asphalt & Sealing LLC · All Rights Reserved · <a href="https://a1asphaltpro.com" style="color:rgba(255,255,255,0.4);text-decoration:none;">a1asphaltpro.com</a></p>
     <p class="footer-seo">Asphalt sealcoating St. Louis · Parking lot striping Illinois · Crack filling commercial · Asphalt patching St. Louis · Commercial paving nationwide</p>
   </div>
 </footer>
