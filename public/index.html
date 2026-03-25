@@ -19,7 +19,7 @@ html{scroll-behavior:smooth;}
 body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;} nav>ul{position:absolute;left:50%;transform:translateX(-50%);}
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bottom:2px solid var(--yellow);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px;}
 .nav-logo img{height:52px;width:auto;border-radius:4px;}
 .nav-links{display:flex;gap:32px;list-style:none;}
 .nav-links a{color:#ffffff;text-decoration:none;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
@@ -97,7 +97,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 
 /* National GC Button */
 .national-btn-wrap{margin:8px 0 0 0;}
-.national-btn{display:block;width:100%;background:linear-gradient(90deg,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.7) 100%),url('Sams-Club-Parking-Lot-Painting-980x429.jpg') center/cover no-repeat;border:2px solid var(--yellow);color:var(--yellow);text-align:center;padding:22px 40px;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.12em;text-decoration:none;text-transform:uppercase;transition:background 0.25s,color 0.25s;position:relative;overflow:hidden;}
+.national-btn{display:block;width:100%;background:linear-gradient(90deg,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.6) 100%),url('A1__asphalt_logo.jpeg') center/cover no-repeat;border:2px solid var(--yellow);color:var(--yellow);text-align:center;padding:22px 40px;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.12em;text-decoration:none;text-transform:uppercase;transition:background 0.25s,color 0.25s;position:relative;overflow:hidden;}
 .national-btn::after{content:'→';position:absolute;right:32px;top:50%;transform:translateY(-50%);font-size:1.4rem;transition:transform 0.2s;}
 .national-btn:hover{background:var(--yellow);color:var(--black);}
 .national-btn:hover::after{transform:translateY(-50%) translateX(6px);}
@@ -157,7 +157,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .audio-placeholder p{color:rgba(255,255,255,0.85);font-size:0.85rem;}
 
 /* ── VIDEO ── */
-.video-section{background:var(--black);padding:96px 40px;}
+.video-section{background:var(--black);padding:96px 40px;position:relative;overflow:hidden;}
 .video-wrap{margin-top:40px;background:var(--gray);border-radius:4px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.08);}
 .play-btn{width:72px;height:72px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--black);cursor:pointer;transition:transform 0.2s;}
 .play-btn:hover{transform:scale(1.08);}
@@ -167,7 +167,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bo
 .ai-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
 .ai-text p{color:rgba(255,255,255,0.85);line-height:1.75;font-size:1rem;margin-bottom:16px;}
 .ai-orb-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;}
-.ai-orb{width:200px;height:200px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center center/120% no-repeat;box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);animation:pulse 3s ease-in-out infinite;cursor:pointer;}
+.ai-orb{width:200px;height:200px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center center/contain no-repeat;background-color:#F5C518;box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);animation:pulse 3s ease-in-out infinite;cursor:pointer;}
 @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
 .orb-label{font-size:0.8rem;color:#ffffff;text-align:center;letter-spacing:0.08em;text-transform:uppercase;}
 
@@ -482,27 +482,21 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
       </ul>
     </div>
   </div>
-  <!-- Address row full width below -->
   <div class="footer-address-row">
     <div>
       <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt & Sealing"/></div>
       <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
-    </div>
-    <div>
       <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
-      <div class="footer-contact-item"><strong>National</strong><span>888-223-3797 · 1-800-ASPHALT</span></div>
-      <div class="footer-contact-item"><strong>Owner</strong><span>Joe Schanz</span></div>
-      <div class="footer-contact-item"><strong>Email</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="365f5850597657075745465e575a424644591855595b">[email&#160;protected]</a></span></div>
+      <div class="footer-contact-item"><strong>National</strong><span>888-223-3797</span></div>
+      <div class="footer-contact-item"><strong>Email</strong><span>info@a1asphaltpro.com</span></div>
     </div>
     <div>
       <div class="footer-hq-label">Main Office</div>
       <div class="footer-contact-item"><strong>HQ</strong><span>Lebanon, IL 62254</span></div>
-    </div>
-    <div>
-      <div class="footer-sat-label">Auxiliary Offices</div>
-      <div class="footer-sat-item"><strong>St. Louis</strong><span>Maryland Heights, MO 63146</span></div>
-      <div class="footer-sat-item"><strong>St. Peters</strong><span>St. Peters, MO 63303 · (314) 356-1142</span></div>
-      <div class="footer-sat-item"><strong>South County</strong><span>St. Louis, MO — Coming Soon</span></div>
+      <div class="footer-hq-label" style="margin-top:20px;">Auxiliary Offices</div>
+      <div class="footer-contact-item"><strong>St. Louis</strong><span>Maryland Heights, MO 63146</span></div>
+      <div class="footer-contact-item"><strong>St. Peters</strong><span>St. Peters, MO 63303 · (314) 356-1142</span></div>
+      <div class="footer-contact-item"><strong>South County</strong><span>Coming Soon</span></div>
     </div>
   </div>
   <div class="footer-bottom">
