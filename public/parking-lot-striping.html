@@ -3,126 +3,276 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Parking Lot Striping — A1 Professional Asphalt & Sealing LLC</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+<title>Parking Lot Striping | A1 Professional Asphalt & Sealing LLC</title>
+<meta name="description" content="Professional parking lot striping by A1. Sherwin-Williams paint, ADA compliance, fire lanes, and custom layouts. St. Louis and nationwide."/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
 <style>
-:root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;}
+:root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--gray:#1E1E1E;}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;}
-nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px;}
-.logo img{height:52px;width:auto;}
-.nav-right{display:flex;align-items:center;gap:12px;}
-.back{color:#ffffff;text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
-.back:hover{color:var(--yellow);}
-.btn-ai{background:var(--yellow);color:var(--black);padding:10px 16px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
-.call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
-.hero{position:relative;height:420px;display:flex;align-items:center;overflow:hidden;margin-top:72px;}
-.hero-bg{position:absolute;inset:0;background:url('images/striping-6-1-400x284.jpg') center/cover no-repeat;filter:brightness(0.35);}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.2) 100%);}
-.hero-content{position:relative;z-index:2;padding:0 60px;max-width:1200px;margin:0 auto;width:100%;}
-.lbl{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
-.lbl::before{content:'';width:28px;height:2px;background:var(--yellow);}
-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);line-height:0.95;margin-bottom:16px;color:#fff;}
-h1 span{color:var(--yellow);}
-.hero-sub{font-size:1.1rem;color:#ffffff;max-width:600px;}
-.wrap{max-width:1200px;margin:0 auto;padding:80px 60px;}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;}
-.body-text p{color:#ffffff;font-size:1rem;line-height:1.8;margin-bottom:20px;}
-.body-text h2{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#fff;margin-bottom:20px;}
-.body-text h2 span{color:var(--yellow);}
-.checklist{list-style:none;margin:24px 0;}
-.checklist li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.12);color:#ffffff;font-size:0.95rem;}
-.checklist li::before{content:'✓';color:var(--yellow);font-weight:900;flex-shrink:0;margin-top:2px;}
-.box{background:#111;border:1px solid rgba(255,255,255,0.1);border-left:4px solid var(--yellow);padding:32px;border-radius:4px;}
-.box h3{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;margin-bottom:16px;}
-.box h3 .white{color:#ffffff;}
-.box h3 .gold{color:var(--yellow);}
-.box p{color:#ffffff;font-size:0.95rem;line-height:1.7;margin-bottom:16px;}
-.cta-strip{background:var(--yellow);padding:60px;text-align:center;}
-.cta-strip h2{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--black);margin-bottom:12px;}
-.cta-strip p{color:rgba(0,0,0,0.75);font-size:1rem;margin-bottom:28px;}
-.btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-.btn-dark{background:var(--black);color:#fff;padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;}
-.btn-outline{background:transparent;color:var(--black);padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;text-transform:uppercase;text-decoration:none;border:2px solid var(--black);}
-footer{background:#050505;border-top:3px solid var(--yellow);padding:32px 60px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
-footer p{color:#ffffff;font-size:0.78rem;}
-footer a{color:var(--yellow);text-decoration:none;}
-footer a:hover{color:#fff;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;overflow-x:hidden;}
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:76px;gap:24px;}
+.nav-logo img{height:52px;width:auto;border-radius:4px;}
+.nav-links{display:flex;gap:32px;list-style:none;}
+.nav-links a{color:#fff;text-decoration:none;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.nav-links a:hover{color:var(--yellow);}
+.btn-nav-call{background:#16a34a;color:#fff;padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
+.btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;text-transform:uppercase;border:none;white-space:nowrap;cursor:pointer;font-weight:800;letter-spacing:0.06em;}
+.has-drop{position:relative;}
+.drop{display:none;position:absolute;top:100%;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:220px;list-style:none;padding:6px 0;z-index:1000;}
+.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.75);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;transition:color 0.15s,background 0.15s;}
+.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
+.has-drop:hover .drop{display:block;}
+.page-hero{position:relative;height:72vh;min-height:500px;display:flex;align-items:flex-end;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;filter:brightness(0.4);}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.1) 60%);}
+.hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 40px 64px;width:100%;}
+.section-label{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
+.section-label::before{content:'';width:28px;height:2px;background:var(--yellow);}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);line-height:0.95;color:#fff;margin-bottom:20px;}
+.hero-title span{color:var(--yellow);}
+.hero-sub{color:rgba(255,255,255,0.75);font-size:1.05rem;max-width:560px;line-height:1.6;margin-bottom:32px;}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap;}
+.btn-primary{background:var(--yellow);color:var(--black);padding:16px 32px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s,transform 0.2s;display:inline-block;}
+.btn-primary:hover{opacity:0.88;transform:translateY(-2px);}
+.btn-outline{background:transparent;color:#fff;padding:16px 32px;border-radius:4px;font-weight:700;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:2px solid rgba(255,255,255,0.35);transition:border-color 0.2s,color 0.2s;display:inline-block;}
+.btn-outline:hover{border-color:var(--yellow);color:var(--yellow);}
+.content-section{padding:96px 40px;}
+.container{max-width:1200px;margin:0 auto;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,4vw,3.5rem);line-height:1.05;margin-bottom:24px;}
+.section-title span{color:var(--yellow);}
+.lead-text{font-size:1.05rem;color:rgba(255,255,255,0.85);line-height:1.75;margin-bottom:20px;max-width:760px;}
+.two-col{display:grid;grid-template-columns:1.2fr 1fr;gap:80px;align-items:start;}
+.benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:48px;}
+.benefit-card{background:var(--gray);padding:32px 28px;border-top:3px solid transparent;transition:border-color 0.2s;}
+.benefit-card:hover{border-top-color:var(--yellow);}
+.benefit-icon{font-size:1.8rem;margin-bottom:14px;}
+.benefit-title{font-weight:800;font-size:0.95rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:8px;color:#fff;}
+.benefit-desc{font-size:0.88rem;color:rgba(255,255,255,0.75);line-height:1.6;}
+.process-section{background:var(--dark);padding:96px 40px;}
+.process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:48px;}
+.step{background:#1a1a1a;padding:36px 28px;position:relative;}
+.step-num{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:rgba(245,197,24,0.12);line-height:1;margin-bottom:12px;}
+.step-title{font-weight:800;font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--yellow);margin-bottom:10px;}
+.step-desc{font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.6;}
+.photo-section{padding:0;}
+.photo-section img{width:100%;height:420px;object-fit:cover;filter:contrast(1.05) brightness(0.88);}
+.why-section{background:var(--black);padding:96px 40px;}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:48px;}
+.why-card{background:var(--gray);padding:36px 28px;}
+.why-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--yellow);line-height:1;margin-bottom:8px;}
+.why-label{font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+.cta-band{background:var(--yellow);padding:80px 40px;text-align:center;}
+.cta-band h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);color:var(--black);margin-bottom:16px;}
+.cta-band p{color:rgba(0,0,0,0.65);font-size:1rem;margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto;}
+.work-link-band{background:#0d0d0d;padding:48px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);}
+.work-link-band p{color:rgba(255,255,255,0.5);font-size:0.85rem;margin-bottom:12px;letter-spacing:0.06em;text-transform:uppercase;}
+.tagline-band{background:#000;padding:56px 40px;text-align:center;}
+.tagline-band .quote{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4vw,3.5rem);color:#fff;letter-spacing:0.04em;line-height:1.1;}
+.tagline-band .attr{margin-top:14px;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yellow);}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;max-width:1400px;margin:0 auto 48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.footer-logo img{height:56px;width:auto;margin-bottom:16px;}
+.footer-about{color:rgba(255,255,255,0.8);font-size:0.85rem;line-height:1.7;margin-bottom:20px;}
+.footer-ci{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:#fff;font-size:0.85rem;}
+.footer-ci strong{color:var(--yellow);min-width:80px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
+.fh{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px;}
+.fl{list-style:none;}
+.fl li{margin-bottom:10px;}
+.fl a{color:rgba(255,255,255,0.85);text-decoration:none;font-size:0.85rem;transition:color 0.2s;}
+.fl a:hover{color:var(--yellow);}
+.footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.footer-bottom p{color:rgba(255,255,255,0.25);font-size:0.75rem;}
+#vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;}
+#vox-overlay iframe{width:100%;height:100%;border:none;}
+#vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;}
+@media(max-width:768px){.two-col{grid-template-columns:1fr;gap:40px;}.process-steps{grid-template-columns:repeat(2,1fr);}.benefits-grid{grid-template-columns:1fr;}.why-grid{grid-template-columns:1fr;}.nav-links{display:none;}}
 </style>
 </head>
 <body>
 <nav>
-  <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
-  <div class="nav-right">
-    <a href="index.html" class="back">← Back to Home</a>
-    <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" class="btn-ai">Talk with Our A.I. Team Member</a>
-    <a href="tel:6189293301" class="call">📞 (618) 929-3301</a>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a href="index.html" class="nav-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
+    <a href="tel:6189293301" class="btn-nav-call">📞 Call Now</a>
   </div>
+  <ul class="nav-links">
+    <li class="has-drop"><a href="index.html#services">Services ▾</a>
+      <ul class="drop">
+        <li><a href="sealcoating.html">Sealcoating</a></li>
+        <li><a href="crack-filling.html">Crack Filling</a></li>
+        <li><a href="parking-lot-striping.html">Parking Lot Striping</a></li>
+        <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
+        <li><a href="ada-compliance.html">ADA Compliance</a></li>
+        <li><a href="concrete-work.html">Concrete Work</a></li>
+        <li><a href="bollard-installation.html">Bollard Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="our-work.html">Our Work</a></li>
+    <li><a href="index.html#reviews">Reviews</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><button class="btn-nav-ai" onclick="openVox()">Talk with Our A.I.</button></li>
+  </ul>
 </nav>
-<div class="hero">
-  <div class="hero-bg"></div>
+
+<section class="page-hero">
+  <div class="hero-bg" style="background-image:url('striping-34-400x284.jpg');"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <div class="lbl">A1 Professional Asphalt & Sealing</div>
-    <h1>Parking Lot Striping<br/><span>Crisp. Clean. Compliant.</span></h1>
-    <p class="hero-sub">Commercial asphalt services done right — on time, on budget, nationwide.</p>
-  </div>
-</div>
-<div class="wrap">
-  <div class="two-col">
-    <div class="body-text">
-      <h2>First Impressions <span>Matter</span></h2>
-      <p>Your parking lot is the first thing customers see. Faded, uneven lines tell people everything they need to know about how you run your property. Fresh striping says you take care of things.</p>
-      <p>A1 uses Sherwin Williams traffic paint — the same product used by national retailers and municipalities. Our striping machines lay clean, straight lines every time. We handle standard parking spaces, fire lanes, loading zones, handicap symbols, directional arrows, and custom stenciling.</p>
-      <p>Sam's Club, Walmart, Lowe's — we've striped some of the highest-traffic lots in the country. Night and weekend work is standard for us.</p>
-      
-      <ul class="checklist">
-        <li>Sherwin Williams commercial traffic paint</li>
-        <li>ADA-compliant handicap spaces and symbols</li>
-        <li>Fire lanes, loading zones, directional arrows</li>
-        <li>Custom stenciling and lot markings</li>
-        <li>Night and weekend scheduling available</li>
-        
-      </ul>
+    <div class="section-label">Striping</div>
+    <h1 class="hero-title">Sharp Lines.<br/><span>Professional Results.</span></h1>
+    <p class="hero-sub">From Walmart to your local strip mall — we stripe it right the first time. Sherwin-Williams traffic paint, ADA-compliant layouts, and crews that show up when they say they will.</p>
+    <div class="hero-btns">
+      <a href="contact.html" class="btn-primary">Get a Free Estimate →</a>
+      <a href="our-work.html?filter=striping" class="btn-outline">See Our Work</a>
     </div>
-    <div>
-      <div class="box">
-        <h3><span class="white">Full Lot</span> <span class="gold">Packages</span></h3>
-        <p>Most clients combine sealcoating and striping into one project. We seal first, let it cure, then stripe — fresh black lot with clean new lines in a single mobilization.</p>
-        <p>We also handle restriping over existing pavement when a full seal isn't needed yet.</p>
-        
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <div class="section-label">The Details</div>
+        <h2 class="section-title">What You're <span>Getting</span></h2>
+        <p class="lead-text">Faded striping isn't just ugly — it's a liability. Unclear parking layouts cause accidents, ADA violations carry serious fines, and a poorly striped lot frustrates customers before they even walk in your door.</p>
+        <p class="lead-text">We use <strong>Sherwin-Williams</strong> professional traffic paint — the same product specified by national retail chains. It goes down clean, dries fast, and holds up through heavy traffic and weather.</p>
+        <p class="lead-text">Every job includes a layout plan. We don't just repaint what was there — we make sure it's right, it's compliant, and it maximizes your usable spaces.</p>
+      </div>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">📐</div>
+          <div class="benefit-title">Custom Layouts</div>
+          <div class="benefit-desc">We design or redesign your lot layout to maximize spaces and improve traffic flow.</div>
+        </div>
+<div class="benefit-card">
+          <div class="benefit-icon">♿</div>
+          <div class="benefit-title">ADA Compliance</div>
+          <div class="benefit-desc">Correct number of accessible spaces, proper dimensions, signage, and access aisles.</div>
+        </div>
+<div class="benefit-card">
+          <div class="benefit-icon">🚒</div>
+          <div class="benefit-title">Fire Lane Striping</div>
+          <div class="benefit-desc">Yellow fire lanes, no-parking zones, and curb painting done to code.</div>
+        </div>
+<div class="benefit-card">
+          <div class="benefit-icon">🎨</div>
+          <div class="benefit-title">Sherwin-Williams Paint</div>
+          <div class="benefit-desc">Professional-grade traffic paint for crisp lines that last.</div>
+        </div>
+<div class="benefit-card">
+          <div class="benefit-icon">🅿️</div>
+          <div class="benefit-title">Car Stops & Signage</div>
+          <div class="benefit-desc">Parking blocks, speed limit signs, directional arrows, and specialty markings.</div>
+        </div>
+<div class="benefit-card">
+          <div class="benefit-icon">✂️</div>
+          <div class="benefit-title">Minimal Grinding</div>
+          <div class="benefit-desc">Old lines removed cleanly when relayout requires it — no ghost lines left behind.</div>
+        </div>
+
       </div>
     </div>
   </div>
+</section>
+
+<div class="photo-section">
+  <img src="sealing-striping-52-400x284.jpg" alt="Walmart parking lot full crosswalk restripe"/>
 </div>
 
-<div style="background:#111;padding:48px 60px;border-top:1px solid rgba(255,255,255,0.06);">
-  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:48px;flex-wrap:wrap;">
-    <div style="flex:1;min-width:250px;">
-      <div style="font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#F5C518;margin-bottom:12px;">Owner Podcast</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#fff;margin-bottom:8px;">Hear It Straight From Joe</div>
-      <p style="color:rgba(255,255,255,0.7);font-size:0.9rem;line-height:1.6;">Joe talks about how A1 grew to a national level and why AI is changing the game for commercial asphalt.</p>
-    </div>
-    <div style="flex:1;min-width:280px;background:#1a1a1a;border-radius:8px;padding:24px;border:1px solid rgba(255,255,255,0.08);">
-      <div style="font-size:0.78rem;font-weight:800;color:#F5C518;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">🎙️ Scaling an Asphalt Empire with AI</div>
-      <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:12px;">Joe Schanz — Owner, A1 Professional Asphalt & Sealing LLC</div>
-      <audio controls preload="metadata" style="width:100%;border-radius:4px;">
-        <source src="Scaling_an_asphalt_empire_with_AI.mp3" type="audio/mpeg"/>
-      </audio>
+<section class="process-section">
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Our <span>Process</span></h2>
+    <div class="process-steps">
+      <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-title">Layout Plan</div>
+          <div class="step-desc">Measure the lot, plan the layout, confirm ADA requirements and space count.</div>
+        </div>
+<div class="step">
+          <div class="step-num">02</div>
+          <div class="step-title">Surface Clean</div>
+          <div class="step-desc">Blow out debris, address any areas that need spot sealing before paint goes down.</div>
+        </div>
+<div class="step">
+          <div class="step-num">03</div>
+          <div class="step-title">Stripe & Mark</div>
+          <div class="step-desc">Machine-applied Sherwin-Williams paint — parking stalls, arrows, fire lanes, ADA.</div>
+        </div>
+<div class="step">
+          <div class="step-num">04</div>
+          <div class="step-title">Final Inspection</div>
+          <div class="step-desc">We walk every line before we leave. If it's not right, we fix it on the spot.</div>
+        </div>
+
     </div>
   </div>
+</section>
+
+<section class="why-section">
+  <div class="container">
+    <div class="section-label">By the Numbers</div>
+    <h2 class="section-title">Why A1 <span>Wins</span></h2>
+    <div class="why-grid">
+      <div class="why-card">
+          <div class="why-num">100%</div>
+          <div class="why-label">ADA compliant layouts on every job</div>
+        </div>
+<div class="why-card">
+          <div class="why-num">Sherwin-Williams</div>
+          <div class="why-label">Professional traffic paint — what the nationals require</div>
+        </div>
+<div class="why-card">
+          <div class="why-num">4" to 12"</div>
+          <div class="why-label">Core drilling for bollards and signage posts</div>
+        </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="work-link-band">
+  <p>Want to see this service in action?</p>
+  <a href="our-work.html?filter=striping" class="btn-primary">View Our Striping Work →</a>
 </div>
-<div class="cta-strip">
+
+<div class="cta-band">
   <h2>Ready to Get Started?</h2>
-  <p style="color:rgba(0,0,0,0.85);font-weight:700;font-size:1.1rem;">Call Joe directly. We pick up.</p>
-  <div class="btns">
-    <a href="tel:6189293301" class="btn-dark">Call (618) 929-3301</a>
-    <a href="https://a1asphaltpro.com/contact-us/" class="btn-dark">Get a Free Estimate</a>
-  </div>
+  <p>Call us or request a free estimate online. We respond fast — usually same day.</p>
+  <a href="contact.html" class="btn-black" style="background:#000;color:#fff;padding:16px 40px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;display:inline-block;">Request a Free Estimate →</a>
+</div>
+
+<div class="tagline-band">
+  <div class="quote">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:var(--yellow);">ASPHALT</span>"</div>
+  <div class="attr">— Joe Schanz, Owner · A1 Professional Asphalt & Sealing LLC</div>
 </div>
 <footer>
-  <p>© 2025 A1 Professional Asphalt & Sealing LLC · 107 Southern Dr, Lebanon, IL 62254 · (618) 929-3301 · 888-223-3797 · Nationwide</p>
-  <p><a href="index.html">← Home</a> &nbsp;·&nbsp; <a href="tel:6189293301">(618) 929-3301</a> &nbsp;·&nbsp; <a href="tel:8882233797">888-223-3797</a></p>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></div>
+      <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
+      <div class="footer-ci"><strong>Local</strong><span>(618) 929-3301</span></div>
+      <div class="footer-ci"><strong>Toll Free</strong><span>1-800-ASPHALT</span></div>
+      <div style="display:flex;gap:20px;margin-top:20px;">
+        <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></a>
+        <a href="https://x.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a href="https://www.linkedin.com/company/a-1-asphalt-pros/" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+      </div>
+    </div>
+    <div><div class="fh">Services</div><ul class="fl"><li><a href="sealcoating.html">Sealcoating</a></li><li><a href="crack-filling.html">Crack Filling</a></li><li><a href="parking-lot-striping.html">Lot Striping</a></li><li><a href="asphalt-patching.html">Asphalt Patching</a></li><li><a href="ada-compliance.html">ADA Compliance</a></li><li><a href="concrete-work.html">Concrete Work</a></li></ul></div>
+    <div><div class="fh">Markets</div><ul class="fl"><li><a href="commercial.html">Commercial</a></li><li><a href="churches.html">Churches</a></li><li><a href="strip-malls.html">Strip Malls</a></li><li><a href="municipalities.html">Municipalities</a></li><li><a href="general-contractors.html">General Contractors</a></li><li><a href="industrial.html">Industrial</a></li></ul></div>
+    <div><div class="fh">Offices</div><div class="footer-ci"><strong>HQ</strong><span>Lebanon, IL<br/>(618) 929-3301</span></div><div class="footer-ci" style="margin-top:12px;"><strong>St. Louis</strong><span>Maryland Heights<br/>(314) 949-5660</span></div><div class="footer-ci" style="margin-top:12px;"><strong>St. Peters</strong><span>(314) 356-1142</span></div></div>
+  </div>
+  <div class="footer-bottom"><p>© 2025 A1 Professional Asphalt & Sealing LLC · All Rights Reserved</p></div>
 </footer>
-<div id="vox-overlay" style="display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid #F5C518;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;"><button onclick="closeVox()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;">✕</button><iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="width:100%;height:100%;border:none;"></iframe></div><script>function openVox(){document.getElementById("vox-overlay").style.display="block";}function closeVox(){document.getElementById("vox-overlay").style.display="none";}document.addEventListener("keydown",function(e){if(e.key==="Escape")closeVox();});</script></body>
+<div id="vox-overlay">
+  <button id="vox-close-btn" onclick="closeVox()">✕</button>
+  <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
+</div>
+<script>
+function openVox(){document.getElementById('vox-overlay').style.display='block';}
+function closeVox(){document.getElementById('vox-overlay').style.display='none';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
+</script>
+</body>
 </html>
