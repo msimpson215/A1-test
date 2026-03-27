@@ -3,61 +3,69 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>A1 Professional Asphalt & Sealing LLC | St. Louis | 1-800-ASPHALT</title>
+<title>A1 Professional Asphalt & Sealing LLC</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
 <style>
-:root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--gray:#1E1E1E;--text:#FFFFFF;--muted:rgba(255,255,255,0.55);}
+:root {
+  --yellow: #F5C518;
+  --black: #0A0A0A;
+  --dark: #111111;
+  --gray: #1E1E1E;
+  --text: #FFFFFF;
+  --muted: rgba(255,255,255,0.55);
+}
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:76px;gap:24px;}
-.nav-logo img{height:54px;width:auto;border-radius:4px;}
-.nav-links{display:flex;gap:28px;list-style:none;align-items:center;}
-.nav-links a{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000000;border-bottom:2px solid var(--yellow);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px;}
+.nav-logo img{height:52px;width:auto;border-radius:4px;}
+.nav-links{display:flex;gap:32px;list-style:none;}
+.nav-links a{color:#ffffff;text-decoration:none;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
 .nav-links a:hover{color:var(--yellow);}
 .nav-cta{display:flex;align-items:center;gap:12px;}
-.btn-nav-call{background:#16a34a;color:#fff;padding:12px 22px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:none;white-space:nowrap;cursor:pointer;transition:opacity 0.2s;}
+.nav-phone{display:none;}
+.btn-nav-call{background:#16a34a;color:#fff;padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;white-space:nowrap;cursor:pointer;}
 .btn-nav-call:hover{opacity:0.85;}
-.btn-nav-ai{background:var(--yellow);color:var(--black);padding:12px 22px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;border:none;white-space:nowrap;cursor:pointer;transition:opacity 0.2s;}
+.btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;white-space:nowrap;cursor:pointer;}
 .btn-nav-ai:hover{opacity:0.85;}
+.btn-nav{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;}
+.btn-nav:hover{opacity:0.85;}
 .has-drop{position:relative;}
 .drop{display:none;position:absolute;top:100%;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:210px;list-style:none;padding:6px 0;z-index:1000;}
 .drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.75);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;transition:color 0.15s,background 0.15s;}
 .drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
 .has-drop:hover .drop{display:block;}
 
-/* HERO */
+/* ── HERO ── */
 .hero{position:relative;height:100vh;min-height:640px;display:flex;align-items:center;overflow:hidden;}
-.hero-bg{position:absolute;inset:0;background:url('A1-Asphalt-Truck-in-front-of-St_-Louis-Arch.jpg') center/cover no-repeat;filter:brightness(0.6);}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.05) 100%);}
+.hero-bg{position:absolute;inset:0;background:url('A1-Asphalt-Truck-in-front-of-St_-Louis-Arch.jpg') center/cover no-repeat;filter:brightness(0.62);}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.6) 0%,rgba(0,0,0,0.15) 100%);}
 .hero-stripe{position:absolute;bottom:0;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--yellow) 0px,var(--yellow) 60px,transparent 60px,transparent 90px);}
-.hero-content{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 40px;padding-top:76px;}
-.hero-badge{display:inline-flex;align-items:center;gap:10px;color:#fff;font-size:0.9rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:20px;}
-.hero-badge::before{content:"";width:28px;height:2px;background:var(--yellow);}
-.hero-tagline{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,11vw,10rem);color:#fff;line-height:0.9;letter-spacing:0.01em;margin-bottom:24px;}
-.hero-tagline span{color:var(--yellow);}
-.hero-sub{font-size:1.1rem;color:rgba(255,255,255,0.85);max-width:600px;line-height:1.6;margin-bottom:36px;}
-.hero-btns{display:flex;gap:16px;flex-wrap:wrap;}
-.btn-primary{background:var(--yellow);color:var(--black);padding:16px 32px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:transform 0.2s,opacity 0.2s;display:inline-block;}
+.hero-content{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 40px;padding-top:72px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;}.hero-tagline{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,11vw,10rem);color:#ffffff;line-height:0.9;letter-spacing:0.01em;margin-bottom:24px;text-align:left;}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;background:transparent;color:#ffffff;font-size:0.9rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:20px;}.hero-badge::before{content:"";width:28px;height:2px;background:var(--yellow);}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,7rem);line-height:0.95;letter-spacing:0.02em;margin-bottom:24px;text-align:center;}
+.hero h1 span{color:var(--yellow);}
+.hero-sub{font-size:1.1rem;color:#ffffff;max-width:700px;line-height:1.6;margin-bottom:36px;text-align:left;}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-start;}
+.btn-primary{background:var(--yellow);color:var(--black);padding:16px 32px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:transform 0.2s,opacity 0.2s;}
 .btn-primary:hover{transform:translateY(-2px);opacity:0.9;}
-.btn-outline{background:transparent;color:#fff;padding:16px 32px;border-radius:4px;font-weight:700;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:2px solid rgba(255,255,255,0.4);transition:border-color 0.2s,color 0.2s;display:inline-block;}
+.btn-outline{background:transparent;color:#fff;padding:16px 32px;border-radius:4px;font-weight:700;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:2px solid rgba(255,255,255,0.4);transition:border-color 0.2s,color 0.2s;}
 .btn-outline:hover{border-color:var(--yellow);color:var(--yellow);}
-.hero-stats{display:flex;gap:48px;margin-top:56px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.12);}
+.hero-stats{display:flex;gap:48px;margin-top:56px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.12);justify-content:flex-start;}
 .stat-num{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--yellow);line-height:1;}
-.stat-label{font-size:0.75rem;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;}
+.stat-label{font-size:0.78rem;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;}
 
-/* TICKER */
+/* ── TICKER ── */
 .ticker-label{background:var(--black);text-align:center;padding:10px;font-size:0.7rem;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--yellow);}
-.ticker-wrap{background:var(--yellow);padding:18px 0;overflow:hidden;position:relative;}
-.ticker-track{display:flex;align-items:center;width:max-content;animation:tickerMove 20s linear infinite;}
+.ticker-wrap{background:var(--yellow);padding:16px 0;overflow:hidden;position:relative;}
+.ticker-track{display:flex;align-items:center;width:max-content;animation:tickerMove 30s linear infinite;}
 .ticker-item{display:inline-flex;align-items:center;margin-right:80px;flex-shrink:0;}
-.ticker-item img{height:56px;width:auto;max-width:150px;object-fit:contain;opacity:0.9;}
-.ticker-dot{width:6px;height:6px;background:var(--black);border-radius:50%;opacity:0.3;margin-right:80px;flex-shrink:0;}
-@keyframes tickerMove{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.ticker-item img{height:48px;width:auto;max-width:130px;object-fit:contain;opacity:0.85;}
+.ticker-dot{width:5px;height:5px;background:var(--black);border-radius:50%;opacity:0.3;margin-right:80px;flex-shrink:0;}
 
-/* SECTION SHARED */
+/* ── SECTION SHARED ── */
 .section{padding:96px 40px;}
 .container{max-width:1200px;margin:0 auto;}
 .section-label{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
@@ -65,10 +73,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-botto
 .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.4rem,5vw,4rem);line-height:1.05;margin-bottom:24px;}
 .section-title span{color:var(--yellow);}
 
-/* SERVICES */
-.services-section{background:var(--dark);position:relative;}
-.services-section::before{content:'';position:absolute;inset:0;background:url('A1__asphalt_logo.jpeg') center/cover no-repeat;opacity:0.07;z-index:0;}
-.services-section .container{position:relative;z-index:1;}
+/* ── SERVICES ── */
+.services-section{background:var(--dark);position:relative;} .services-section::before{content:'';position:absolute;inset:0;background:url('A1__asphalt_logo.jpeg') center/cover no-repeat;opacity:0.12;z-index:0;} .services-section .container{position:relative;z-index:1;}
 .services-intro{max-width:560px;margin-bottom:56px;}
 .services-intro p{color:rgba(255,255,255,0.85);line-height:1.7;font-size:1rem;}
 .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:32px;}
@@ -76,90 +82,116 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-botto
 .service-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--yellow);transform:scaleX(0);transform-origin:left;transition:transform 0.3s;}
 .service-card:hover{background:#252525;}
 .service-card:hover::before{transform:scaleX(1);}
+.service-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:rgba(245,197,24,0.15);line-height:1;margin-bottom:12px;}
+.service-icon{font-size:1.8rem;margin-bottom:14px;}
 .service-name{font-weight:800;font-size:1rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:8px;color:#fff;}
-.service-desc{font-size:0.85rem;color:rgba(255,255,255,0.85);line-height:1.6;}
+.service-desc{font-size:0.85rem;color:#ffffff;line-height:1.6;}
 .service-arrow{position:absolute;bottom:20px;right:20px;color:var(--yellow);font-size:1.1rem;opacity:0;transition:opacity 0.2s,transform 0.2s;}
 .service-card:hover .service-arrow{opacity:1;transform:translateX(4px);}
+/* Photo backgrounds on service cards */
 .service-card.has-photo{background-size:cover;background-position:center;background-repeat:no-repeat;}
-.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.55);z-index:0;transition:background 0.3s;}
-.service-card.has-photo:hover::after{background:rgba(10,10,10,0.25);}
-.service-card.has-photo .service-name,.service-card.has-photo .service-desc,.service-card.has-photo .service-arrow{position:relative;z-index:1;}
+.service-card.has-photo::after{content:'';position:absolute;inset:0;background:rgba(10,10,10,0.5);z-index:0;transition:background 0.3s;}
+.service-card.has-photo:hover::after{background:rgba(10,10,10,0.2);}
+.service-card.has-photo .service-icon,.service-card.has-photo .service-name,.service-card.has-photo .service-desc,.service-card.has-photo .service-arrow{position:relative;z-index:1;}
+.service-card.has-photo .service-num{position:relative;z-index:1;}
+
+/* National GC Button */
 .national-btn-wrap{margin:8px 0 0 0;}
-.national-btn{display:block;width:100%;background:linear-gradient(90deg,rgba(0,0,0,0.75),rgba(0,0,0,0.6)),url('A1__asphalt_logo.jpeg') center/cover no-repeat;border:2px solid var(--yellow);color:var(--yellow);text-align:center;padding:22px 40px;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.12em;text-decoration:none;text-transform:uppercase;transition:background 0.25s,color 0.25s;position:relative;}
+.national-btn{display:block;width:100%;background:linear-gradient(90deg,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.6) 100%),url('A1__asphalt_logo.jpeg') center/cover no-repeat;border:2px solid var(--yellow);color:var(--yellow);text-align:center;padding:22px 40px;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.12em;text-decoration:none;text-transform:uppercase;transition:background 0.25s,color 0.25s;position:relative;overflow:hidden;}
 .national-btn::after{content:'→';position:absolute;right:32px;top:50%;transform:translateY(-50%);font-size:1.4rem;transition:transform 0.2s;}
 .national-btn:hover{background:var(--yellow);color:var(--black);}
 .national-btn:hover::after{transform:translateY(-50%) translateX(6px);}
 
-/* STATS BAND */
-.stats-band{background:#111;padding:80px 40px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);}
-.stats-band-inner{max-width:1200px;margin:0 auto;}
-.stats-band-header{text-align:center;margin-bottom:52px;}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;}
-.stat-card{background:#1a1a1a;padding:40px 24px;text-align:center;border-top:3px solid var(--yellow);}
-.stat-card-num{font-family:'Bebas Neue',sans-serif;font-size:3.8rem;color:var(--yellow);line-height:1;}
-.stat-card-label{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-top:8px;}
+/* ── CREDIBILITY ── */
+.cred-section{background:var(--black);padding:72px 40px;}
+.cred-logos{display:flex;flex-wrap:wrap;gap:0;margin-top:48px;border:1px solid rgba(255,255,255,0.06);}
+.cred-logo{flex:1;min-width:160px;padding:32px 24px;display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);transition:background 0.2s;}
+.cred-logo:hover{background:rgba(245,197,24,0.05);}
+.cred-logo span{font-weight:800;font-size:0.82rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.35);transition:color 0.2s;}
+.cred-logo:hover span{color:var(--yellow);}
 
-/* REVIEWS */
-.reviews-section{background:var(--black);padding:96px 40px;}
+/* ── PHOTO STRIP ── */
+.photo-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;height:360px;}
+.photo-strip-item{position:relative;overflow:hidden;}
+.photo-strip-item img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s;}
+.photo-strip-item:hover img{transform:scale(1.05);}
+.photo-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:20px 16px 14px;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--yellow);}
+
+/* ── MAP SECTION ── */
+.map-section{background:var(--dark);padding:80px 40px;}
+.map-section:hover .map-flag-overlay{background:rgba(0,0,0,0.58);transition:background 0.4s;}
+.map-flag-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.72);transition:background 0.4s;}
+.map-placeholder{margin-top:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:4px;height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.map-placeholder .map-icon{font-size:3rem;opacity:0.3;}
+.map-placeholder p{color:rgba(255,255,255,0.85);font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;}
+.map-placeholder .map-badge{background:var(--yellow);color:var(--black);font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:5px 12px;border-radius:2px;}
+/* Video/Joe section flag */
+.video-section{background:var(--black);padding:96px 40px;position:relative;overflow:hidden;}
+.video-section::before{content:'';position:absolute;inset:0;background:url('images/unitedstatesflag.jpg') center/cover no-repeat;filter:brightness(0.38);z-index:0;}
+.video-section .container{position:relative;z-index:1;}
+
+/* ── REVIEWS ── */
+.reviews-section{background:var(--black);padding:96px 40px;position:relative;} .reviews-section::before{content:'';position:absolute;inset:0;background:url('A1__asphalt_logo.jpeg') center/cover no-repeat;opacity:0.1;z-index:0;} .reviews-section .container{position:relative;z-index:1;}
 .stars-header{display:flex;align-items:center;gap:20px;margin-bottom:48px;}
 .big-stars{font-size:1.8rem;color:var(--yellow);letter-spacing:2px;}
 .big-score{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--yellow);line-height:1;}
-.score-label{font-size:0.8rem;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.08em;}
+.score-label{font-size:0.8rem;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:0.08em;}
 .reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
 .review-card{background:var(--gray);padding:32px 28px;}
 .review-stars{color:var(--yellow);font-size:1rem;letter-spacing:2px;margin-bottom:16px;}
-.review-text{color:rgba(255,255,255,0.9);font-size:0.9rem;line-height:1.7;margin-bottom:20px;font-style:italic;}
+.review-text{color:rgba(255,255,255,0.95);font-size:0.9rem;line-height:1.7;margin-bottom:20px;font-style:italic;}
 .review-author{font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--yellow);}
 
-/* PODCAST */
-.podcast-section{background:var(--dark);padding:80px 40px;}
+/* ── PODCAST ── */
+.podcast-section{background:var(--dark);padding:80px 40px;position:relative;} .podcast-section::before{content:'';position:absolute;inset:0;background:url('A1__asphalt_logo.jpeg') center/cover no-repeat;opacity:0.12;z-index:0;} .podcast-section .container{position:relative;z-index:1;}
 .podcast-inner{display:flex;align-items:center;gap:64px;}
 .podcast-text{flex:1;}
 .podcast-player{flex:1;background:var(--gray);border-radius:8px;padding:32px;border:1px solid rgba(255,255,255,0.08);}
+.podcast-btn{display:flex;align-items:center;gap:20px;background:var(--yellow);color:var(--black);padding:20px 28px;border-radius:6px;text-decoration:none;margin-top:28px;transition:transform 0.2s,opacity 0.2s;}
+.podcast-btn:hover{transform:translateY(-2px);opacity:0.9;}
+.podcast-icon{font-size:2rem;}
+.podcast-btn-text strong{display:block;font-size:0.95rem;font-weight:800;letter-spacing:0.04em;}
+.podcast-btn-text span{font-size:0.8rem;opacity:0.7;}
+.audio-placeholder{text-align:center;padding:20px 0;}
+.audio-placeholder .play-circle{width:64px;height:64px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.4rem;color:var(--black);}
+.audio-placeholder p{color:rgba(255,255,255,0.85);font-size:0.85rem;}
 
-/* VIDEO */
+/* ── VIDEO ── */
 .video-section{background:var(--black);padding:96px 40px;position:relative;overflow:hidden;}
-.video-section::before{content:'';position:absolute;inset:0;background:url('unitedstatesflag.jpg') center/cover no-repeat;filter:brightness(0.48);z-index:0;}
-.video-section .container{position:relative;z-index:1;}
 .video-wrap{margin-top:40px;background:var(--gray);border-radius:4px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.08);}
 .play-btn{width:72px;height:72px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--black);cursor:pointer;transition:transform 0.2s;}
 .play-btn:hover{transform:scale(1.08);}
 
-/* AI SECTION */
+/* ── AI SECTION ── */
 .ai-section{background:#ffffff;padding:96px 40px;}
-.ai-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:960px;margin:0 auto;}
-.ai-section .section-label{color:#b8960a;}
-.ai-section .section-label::before{background:#b8960a;}
-.ai-section .section-title{color:#111;}
-.ai-section .section-title span{color:#b8960a;}
+.ai-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
 .ai-text p{color:#333;line-height:1.75;font-size:1rem;margin-bottom:16px;}
 .ai-orb-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;}
-.ai-orb{width:200px;height:200px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center/contain no-repeat;background-color:var(--yellow);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);animation:pulse 3s ease-in-out infinite;cursor:pointer;}
+.ai-orb{width:200px;height:200px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center center/contain no-repeat;background-color:#F5C518;box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);animation:pulse 3s ease-in-out infinite;cursor:pointer;}
+@keyframes tickerMove{0%{transform:translateX(0);}100%{transform:translateX(-50%);}} @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
 .orb-label{font-size:0.8rem;color:#555;text-align:center;letter-spacing:0.08em;text-transform:uppercase;}
-@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
 
-/* CTA */
+/* ── CTA ── */
 .cta-section{background:#0a0a0a;padding:80px 40px;text-align:center;border-top:3px solid var(--yellow);}
 .cta-section h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4.5rem);color:var(--yellow);margin-bottom:16px;}
-.cta-section p{color:rgba(255,255,255,0.75);font-size:1.1rem;margin-bottom:36px;}
+.cta-section p{color:rgba(255,255,255,0.85);font-size:1.1rem;margin-bottom:36px;}
 .cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-.btn-dark{background:#1a1a1a;color:#fff;padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:2px solid rgba(255,255,255,0.15);transition:border-color 0.2s;}
-.btn-dark:hover{border-color:var(--yellow);}
-.btn-dark-outline{background:var(--yellow);color:var(--black);padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;}
-.btn-dark-outline:hover{opacity:0.88;}
+.btn-dark{background:var(--black);color:#fff;padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;}
+.btn-dark:hover{opacity:0.85;}
+.btn-dark-outline{background:var(--black);color:#ffffff;padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:2px solid var(--black);transition:background 0.2s,color 0.2s;}
+.btn-dark-outline:hover{background:var(--black);color:#fff;}
 
-/* TAGLINE BILLBOARD */
-.tagline-band{background:#000;padding:80px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);}
-.tagline-band .quote{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,6vw,5.5rem);color:#fff;letter-spacing:0.03em;line-height:1.05;}
-.tagline-band .attr{margin-top:20px;font-size:0.8rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
-
-/* FOOTER */
+/* ── FOOTER ── */
 footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yellow);}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;max-width:1400px;margin:0 auto 48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.footer-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;max-width:1400px;margin:0 auto 48px;}.footer-address-row{max-width:1400px;margin:0 auto 40px;padding-bottom:32px;border-bottom:1px solid rgba(255,255,255,0.08);display:grid;grid-template-columns:repeat(4,1fr);gap:32px;}
 .footer-logo img{height:56px;width:auto;margin-bottom:16px;}
 .footer-about{color:rgba(255,255,255,0.8);font-size:0.85rem;line-height:1.7;margin-bottom:20px;}
-.footer-contact-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:#fff;font-size:0.85rem;}
+.footer-contact-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:#ffffff;font-size:0.85rem;}
 .footer-contact-item strong{color:var(--yellow);min-width:80px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
+.footer-hq-label{font-size:0.68rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin:16px 0 8px;}
+.footer-sat-label{font-size:0.68rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#ffffff;margin:14px 0 8px;}
+.footer-sat-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;color:#ffffff;font-size:0.82rem;}
+.footer-sat-item strong{color:var(--yellow);min-width:80px;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
 .footer-heading{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px;}
 .footer-links{list-style:none;}
 .footer-links li{margin-bottom:10px;}
@@ -167,25 +199,14 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 .footer-links a:hover{color:var(--yellow);}
 .footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .footer-bottom p{color:rgba(255,255,255,0.25);font-size:0.75rem;}
-.footer-seo{color:rgba(255,255,255,0.15);font-size:0.72rem;}
+.footer-seo{color:rgba(255,255,255,0.18);font-size:0.72rem;}
 
-/* VOX */
+/* ── VOX TALK OVERLAY ── */
 #vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;}
-#vox-overlay.open{display:block;}
+#vox-overlay.open{display:block;animation:voxIn 0.25s ease forwards;}
+@keyframes voxIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 #vox-overlay iframe{width:100%;height:100%;border:none;}
 #vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;line-height:1;}
-
-@media(max-width:768px){
-  nav{padding:0 16px;}
-  .nav-links{display:none;}
-  .hero-tagline{font-size:clamp(3.5rem,15vw,6rem);}
-  .services-grid{grid-template-columns:1fr;}
-  .stats-grid{grid-template-columns:repeat(2,1fr);}
-  .reviews-grid{grid-template-columns:1fr;}
-  .ai-inner{grid-template-columns:1fr;}
-  .podcast-inner{flex-direction:column;gap:32px;}
-  .footer-grid{grid-template-columns:1fr;}
-}
 </style>
 </head>
 <body>
@@ -197,7 +218,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <a href="tel:6189293301" class="btn-nav-call">📞 Call Now</a>
   </div>
   <ul class="nav-links">
-    <li class="has-drop"><a href="index.html#services">Services ▾</a>
+    <li class="has-drop"><a href="#services">Services ▾</a>
       <ul class="drop">
         <li><a href="sealcoating.html">Sealcoating</a></li>
         <li><a href="crack-filling.html">Crack Filling</a></li>
@@ -208,15 +229,15 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
       </ul>
     </li>
     <li><a href="our-work.html">Our Work</a></li>
-    <li class="has-drop"><a href="index.html#about">About ▾</a>
+    <li class="has-drop"><a href="#about">About ▾</a>
       <ul class="drop">
         <li><a href="about.html">Meet Joe</a></li>
-        <li><a href="index.html#podcast">Owner Podcast</a></li>
-        <li><a href="index.html#ai">AI Team Member</a></li>
-        <li><a href="index.html#reviews">Google Reviews</a></li>
+        <li><a href="#podcast">Owner Podcast</a></li>
+        <li><a href="#ai">AI Team Member</a></li>
+        <li><a href="#reviews">Google Reviews</a></li>
       </ul>
     </li>
-    <li><button class="btn-nav-ai" onclick="openVox()">Talk with our AI Team Member</button></li>
+    <li><button class="btn-nav-ai" id="navAiBtn" onclick="openVox()">Talk with our AI Team Member</button></li>
   </ul>
 </nav>
 
@@ -225,20 +246,12 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <div class="hero-bg"></div>
   <div class="hero-overlay"></div>
   <div class="hero-stripe"></div>
-  <div class="hero-content">
-    <div class="hero-badge">St. Louis &amp; Nationwide</div>
-    <div class="hero-tagline">THE LAST<br/>ASPHALT COMPANY<br/><span>YOU'LL EVER CALL</span></div>
-    <p class="hero-sub">Commercial sealcoating, striping, paving, and concrete — done right the first time. Trusted by Walmart, Sam's Club, Lowe's, and hundreds more.</p>
-    <div class="hero-btns">
-      <a href="contact.html" class="btn-primary">Get a Free Estimate →</a>
-      <a href="our-work.html" class="btn-outline">See Our Work</a>
-    </div>
-    <div class="hero-stats">
-      <div><div class="stat-num">13+</div><div class="stat-label">Years in Business</div></div>
-      <div><div class="stat-num">500+</div><div class="stat-label">Projects Completed</div></div>
-      <div><div class="stat-num">15</div><div class="stat-label">States Served</div></div>
-      <div><div class="stat-num">5.0</div><div class="stat-label">Google Rating</div></div>
-    </div>
+  <div class="hero-content container">
+    <div class="hero-badge">ST. LOUIS &amp; NATIONWIDE</div>
+    <div class="hero-tagline">THE LAST<br/>ASPHALT COMPANY<br/><span style="color:var(--yellow)">YOU'LL EVER CALL</span></div>
+
+    <p class="hero-sub">Commercial sealcoating, striping, paving, and concrete — done right the first time.</p>
+
   </div>
 </section>
 
@@ -246,100 +259,84 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 <div class="ticker-label">Trusted By America's Leading Brands</div>
 <div class="ticker-wrap">
   <div class="ticker-track" id="tickerTrack">
-    <span class="ticker-item"><img src="sams-club.png" alt="Sam's Club"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="walmart.jpg" alt="Walmart"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="lowes.png" alt="Lowe's"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="target.png" alt="Target"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="walgreens.png" alt="Walgreens"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="kohls.png" alt="Kohl's"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="trader-joes.png" alt="Trader Joe's"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="bandanasbbq.jpg" alt="Bandana's BBQ"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="manards.jpg" alt="Menards"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="panarabread.png" alt="Panera Bread"/></span><span class="ticker-dot"></span>
-    <!-- duplicate for seamless loop -->
-    <span class="ticker-item"><img src="sams-club.png" alt="Sam's Club"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="walmart.jpg" alt="Walmart"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="lowes.png" alt="Lowe's"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="target.png" alt="Target"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="walgreens.png" alt="Walgreens"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="kohls.png" alt="Kohl's"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="trader-joes.png" alt="Trader Joe's"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="bandanasbbq.jpg" alt="Bandana's BBQ"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="manards.jpg" alt="Menards"/></span><span class="ticker-dot"></span>
-    <span class="ticker-item"><img src="panarabread.png" alt="Panera Bread"/></span>
+    <span class="ticker-item"><img src="images/sams-club.png" alt="Sam's Club"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/walmart.jpg" alt="Walmart"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/lowes.png" alt="Lowe's"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/target.png" alt="Target"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/walgreens.png" alt="Walgreens"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/kohls.png" alt="Kohl's"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/trader-joes.png" alt="Trader Joe's"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/bandanasbbq.jpg" alt="Bandana's BBQ"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/manards.jpg" alt="Menards"/></span><span class="ticker-dot"></span>
+    <span class="ticker-item"><img src="images/panarabread.png" alt="Panera Bread"/></span>
   </div>
 </div>
-
 <!-- SERVICES -->
 <section class="section services-section" id="services">
   <div class="container">
     <div class="section-label">What We Do</div>
     <div class="services-intro">
       <h2 class="section-title">Full-Service<br/><span>Pavement Solutions</span></h2>
-      <p>From strip malls to national retail chains — A1 delivers professional results on every project, every time.</p>
+      <p>From single driveways to national retail chains — A1 delivers professional results on every project, every time.</p>
     </div>
     <div class="services-grid">
-      <a href="commercial.html" class="service-card has-photo" style="background-image:url('commercial.jpg');">
+      <a href="commercial.html" class="service-card has-photo" style="background-image:url('images/commercial.jpg');">
+
         <div class="service-name">Commercial Properties</div>
         <div class="service-desc">Retail centers, office parks, and commercial facilities. Full sealcoat and restripe programs.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="churches.html" class="service-card has-photo" style="background-image:url('church.jpg');">
+      <a href="churches.html" class="service-card has-photo" style="background-image:url('images/church.jpg');">
+
         <div class="service-name">Churches & Institutions</div>
         <div class="service-desc">Parking lot maintenance for houses of worship, schools, and community facilities.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="strip-malls.html" class="service-card has-photo" style="background-image:url('stripmallsretail.jpg');">
+      <a href="strip-malls.html" class="service-card has-photo" style="background-image:url('images/stripmallsretail.jpg');">
+
         <div class="service-name">Strip Malls & Retail</div>
         <div class="service-desc">Multi-tenant retail properties. ADA compliance, fire lanes, full striping packages.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="municipalities.html" class="service-card has-photo" style="background-image:url('roads.jpg');">
+      <a href="municipalities.html" class="service-card has-photo" style="background-image:url('images/roads.jpg');">
+
         <div class="service-name">Roads & Municipalities</div>
         <div class="service-desc">Municipal roads, private communities, and access roads. Crack fill, patch, and seal programs.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="general-contractors.html" class="service-card has-photo" style="background-image:url('generalcontractor.jpg');">
+      <a href="general-contractors.html" class="service-card has-photo" style="background-image:url('images/generalcontractor.jpg');">
+
         <div class="service-name">General Contractors</div>
         <div class="service-desc">Subcontract pavement work for GC projects. Reliable, professional, on schedule.</div>
         <div class="service-arrow">→</div>
       </a>
-      <a href="industrial.html" class="service-card has-photo" style="background-image:url('industrial.jpg');">
+      <a href="industrial.html" class="service-card has-photo" style="background-image:url('images/industrial.jpg');">
+
         <div class="service-name">Industrial & Warehouse</div>
         <div class="service-desc">Heavy-duty pavement maintenance for distribution centers, warehouses, and industrial facilities.</div>
         <div class="service-arrow">→</div>
       </a>
     </div>
     <div class="national-btn-wrap">
-      <a href="contact.html" class="national-btn">Speak With a Project Specialist Today</a>
+      <a href="#contact" class="national-btn">Speak With a Project Specialist Today</a>
     </div>
   </div>
 </section>
 
+
+
 <!-- STATS BAND -->
-<section class="stats-band">
-  <div class="stats-band-inner">
-    <div class="stats-band-header">
+<section style="background:#111;padding:80px 40px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:52px;">
       <div class="section-label" style="justify-content:center;">Coverage</div>
       <h2 class="section-title" style="text-align:center;">Serving the Midwest<br/><span>&amp; Beyond</span></h2>
     </div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-card-num">2012</div>
-        <div class="stat-card-label">Est. — Over 13 Years Strong</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-num">500+</div>
-        <div class="stat-card-label">Commercial Projects Completed</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-num">15</div>
-        <div class="stat-card-label">States Served</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-num">4</div>
-        <div class="stat-card-label">Office Locations</div>
-      </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;">
+      <div style="background:#1a1a1a;padding:40px 24px;text-align:center;border-top:3px solid var(--yellow);"><div style="font-family:'Bebas Neue',sans-serif;font-size:3.8rem;color:var(--yellow);line-height:1;">2012</div><div style="font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-top:8px;">Est. — 13+ Years Strong</div></div>
+      <div style="background:#1a1a1a;padding:40px 24px;text-align:center;border-top:3px solid var(--yellow);"><div style="font-family:'Bebas Neue',sans-serif;font-size:3.8rem;color:var(--yellow);line-height:1;">500+</div><div style="font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-top:8px;">Commercial Projects</div></div>
+      <div style="background:#1a1a1a;padding:40px 24px;text-align:center;border-top:3px solid var(--yellow);"><div style="font-family:'Bebas Neue',sans-serif;font-size:3.8rem;color:var(--yellow);line-height:1;">15</div><div style="font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-top:8px;">States Served</div></div>
+      <div style="background:#1a1a1a;padding:40px 24px;text-align:center;border-top:3px solid var(--yellow);"><div style="font-family:'Bebas Neue',sans-serif;font-size:3.8rem;color:var(--yellow);line-height:1;">4</div><div style="font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-top:8px;">Office Locations</div></div>
     </div>
   </div>
 </section>
@@ -349,8 +346,14 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <div class="container">
     <div class="section-label">Google Reviews</div>
     <div class="stars-header">
-      <div><div class="big-score">5.0</div><div class="score-label">Google Rating</div></div>
-      <div><div class="big-stars">★★★★★</div><div class="score-label">Verified Reviews</div></div>
+      <div>
+        <div class="big-score">5.0</div>
+        <div class="score-label">Google Rating</div>
+      </div>
+      <div>
+        <div class="big-stars">★★★★★</div>
+        <div class="score-label">Verified Reviews</div>
+      </div>
     </div>
     <div class="reviews-grid">
       <div class="review-card">
@@ -402,7 +405,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <div class="video-wrap">
       <div style="text-align:center">
         <div class="play-btn">▶</div>
-        <p style="margin-top:16px;color:rgba(255,255,255,0.75);font-size:0.85rem;">Owner video — coming soon</p>
+        <p style="margin-top:16px;color:rgba(255,255,255,0.85);font-size:0.85rem;">Owner video — coming soon</p>
       </div>
     </div>
   </div>
@@ -434,28 +437,27 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <p>Call us or request a free estimate online. We respond fast.</p>
     <div class="cta-btns">
       <a href="tel:6189293301" class="btn-dark">📞 (618) 929-3301</a>
-      <a href="contact.html" class="btn-dark-outline">Request a Free Estimate →</a>
+      <a href="https://a1asphaltpro.com/contact-us/" class="btn-dark-outline">Request a Free Estimate</a>
     </div>
   </div>
 </section>
 
 <!-- TAGLINE BILLBOARD -->
-<div class="tagline-band">
-  <div class="quote">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:var(--yellow);">ASPHALT</span>"</div>
-  <div class="attr">— Joe Schanz, Owner · A1 Professional Asphalt & Sealing LLC</div>
+<div style="background:#000;padding:80px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,6vw,5.5rem);color:#fff;letter-spacing:0.03em;line-height:1.05;">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:#F5C518;">ASPHALT</span>"</div>
+  <div style="margin-top:20px;font-size:0.8rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);">— Joe Schanz, Owner · A1 Professional Asphalt &amp; Sealing LLC</div>
 </div>
-
 <!-- FOOTER -->
 <footer>
-  <div class="footer-grid">
+  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);">
     <div>
       <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt &amp; Sealing"/></div>
       <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
       <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
       <div style="display:flex;gap:16px;margin-top:20px;align-items:center;">
-        <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></a>
-        <a href="https://x.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-        <a href="https://www.linkedin.com/company/a-1-asphalt-pros/" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></a>
+        <a href="https://x.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a href="https://www.linkedin.com/company/a-1-asphalt-pros/" target="_blank" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
       </div>
     </div>
     <div>
@@ -481,9 +483,9 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     </div>
     <div>
       <div class="footer-heading">Offices</div>
-      <div class="footer-contact-item"><strong>HQ</strong><span>Lebanon, IL<br/>(618) 929-3301</span></div>
-      <div class="footer-contact-item" style="margin-top:12px;"><strong>St. Louis</strong><span>Maryland Heights<br/>(314) 949-5660</span></div>
-      <div class="footer-contact-item" style="margin-top:12px;"><strong>St. Peters</strong><span>(314) 356-1142</span></div>
+      <div class="footer-contact-item"><strong>HQ</strong><span>Lebanon, IL 62254<br/>(618) 929-3301</span></div>
+      <div class="footer-contact-item" style="margin-top:12px;"><strong>St. Louis</strong><span>Maryland Heights, MO<br/>(314) 949-5660</span></div>
+      <div class="footer-contact-item" style="margin-top:12px;"><strong>St. Peters</strong><span>St. Peters, MO<br/>(314) 356-1142</span></div>
     </div>
   </div>
   <div class="footer-bottom">
@@ -492,19 +494,39 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
 </footer>
 
-<!-- VOX -->
+<!-- VOX TALK OVERLAY -->
 <div id="vox-overlay">
   <button id="vox-close-btn" onclick="closeVox()">✕</button>
   <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
 </div>
-<script>
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
-document.addEventListener('click',function(e){var o=document.getElementById('vox-overlay');if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('.btn-nav-ai')&&!e.target.closest('#aiOrb')&&!e.target.closest('.btn-primary')){closeVox();}});
-</script><script>
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function openVox(){
+  var o=document.getElementById('vox-overlay');
+  o.classList.add('open');
+  o.style.display='block';
+}
+function closeVox(){
+  var o=document.getElementById('vox-overlay');
+  o.style.display='none';
+  o.classList.remove('open');
+}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
 document.addEventListener('click',function(e){
-  var o=doc
+  var o=document.getElementById('vox-overlay');
+  if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('.vox-float-orb')&&!e.target.closest('#navAiBtn')&&!e.target.closest('#aiOrb')&&!e.target.closest('.btn-primary')){closeVox();}
+});
+</script>
+
+<script>
+window.addEventListener('load',function(){
+  var t=document.getElementById('tickerTrack');
+  if(!t)return;
+  t.innerHTML=t.innerHTML+t.innerHTML;
+  var p=0,h=t.scrollWidth/2;
+  function step(){p+=1.2;if(p>=h)p=0;t.style.transform='translateX(-'+p+'px)';requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+});
+</script>
+</body>
+</html>
