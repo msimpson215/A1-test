@@ -15,18 +15,18 @@ body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;overflow
 
 
 
-.nav-links a:hover{color:var(--yellow);}
 
 
 
 
-.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.75);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;transition:color 0.15s,background 0.15s;}
-.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
-.has-drop:hover .drop{display:block;}
-.page-hero{position:relative;height:72vh;min-height:520px;display:flex;align-items:flex-end;overflow:hidden;padding-top:76px;}
 
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.1) 60%);}
-.hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 40px 64px;width:100%;}
+
+
+.has-drop:hover 
+
+
+
+
 .section-label{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
 .section-label::before{content:'';width:28px;height:2px;background:var(--yellow);}
 .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);line-height:0.95;color:#fff;margin-bottom:20px;}
@@ -86,270 +86,17 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 #vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;}
 #vox-overlay iframe{width:100%;height:100%;border:none;}
 #vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;}
-@media(max-width:768px){.two-col{grid-template-columns:1fr;gap:40px;}.process-steps{grid-template-columns:repeat(2,1fr);}.benefits-grid{grid-template-columns:1fr;}.why-grid{grid-template-columns:1fr;}.nav-links{display:none;}}
-nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-bottom:2px solid var(--yellow);display:flex;align-items:stretch;justify-content:space-between;height:76px;padding:0;gap:0;}
-.nav-links{display:flex;gap:0;list-style:none;align-items:stretch;}
-.nav-links li{display:flex;align-items:center;}
-.nav-links a{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;padding:0 18px;}
-.nav-links a:hover{color:var(--yellow);}
-.btn-nav-ai{background:var(--yellow);color:var(--black);font-weight:800;font-family:'Barlow',sans-serif;letter-spacing:0.04em;text-transform:uppercase;}
-.btn-nav-ai:hover{opacity:0.88;}
-.has-drop{position:relative;}
-.drop{display:none;position:absolute;top:100%;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:210px;list-style:none;padding:6px 0;z-index:1000;}
-.drop li{display:block;}
-.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.75);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;transition:color 0.15s,background 0.15s;}
-.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
-.has-drop:hover .drop{display:block;}
-</style>
-</head>
-<body>
-<nav>
-  <div style="display:flex;align-items:stretch;height:76px;">
-    <a href="index.html" style="display:flex;align-items:center;padding:0 16px;border-right:1px solid rgba(255,255,255,0.1);background:#000;">
-      <img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt" onerror="this.src='A1_asphalt_logo.jpeg'" style="height:44px;width:auto;border-radius:3px;"/>
-    </a>
-    <a href="tel:6189293301" style="display:flex;align-items:center;justify-content:center;padding:0 24px;background:#16a34a;color:#fff;font-family:'Barlow',sans-serif;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;border-right:1px solid rgba(255,255,255,0.1);">📞 Call Now</a>
-  </div>
-  <ul class="nav-links">
-    <li class="has-drop"><a href="index.html#services">Services ▾</a>
-      <ul class="drop">
-        <li><a href="sealcoating.html">Sealcoating</a></li>
-        <li><a href="crack-filling.html">Crack Filling</a></li>
-        <li><a href="parking-lot-striping.html">Parking Lot Striping</a></li>
-        <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
-        <li><a href="concrete-work.html">Concrete Work</a></li>
-        <li><a href="bollard-installation.html">Bollard Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="our-work.html">Our Work</a></li>
-    <li class="has-drop"><a href="index.html#about">About ▾</a>
-      <ul class="drop">
-        <li><a href="about.html">Meet Joe</a></li>
-        <li><a href="index.html#podcast">Owner Podcast</a></li>
-        <li><a href="index.html#ai">AI Team Member</a></li>
-        <li><a href="index.html#reviews">Google Reviews</a></li>
-      </ul>
-    </li>
-    <li><button class="btn-nav-ai" onclick="openVox()" style="height:76px;padding:0 24px;border-radius:0;font-size:0.75rem;letter-spacing:0.04em;border:none;cursor:pointer;">Talk with our AI Team Member</button></li>
-  </ul>
-</nav>
+@media(max-width:768px){.two-col{grid-template-columns:1fr;gap:40px;}.process-steps{grid-template-columns:repeat(2,1fr);}.benefits-grid{grid-template-columns:1fr;}.why-grid{grid-template-columns:1fr;}}
 
-<section class="page-hero">
-  <div class="hero-bg" style="background-image:url('concrete-400x284.jpg');"></div>
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <div class="section-label">Concrete</div>
-    <h1 class="hero-title">Concrete Done<br/><span>The Right Way.</span></h1>
-    <p class="hero-sub">ADA curb cuts, sidewalk repairs, parking lot concrete, curbing — we handle all of it. Same crew, same quality, same guarantee as our asphalt work.</p>
-    <div class="hero-btns">
-      <a href="contact.html" class="btn-primary">Get a Free Estimate →</a>
-      <a href="our-work.html?filter=concrete" class="btn-outline">See Our Work</a>
-    </div>
-  </div>
-</section>
 
-<section class="content-section">
-  <div class="container">
-    <div class="two-col">
-      <div>
-        <div class="section-label">The Details</div>
-        <h2 class="section-title">What You're <span>Getting</span></h2>
-        <p class="lead-text">Most asphalt contractors sub out their concrete work. We don't. Our crews handle concrete in-house — which means one point of contact, consistent quality, and no finger-pointing when something needs to be right.</p>
-        <p class="lead-text">ADA compliance is a big part of what we do. Curb cuts, detectable warning surfaces, accessible parking areas, and proper slopes — we know the requirements and we build to them.</p>
-        <p class="lead-text">We've done concrete work at Amazon fulfillment centers, Walmart, and commercial developments across the region. The work speaks for itself.</p>
-      </div>
-      <div class="benefits-grid">
-        <div class="benefit-card">
-          <div class="benefit-icon">♿</div>
-          <div class="benefit-title">ADA Curb Cuts</div>
-          <div class="benefit-desc">Proper dimensions, slopes, and detectable warning surfaces built to federal standards.</div>
-        </div>
-<div class="benefit-card">
-          <div class="benefit-icon">🏗️</div>
-          <div class="benefit-title">Sidewalk Repair & Pour</div>
-          <div class="benefit-desc">Remove and replace damaged sections or pour new walks to match existing.</div>
-        </div>
-<div class="benefit-card">
-          <div class="benefit-icon">🅿️</div>
-          <div class="benefit-title">Parking Lot Concrete</div>
-          <div class="benefit-desc">Islands, curbing, wheel stops, and concrete sections in asphalt lots.</div>
-        </div>
-<div class="benefit-card">
-          <div class="benefit-icon">🔩</div>
-          <div class="benefit-title">Core Drilling</div>
-          <div class="benefit-desc">4" to 12" diameter — for bollard installation, signage posts, and utilities.</div>
-        </div>
-<div class="benefit-card">
-          <div class="benefit-icon">📋</div>
-          <div class="benefit-title">ADA Signage</div>
-          <div class="benefit-desc">Accessible parking signs, van-accessible markers, and specialty signage.</div>
-        </div>
-<div class="benefit-card">
-          <div class="benefit-icon">🏢</div>
-          <div class="benefit-title">Commercial Scale</div>
-          <div class="benefit-desc">Equipped for large-scale commercial and industrial concrete projects.</div>
-        </div>
 
-      </div>
-    </div>
-  </div>
-</section>
 
-<div class="photo-section">
-  <img src="concrete-21-400x284.jpg" alt="Walmart concrete sidewalk work crew"/>
-</div>
 
-<section class="process-section">
-  <div class="container">
-    <div class="section-label">How It Works</div>
-    <h2 class="section-title">Our <span>Process</span></h2>
-    <div class="process-steps">
-      <div class="step">
-          <div class="step-num">01</div>
-          <div class="step-title">Site Survey</div>
-          <div class="step-desc">Assess existing conditions, ADA requirements, drainage, and grade.</div>
-        </div>
-<div class="step">
-          <div class="step-num">02</div>
-          <div class="step-title">Demo & Prep</div>
-          <div class="step-desc">Remove failed concrete, prepare subbase, set forms to proper grade.</div>
-        </div>
-<div class="step">
-          <div class="step-num">03</div>
-          <div class="step-title">Pour & Finish</div>
-          <div class="step-desc">Place concrete, finish to spec — broom, trowel, or exposed aggregate.</div>
-        </div>
-<div class="step">
-          <div class="step-num">04</div>
-          <div class="step-title">Cure & Open</div>
-          <div class="step-desc">Proper cure time before traffic. We coordinate to minimize your downtime.</div>
-        </div>
 
-    </div>
-  </div>
-</section>
 
-<section class="why-section">
-  <div class="container">
-    <div class="section-label">By the Numbers</div>
-    <h2 class="section-title">Why A1 <span>Wins</span></h2>
-    <div class="why-grid">
-      <div class="why-card">
-          <div class="why-num">In-House</div>
-          <div class="why-label">No subs — our crew does the concrete work directly</div>
-        </div>
-<div class="why-card">
-          <div class="why-num">ADA</div>
-          <div class="why-label">Every curb cut built to current federal accessibility standards</div>
-        </div>
-<div class="why-card">
-          <div class="why-num">4–12"</div>
-          <div class="why-label">Core drilling diameter range for bollards and signage</div>
-        </div>
 
-    </div>
-  </div>
-</section>
 
-<div class="work-link-band">
-  <p>Want to see this service in action?</p>
-  <a href="our-work.html?filter=concrete" class="btn-primary">View Our Concrete Work →</a>
-</div>
 
-<div class="cta-band">
-  <h2>Ready to Get Started?</h2>
-  <p>Call us or request a free estimate online. We respond fast — usually same day.</p>
-  <a href="contact.html" class="btn-black" style="background:#000;color:#fff;padding:16px 40px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;display:inline-block;">Request a Free Estimate →</a>
-</div>
 
-<div class="tagline-band">
-  <div class="quote">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:var(--yellow);">ASPHALT</span>"</div>
-  <div class="attr">— Joe Schanz, Owner · A1 Professional Asphalt & Sealing LLC</div>
-</div>
 
-<div id="vox-overlay">
-  <button id="vox-close-btn" onclick="closeVox()">✕</button>
-  <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
-</div>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
-document.addEventListener('click',function(e){var o=document.getElementById('vox-overlay');if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('#navAiBtn')&&!e.target.closest('#aiOrb')&&!e.target.closest('.btn-primary')){closeVox();}});
-</script>
-<script>
-window.addEventListener('load',function(){
-  var t=document.getElementById('tickerTrack');
-  if(!t)return;
-  t.i
-<!-- FOOTER -->
-<footer>
-  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);">
-    <div>
-      <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt &amp; Sealing"/></div>
-      <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
-      <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301)</span></div>
-      <div class="footer-contact-item"><strong>Email</strong><span>joe@a1asphaltpro.com</span></div>
-      <div class="footer-contact-item"><strong>Estimate</strong><span><a href="contact.html" style="color:var(--yellow);text-decoration:none;">Request Free Estimate →</a></span></div>
-      <div style="display:flex;gap:14px;margin-top:20px;align-items:center;">
-        <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></a>
-        <a href="https://x.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-        <a href="https://www.linkedin.com/company/a-1-asphalt-pros/" target="_blank" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
-      </div>
-    </div>
-    <div>
-      <div class="footer-heading">Services</div>
-      <ul class="footer-links">
-        <li><a href="sealcoating.html">Sealcoating</a></li>
-        <li><a href="crack-filling.html">Crack Filling</a></li>
-        <li><a href="parking-lot-striping.html">Lot Striping</a></li>
-        <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
-        <li><a href="concrete-work.html">Concrete Work</a></li>
-        <li><a href="bollard-installation.html">Bollards</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-heading">Markets</div>
-      <ul class="footer-links">
-        <li><a href="commercial.html">Commercial</a></li>
-        <li><a href="churches.html">Churches</a></li>
-        <li><a href="strip-malls.html">Strip Malls</a></li>
-        <li><a href="municipalities.html">Municipalities</a></li>
-        <li><a href="general-contractors.html">General Contractors</a></li>
-        <li><a href="industrial.html">Industrial</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-heading">Offices</div>
-      <div class="footer-contact-item"><strong>HQ</strong><span>Lebanon, IL 62254<br/>(618) 929-3301</span></div>
-      <div class="footer-contact-item" style="margin-top:12px;"><strong>St. Louis</strong><span>Maryland Heights, MO<br/>(314) 949-5660</span></div>
-      <div class="footer-contact-item" style="margin-top:12px;"><strong>St. Peters</strong><span>St. Peters, MO<br/>(314) 356-1142</span></div>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <p>© 2025 A1 Professional Asphalt &amp; Sealing LLC · All Rights Reserved · <a href="https://a1asphaltpro.com" style="color:rgba(255,255,255,0.4);text-decoration:none;">a1asphaltpro.com</a></p>
-    <p class="footer-seo">Asphalt sealcoating St. Louis · Parking lot striping Illinois · Crack filling commercial · Asphalt patching St. Louis · Commercial paving nationwide</p>
-  </div>
-</footer>
-<div id="vox-overlay">
-  <button id="vox-close-btn" onclick="closeVox()">✕</button>
-  <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
-</div>
-<script>
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
-document.addEventListener('click',function(e){var o=document.getElementById('vox-overlay');if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('[onclick="openVox()"]')){closeVox();}});
-</script>
-<script>
-window.addEventListener('load',function(){
-  var t=document.getElementById('tickerTrack');
-  if(!t)return;
-  t.innerHTML=t.innerHTML+t.innerHTML;
-  var p=0,h=t.scrollWidth/2;
-  function step(){p+=1.2;if(p>=h)p=0;t.style.transform='translateX(-'+p+'px)';requestAnimationFrame(step);}
-  requestAnimationFrame(step);
-});
-</script>
-</body>
-</html>
+.has-drop:hover 
