@@ -10,13 +10,13 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;overflow-x:hidden;}
-nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:76px;gap:24px;}
-.nav-logo img{height:52px;width:auto;border-radius:4px;}
-.nav-links{display:flex;gap:32px;list-style:none;}
-.nav-links a{color:#fff;text-decoration:none;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+
+
+
+
 .nav-links a:hover,.nav-links a.active{color:var(--yellow);}
-.btn-nav-call{background:#16a34a;color:#fff;padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
-.btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;border:none;white-space:nowrap;cursor:pointer;}
+
+
 .page-header{padding:140px 40px 80px;background:var(--dark);position:relative;overflow:hidden;}
 .page-header::before{content:'';position:absolute;inset:0;background:url('Sams-Club-Parking-Lot-Painting-980x429.jpg') center/cover no-repeat;filter:brightness(0.22);z-index:0;}
 .page-header .inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;}
@@ -90,16 +90,29 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 #vox-overlay iframe{width:100%;height:100%;border:none;}
 #vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;}
 @media(max-width:768px){.feature-row{grid-template-columns:1fr;height:auto;}.feature-card{height:260px;}.gallery-grid{grid-template-columns:repeat(2,1fr);}.nav-links{display:none;}}
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-bottom:2px solid var(--yellow);display:flex;align-items:stretch;justify-content:space-between;height:76px;padding:0;gap:0;}
+.nav-links{display:flex;gap:0;list-style:none;align-items:stretch;}
+.nav-links li{display:flex;align-items:center;}
+.nav-links a{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;padding:0 18px;}
+.nav-links a:hover{color:var(--yellow);}
+.btn-nav-ai{background:var(--yellow);color:var(--black);font-weight:800;font-family:'Barlow',sans-serif;letter-spacing:0.04em;text-transform:uppercase;}
+.btn-nav-ai:hover{opacity:0.88;}
+.has-drop{position:relative;}
+.drop{display:none;position:absolute;top:100%;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:210px;list-style:none;padding:6px 0;z-index:1000;}
+.drop li{display:block;}
+.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.75);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;transition:color 0.15s,background 0.15s;}
+.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
+.has-drop:hover .drop{display:block;}
 </style>
 </head>
 <body>
 
 <nav>
   <div style="display:flex;align-items:stretch;height:76px;">
-    <a href="index.html" style="display:flex;align-items:center;padding:0 20px;border-right:1px solid rgba(255,255,255,0.1);">
-      <img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt" onerror="this.src='A1_asphalt_logo.jpeg'" style="height:42px;width:auto;border-radius:3px;"/>
+    <a href="index.html" style="display:flex;align-items:center;padding:0 16px;border-right:1px solid rgba(255,255,255,0.1);background:#000;">
+      <img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt" onerror="this.src='A1_asphalt_logo.jpeg'" style="height:44px;width:auto;border-radius:3px;"/>
     </a>
-    <a href="tel:6189293301" style="display:flex;align-items:center;padding:0 22px;background:#16a34a;color:#fff;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border-right:1px solid rgba(255,255,255,0.1);white-space:nowrap;">📞 Call Now</a>
+    <a href="tel:6189293301" style="display:flex;align-items:center;justify-content:center;padding:0 24px;background:#16a34a;color:#fff;font-family:'Barlow',sans-serif;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;border-right:1px solid rgba(255,255,255,0.1);">📞 Call Now</a>
   </div>
   <ul class="nav-links">
     <li class="has-drop"><a href="index.html#services">Services ▾</a>
@@ -121,7 +134,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
         <li><a href="index.html#reviews">Google Reviews</a></li>
       </ul>
     </li>
-    <li><button class="btn-nav-ai" onclick="openVox()" style="height:76px;padding:0 20px;border-radius:0;font-size:0.75rem;letter-spacing:0.04em;">Talk with our AI Team Member</button></li>
+    <li><button class="btn-nav-ai" onclick="openVox()" style="height:76px;padding:0 24px;border-radius:0;font-size:0.75rem;letter-spacing:0.04em;border:none;cursor:pointer;">Talk with our AI Team Member</button></li>
   </ul>
 </nav>
 
@@ -285,14 +298,31 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <div class="attr">— Joe Schanz, Owner · A1 Professional Asphalt & Sealing LLC</div>
 </div>
 
+
+<div id="vox-overlay">
+  <button id="vox-close-btn" onclick="closeVox()">✕</button>
+  <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
+function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
+document.addEventListener('click',function(e){var o=document.getElementById('vox-overlay');if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('#navAiBtn')&&!e.target.closest('#aiOrb')&&!e.target.closest('.btn-primary')){closeVox();}});
+</script>
+<script>
+window.addEventListener('load',function(){
+  var t=document.getElementById('tickerTrack');
+  if(!t)return;
+  t.in
+<!-- FOOTER -->
 <footer>
   <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);">
     <div>
       <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt &amp; Sealing"/></div>
       <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
-      <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
-      <div class="footer-contact-item"><strong>Email</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4e24212b0e2f7f2f3d3e262f223a3e3c21602d2123">[email&#160;protected]</a></span></div>
-      <div class="footer-contact-item"><strong>Contact</strong><span><a href="contact.html" style="color:var(--yellow);text-decoration:none;">Request a Free Estimate →</a></span></div>
+      <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301)</span></div>
+      <div class="footer-contact-item"><strong>Email</strong><span>joe@a1asphaltpro.com</span></div>
+      <div class="footer-contact-item"><strong>Estimate</strong><span><a href="contact.html" style="color:var(--yellow);text-decoration:none;">Request Free Estimate →</a></span></div>
       <div style="display:flex;gap:14px;margin-top:20px;align-items:center;">
         <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></a>
         <a href="https://x.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
@@ -337,14 +367,21 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <button id="vox-close-btn" onclick="closeVox()">✕</button>
   <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
 </div>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
 function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
-document.addEventListener('click',function(e){var o=document.getElementById('vox-overlay');if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('#navAiBtn')&&!e.target.closest('#aiOrb')&&!e.target.closest('.btn-primary')){closeVox();}});
+document.addEventListener('click',function(e){var o=document.getElementById('vox-overlay');if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('[onclick="openVox()"]')){closeVox();}});
 </script>
 <script>
 window.addEventListener('load',function(){
   var t=document.getElementById('tickerTrack');
   if(!t)return;
-  t.in
+  t.innerHTML=t.innerHTML+t.innerHTML;
+  var p=0,h=t.scrollWidth/2;
+  function step(){p+=1.2;if(p>=h)p=0;t.style.transform='translateX(-'+p+'px)';requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+});
+</script>
+</body>
+</html>
