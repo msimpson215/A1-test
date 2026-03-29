@@ -227,20 +227,32 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-botto
 .drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.75);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;transition:color 0.15s,background 0.15s;}
 .drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
 .has-drop:hover .drop{display:block;}
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;}
+.logo img{height:48px;width:auto;display:block;}
+.nav-center{display:flex;align-items:center;gap:0;}
+.nav-center a{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0 14px;transition:color 0.2s;display:flex;align-items:center;height:72px;}
+.nav-center a:hover{color:var(--yellow);}
+.has-drop{position:relative;}
+.has-drop>a::after{content:' ▾';}
+.drop{display:none;position:absolute;top:72px;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:220px;list-style:none;padding:6px 0;z-index:1000;}
+.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.85);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;height:auto;}
+.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
+.has-drop:hover .drop{display:block;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.btn-ai{background:var(--yellow);color:var(--black);height:44px;padding:0 18px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
+.btn-ai:hover{opacity:0.88;}
+.call{background:#16a34a;color:#fff;height:44px;padding:0 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
+.call:hover{opacity:0.88;}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
-  <div style="display:flex;align-items:stretch;height:76px;">
-    <a href="index.html" style="display:flex;align-items:center;padding:0 16px;border-right:1px solid rgba(255,255,255,0.1);background:#000;">
-      <img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt" onerror="this.src='A1_asphalt_logo.jpeg'" style="height:44px;width:auto;border-radius:3px;"/>
-    </a>
-    <a href="tel:6189293301" style="display:flex;align-items:center;justify-content:center;padding:0 24px;background:#16a34a;color:#fff;font-family:'Barlow',sans-serif;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;border-right:1px solid rgba(255,255,255,0.1);">📞 Call Now</a>
-  </div>
-  <ul class="nav-links">
-    <li class="has-drop"><a href="index.html#services">Services ▾</a>
+  <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
+  <div class="nav-center">
+    <div class="has-drop">
+      <a href="index.html#services">Services</a>
       <ul class="drop">
         <li><a href="sealcoating.html">Sealcoating</a></li>
         <li><a href="crack-filling.html">Crack Filling</a></li>
@@ -248,19 +260,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-botto
         <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
         <li><a href="concrete-work.html">Concrete Work</a></li>
         <li><a href="bollard-installation.html">Bollard Installation</a></li>
+        <li><a href="ada-compliance.html">ADA Compliance</a></li>
       </ul>
-    </li>
-    <li><a href="our-work.html">Our Work</a></li>
-    <li class="has-drop"><a href="index.html#about">About ▾</a>
-      <ul class="drop">
-        <li><a href="about.html">Meet Joe</a></li>
-        <li><a href="index.html#podcast">Owner Podcast</a></li>
-        <li><a href="index.html#ai">AI Team Member</a></li>
-        <li><a href="index.html#reviews">Google Reviews</a></li>
-      </ul>
-    </li>
-    <li><button class="btn-nav-ai" onclick="openVox()" style="height:76px;padding:0 24px;border-radius:0;font-size:0.75rem;letter-spacing:0.04em;border:none;cursor:pointer;">Talk with our AI Team Member</button></li>
-  </ul>
+    </div>
+    <a href="our-work.html">Our Work</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" class="btn-ai">Talk with Our A.I. Team Member</a>
+    <a href="tel:6189293301" class="call">📞 (618) 929-3301</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -474,7 +483,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-botto
       <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt &amp; Sealing"/></div>
       <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
       <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301)</span></div>
-      <div class="footer-contact-item"><strong>Email</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9ef4f1fbdeffafffedeef6fff2eaeeecf1b0fdf1f3">[email&#160;protected]</a></span></div>
+      <div class="footer-contact-item"><strong>Email</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0e64616b4e6f3f6f7d7e666f627a7e7c61206d6163">[email&#160;protected]</a></span></div>
       <div class="footer-contact-item"><strong>Estimate</strong><span><a href="contact.html" style="color:var(--yellow);text-decoration:none;">Request Free Estimate →</a></span></div>
       <div style="display:flex;gap:14px;margin-top:20px;align-items:center;">
         <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></a>
