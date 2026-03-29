@@ -16,7 +16,7 @@ body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;}
 
 
 
-.hero{position:relative;height:420px;display:flex;align-items:center;overflow:hidden;margin-top:76px;}
+.hero{position:relative;height:420px;display:flex;align-items:center;overflow:hidden;margin-top:72px;}
 .hero-bg{position:absolute;inset:0;background:url('images/126690-400x284.jpg') center/cover no-repeat;filter:brightness(0.6);}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.2) 100%);}
 .hero-content{position:relative;z-index:2;padding:0 60px;max-width:1200px;margin:0 auto;width:100%;}
@@ -48,30 +48,23 @@ footer{background:#050505;border-top:3px solid var(--yellow);padding:32px 60px;d
 footer p{color:#ffffff;font-size:0.78rem;}
 footer a{color:var(--yellow);text-decoration:none;}
 footer a:hover{color:#fff;}
-nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-bottom:2px solid var(--yellow);display:flex;align-items:stretch;height:76px;}
-.nav-logo{display:flex;align-items:center;padding:0 18px;border-right:1px solid rgba(255,255,255,0.1);}
-.nav-logo img{height:46px;width:auto;}
-.nav-call{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;background:#16a34a;color:#fff;font-family:'Barlow',sans-serif;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;border-radius:4px;margin:0 8px;}
-.nav-spacer{flex:1;}
-.nav-links{display:flex;align-items:center;gap:0;padding:0 24px;}
-.nav-links a{color:#fff;text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0 16px;transition:color 0.2s;}
-.nav-links a:hover{color:var(--yellow);}
-.nav-ai{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;background:var(--yellow);color:var(--black);font-family:'Barlow',sans-serif;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;cursor:pointer;border:none;border-radius:4px;margin:0 8px 0 0;}
-.nav-ai:hover{opacity:0.88;}
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px;}
+.logo img{height:52px;width:auto;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.back{color:#ffffff;text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.back:hover{color:var(--yellow);}
+.btn-ai{background:var(--yellow);color:var(--black);padding:10px 16px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
+.call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
 </style>
 </head>
 <body>
 <nav>
-  <a href="index.html" class="nav-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt" onerror="this.src='A1_asphalt_logo.jpeg'"/></a>
-  <a href="tel:6189293301" class="nav-call">📞 Call Now</a>
-  <div class="nav-spacer"></div>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="index.html#services">Services</a>
-    <a href="our-work.html">Our Work</a>
-    <a href="about.html">About</a>
+  <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
+  <div class="nav-right">
+    <a href="index.html" class="back">← Back to Home</a>
+    <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" class="btn-ai">Talk with Our A.I. Team Member</a>
+    <a href="tel:6189293301" class="call">📞 (618) 929-3301</a>
   </div>
-  <button class="nav-ai" onclick="openVox()">AI Team Member</button>
 </nav>
 <div class="hero">
   <div class="hero-bg"></div>
@@ -138,32 +131,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-botto
   <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4vw,3.5rem);color:#fff;letter-spacing:0.04em;line-height:1.1;">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:#F5C518;">ASPHALT</span>"</div>
   <div style="margin-top:14px;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);">— Joe Schanz, Owner · A1 Professional Asphalt &amp; Sealing LLC</div>
 </div>
-<footer style="background:#050505;border-top:3px solid var(--yellow);padding:40px 60px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-  <div>
-    <img src="A1__asphalt_logo.jpeg" style="height:44px;width:auto;margin-bottom:12px;display:block;"/>
-    <p style="color:rgba(255,255,255,0.5);font-size:0.78rem;">© 2025 A1 Professional Asphalt &amp; Sealing LLC · Lebanon, IL · Nationwide</p>
-  </div>
-  <div style="display:flex;gap:32px;flex-wrap:wrap;">
-    <div>
-      <div style="font-size:0.68rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:10px;">Services</div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <a href="sealcoating.html" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.82rem;">Sealcoating</a>
-        <a href="crack-filling.html" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.82rem;">Crack Filling</a>
-        <a href="parking-lot-striping.html" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.82rem;">Lot Striping</a>
-        <a href="asphalt-patching.html" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.82rem;">Asphalt Patching</a>
-        <a href="concrete-work.html" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.82rem;">Concrete Work</a>
-        <a href="bollard-installation.html" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.82rem;">Bollards</a>
-      </div>
-    </div>
-    <div>
-      <div style="font-size:0.68rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:10px;">Contact</div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <a href="tel:6189293301" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.82rem;">(618) 929-3301</a>
-        <a href="/cdn-cgi/l/email-protection#711b1e1431104010020119101d0501031e5f121e1c" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.82rem;"><span class="__cf_email__" data-cfemail="214b4e4461401040525149404d5551534e0f424e4c">[email&#160;protected]</span></a>
-        <a href="contact.html" style="color:var(--yellow);text-decoration:none;font-size:0.82rem;font-weight:700;">Free Estimate →</a>
-      </div>
-    </div>
-  </div>
+<footer>
+  <p>© 2025 A1 Professional Asphalt & Sealing LLC · 107 Southern Dr, Lebanon, IL 62254 · (618) 929-3301 · 888-223-3797 · Nationwide</p>
+  <p><a href="index.html">← Home</a> &nbsp;·&nbsp; <a href="tel:6189293301">(618) 929-3301</a> &nbsp;·&nbsp; <a href="tel:8882233797">888-223-3797</a></p>
 </footer>
-<div id="vox-overlay" style="display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid #F5C518;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;"><button onclick="closeVox()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;">✕</button><iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="width:100%;height:100%;border:none;"></iframe></div>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>function openVox(){docum
+<div id="vox-overlay" style="display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid #F5C518;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;"><button onclick="closeVox()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;">✕</button><iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="width:100%;height:100%;border:none;"></iframe></div><script>function openVox(){document.getElementById("vox-overlay").style.display="block";}function closeVox(){document.getElementById("vox-overlay").style.display="none";}document.addEventListener("keydown",function(e){if(e.key==="Escape")closeVox();});</script></body>
+</html>
