@@ -10,13 +10,13 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;overflow-x:hidden;}
-
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:76px;gap:24px;}
 .nav-logo img{height:52px;width:auto;border-radius:4px;}
-
-
-
-
-
+.nav-links{display:flex;gap:32px;list-style:none;}
+.nav-links a{color:#fff;text-decoration:none;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--yellow);}
+.btn-nav-call{background:#16a34a;color:#fff;padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
+.btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;border:none;white-space:nowrap;cursor:pointer;}
 .page-header{padding:140px 40px 80px;background:var(--dark);position:relative;overflow:hidden;}
 .page-header::before{content:'';position:absolute;inset:0;background:url('Sams-Club-Parking-Lot-Painting-980x429.jpg') center/cover no-repeat;filter:brightness(0.22);z-index:0;}
 .page-header .inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;}
@@ -89,7 +89,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 #vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;}
 #vox-overlay iframe{width:100%;height:100%;border:none;}
 #vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;}
-@media(max-width:768px){.feature-row{grid-template-columns:1fr;height:auto;}.feature-card{height:260px;}.gallery-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){.feature-row{grid-template-columns:1fr;height:auto;}.feature-card{height:260px;}.gallery-grid{grid-template-columns:repeat(2,1fr);}.nav-links{display:none;}}
 nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;}
 .logo img{height:48px;width:auto;display:block;}
 .nav-center{display:flex;align-items:center;gap:8px;}
