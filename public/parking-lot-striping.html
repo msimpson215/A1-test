@@ -9,13 +9,13 @@
 :root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;}
-
-
-
-
-
-
-
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px;}
+.logo img{height:52px;width:auto;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.back{color:#ffffff;text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.back:hover{color:var(--yellow);}
+.btn-ai{background:var(--yellow);color:var(--black);padding:10px 16px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
+.call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
 .hero{position:relative;height:420px;display:flex;align-items:center;overflow:hidden;margin-top:72px;}
 .hero-bg{position:absolute;inset:0;background:url('images/striping-6-1-400x284.jpg') center/cover no-repeat;filter:brightness(0.35);}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.2) 100%);}
