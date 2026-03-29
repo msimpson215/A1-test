@@ -49,20 +49,24 @@ footer p{color:#ffffff;font-size:0.78rem;}
 footer a{color:var(--yellow);text-decoration:none;}
 footer a:hover{color:#fff;}
 nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;}
-.nav-left{display:flex;align-items:center;gap:16px;}
 .logo img{height:48px;width:auto;display:block;}
+.nav-center{display:flex;align-items:center;gap:8px;}
+.nav-center a{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0 14px;transition:color 0.2s;}
+.nav-center a:hover{color:var(--yellow);}
 .nav-right{display:flex;align-items:center;gap:12px;}
-.back{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
-.back:hover{color:var(--yellow);}
 .btn-ai{background:var(--yellow);color:var(--black);height:44px;padding:0 18px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
+.btn-ai:hover{opacity:0.88;}
 .call{background:#16a34a;color:#fff;height:44px;padding:0 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
+.call:hover{opacity:0.88;}
 </style>
 </head>
 <body>
 <nav>
-  <div class="nav-left">
-    <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
-    <a href="index.html" class="back">← Back to Home</a>
+  <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
+  <div class="nav-center">
+    <a href="index.html#services">Services</a>
+    <a href="our-work.html">Our Work</a>
+    <a href="about.html">About</a>
   </div>
   <div class="nav-right">
     <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" class="btn-ai">Talk with Our A.I. Team Member</a>
