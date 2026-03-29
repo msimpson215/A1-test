@@ -92,9 +92,15 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 @media(max-width:768px){.feature-row{grid-template-columns:1fr;height:auto;}.feature-card{height:260px;}.gallery-grid{grid-template-columns:repeat(2,1fr);}.nav-links{display:none;}}
 nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;}
 .logo img{height:48px;width:auto;display:block;}
-.nav-center{display:flex;align-items:center;gap:8px;}
-.nav-center a{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0 14px;transition:color 0.2s;}
+.nav-center{display:flex;align-items:center;gap:0;}
+.nav-center a{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0 14px;transition:color 0.2s;display:flex;align-items:center;height:72px;}
 .nav-center a:hover{color:var(--yellow);}
+.has-drop{position:relative;}
+.has-drop>a::after{content:' ▾';}
+.drop{display:none;position:absolute;top:72px;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:220px;list-style:none;padding:6px 0;z-index:1000;}
+.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.85);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;height:auto;}
+.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
+.has-drop:hover .drop{display:block;}
 .nav-right{display:flex;align-items:center;gap:12px;}
 .btn-ai{background:var(--yellow);color:var(--black);height:44px;padding:0 18px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
 .btn-ai:hover{opacity:0.88;}
@@ -107,7 +113,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
 <nav>
   <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
   <div class="nav-center">
-    <a href="index.html#services">Services</a>
+    <div class="has-drop">
+      <a href="index.html#services">Services</a>
+      <ul class="drop">
+        <li><a href="sealcoating.html">Sealcoating</a></li>
+        <li><a href="crack-filling.html">Crack Filling</a></li>
+        <li><a href="parking-lot-striping.html">Parking Lot Striping</a></li>
+        <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
+        <li><a href="concrete-work.html">Concrete Work</a></li>
+        <li><a href="bollard-installation.html">Bollard Installation</a></li>
+        <li><a href="ada-compliance.html">ADA Compliance</a></li>
+      </ul>
+    </div>
     <a href="our-work.html">Our Work</a>
     <a href="about.html">About</a>
   </div>
