@@ -3,100 +3,126 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Crack Filling | A1 Professional Asphalt & Sealing LLC</title>
-<meta name="description" content="Hot-pour crack filling and joint sealing by A1 Professional Asphalt. Stops water infiltration and prevents major pavement damage. St. Louis and beyond."/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<title>Crack Filling — A1 Professional Asphalt & Sealing LLC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
-:root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--gray:#1E1E1E;}
+:root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;}
 *{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;overflow-x:hidden;}
+body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;}
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px;}
+.logo img{height:52px;width:auto;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.back{color:#ffffff;text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.back:hover{color:var(--yellow);}
+.btn-ai{background:var(--yellow);color:var(--black);padding:10px 16px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
+.call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
+.hero{position:relative;height:420px;display:flex;align-items:center;overflow:hidden;margin-top:72px;}
+.hero-bg{position:absolute;inset:0;background:url('images/126683-400x284.jpg') center/cover no-repeat;filter:brightness(0.35);}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.2) 100%);}
+.hero-content{position:relative;z-index:2;padding:0 60px;max-width:1200px;margin:0 auto;width:100%;}
+.lbl{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
+.lbl::before{content:'';width:28px;height:2px;background:var(--yellow);}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);line-height:0.95;margin-bottom:16px;color:#fff;}
+h1 span{color:var(--yellow);}
+.hero-sub{font-size:1.1rem;color:#ffffff;max-width:600px;}
+.wrap{max-width:1200px;margin:0 auto;padding:80px 60px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;}
+.body-text p{color:#ffffff;font-size:1rem;line-height:1.8;margin-bottom:20px;}
+.body-text h2{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#fff;margin-bottom:20px;}
+.body-text h2 span{color:var(--yellow);}
+.checklist{list-style:none;margin:24px 0;}
+.checklist li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.12);color:#ffffff;font-size:0.95rem;}
+.checklist li::before{content:'✓';color:var(--yellow);font-weight:900;flex-shrink:0;margin-top:2px;}
+.box{background:#111;border:1px solid rgba(255,255,255,0.1);border-left:4px solid var(--yellow);padding:32px;border-radius:4px;}
+.box h3{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;margin-bottom:16px;}
+.box h3 .white{color:#ffffff;}
+.box h3 .gold{color:var(--yellow);}
+.box p{color:#ffffff;font-size:0.95rem;line-height:1.7;margin-bottom:16px;}
+.cta-strip{background:var(--yellow);padding:60px;text-align:center;}
+.cta-strip h2{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--black);margin-bottom:12px;}
+.cta-strip p{color:rgba(0,0,0,0.75);font-size:1rem;margin-bottom:28px;}
+.btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.btn-dark{background:var(--black);color:#fff;padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;}
+.btn-outline{background:transparent;color:var(--black);padding:16px 36px;border-radius:4px;font-weight:800;font-size:0.9rem;text-transform:uppercase;text-decoration:none;border:2px solid var(--black);}
+footer{background:#050505;border-top:3px solid var(--yellow);padding:32px 60px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+footer p{color:#ffffff;font-size:0.78rem;}
+footer a{color:var(--yellow);text-decoration:none;}
+footer a:hover{color:#fff;}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
+  <div class="nav-right">
+    <a href="index.html" class="back">← Back to Home</a>
+    <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" class="btn-ai">Talk with Our A.I. Team Member</a>
+    <a href="tel:6189293301" class="call">📞 (618) 929-3301</a>
+  </div>
+</nav>
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="lbl">A1 Professional Asphalt & Sealing</div>
+    <h1>Crack Filling<br/><span>Stop It Early</span></h1>
+    <p class="hero-sub">Commercial asphalt services done right — on time, on budget, nationwide.</p>
+  </div>
+</div>
+<div class="wrap">
+  <div class="two-col">
+    <div class="body-text">
+      <h2>Small Cracks, <span>Big Problems</span></h2>
+      <p>Small cracks turn into big problems fast. Water gets in, the freeze-thaw cycle does its work, and what started as a hairline crack becomes a pothole that needs full-depth patching. I've seen it happen in a single winter.</p>
+      <p>We use CrafCo hot-applied rubberized crack filler — the commercial standard. It expands and contracts with temperature changes, which means it stays sealed season after season. We clean the crack, dry it, and apply under heat for maximum adhesion.</p>
+      <p>Crack filling is almost always the first step before sealcoating. You don't put a new coat over open cracks — you seal the lot from the ground up.</p>
+      
+      <ul class="checklist">
+        <li>Hot-applied CrafCo rubberized filler</li>
+        <li>Expands and contracts with temperature changes</li>
+        <li>Highway, commercial, and industrial applications</li>
+        <li>Prevents water infiltration and sub-base damage</li>
+        <li>Always recommended before sealcoating</li>
+        
+      </ul>
+    </div>
+    <div>
+      <div class="box">
+        <h3><span class="white">Highway</span> <span class="gold">Grade Work</span></h3>
+        <p>A1 handles crack filling for municipalities, state highway contracts, and national retail chains. We have the equipment and crew to handle large-scale linear footage efficiently.</p>
+        <p>We also do mastic applications for airports and high-traffic roadways where standard crack filler isn't enough.</p>
+        
+      </div>
+    </div>
+  </div>
+</div>
 
-
-
-
-
-
-
-
-
-
-
-.has-drop:hover 
-
-
-
-
-.section-label{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
-.section-label::before{content:'';width:28px;height:2px;background:var(--yellow);}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);line-height:0.95;color:#fff;margin-bottom:20px;}
-.hero-title span{color:var(--yellow);}
-.hero-sub{color:rgba(255,255,255,0.75);font-size:1.05rem;max-width:560px;line-height:1.6;margin-bottom:32px;}
-.hero-btns{display:flex;gap:16px;flex-wrap:wrap;}
-.btn-primary{background:var(--yellow);color:var(--black);padding:16px 32px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s,transform 0.2s;display:inline-block;}
-.btn-primary:hover{opacity:0.88;transform:translateY(-2px);}
-.btn-outline{background:transparent;color:#fff;padding:16px 32px;border-radius:4px;font-weight:700;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:2px solid rgba(255,255,255,0.35);transition:border-color 0.2s,color 0.2s;display:inline-block;}
-.btn-outline:hover{border-color:var(--yellow);color:var(--yellow);}
-.content-section{padding:96px 40px;}
-.container{max-width:1200px;margin:0 auto;}
-.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,4vw,3.5rem);line-height:1.05;margin-bottom:24px;}
-.section-title span{color:var(--yellow);}
-.lead-text{font-size:1.05rem;color:rgba(255,255,255,0.85);line-height:1.75;margin-bottom:20px;max-width:760px;}
-.two-col{display:grid;grid-template-columns:1.2fr 1fr;gap:80px;align-items:start;}
-.benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:48px;}
-.benefit-card{background:var(--gray);padding:32px 28px;border-top:3px solid transparent;transition:border-color 0.2s;}
-.benefit-card:hover{border-top-color:var(--yellow);}
-.benefit-icon{font-size:1.8rem;margin-bottom:14px;}
-.benefit-title{font-weight:800;font-size:0.95rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:8px;color:#fff;}
-.benefit-desc{font-size:0.88rem;color:rgba(255,255,255,0.75);line-height:1.6;}
-.process-section{background:var(--dark);padding:96px 40px;}
-.process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:48px;}
-.step{background:#1a1a1a;padding:36px 28px;position:relative;}
-.step-num{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:rgba(245,197,24,0.12);line-height:1;margin-bottom:12px;}
-.step-title{font-weight:800;font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--yellow);margin-bottom:10px;}
-.step-desc{font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.6;}
-.photo-section{padding:0;}
-.photo-section img{width:100%;height:420px;object-fit:cover;filter:contrast(1.05) brightness(0.88);}
-.why-section{background:var(--black);padding:96px 40px;}
-.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:48px;}
-.why-card{background:var(--gray);padding:36px 28px;}
-.why-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--yellow);line-height:1;margin-bottom:8px;}
-.why-label{font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
-.cta-band{background:var(--yellow);padding:80px 40px;text-align:center;}
-.cta-band h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);color:var(--black);margin-bottom:16px;}
-.cta-band p{color:rgba(0,0,0,0.65);font-size:1rem;margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto;}
-.work-link-band{background:#0d0d0d;padding:48px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);}
-.work-link-band p{color:rgba(255,255,255,0.5);font-size:0.85rem;margin-bottom:12px;letter-spacing:0.06em;text-transform:uppercase;}
-.tagline-band{background:#000;padding:56px 40px;text-align:center;}
-.tagline-band .quote{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4vw,3.5rem);color:#fff;letter-spacing:0.04em;line-height:1.1;}
-.tagline-band .attr{margin-top:14px;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
-footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yellow);}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;max-width:1400px;margin:0 auto 48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);}
-.footer-logo img{height:56px;width:auto;margin-bottom:16px;}
-.footer-about{color:rgba(255,255,255,0.8);font-size:0.85rem;line-height:1.7;margin-bottom:20px;}
-.footer-ci{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:#fff;font-size:0.85rem;}
-.footer-ci strong{color:var(--yellow);min-width:80px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
-.fh{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px;}
-.fl{list-style:none;}
-.fl li{margin-bottom:10px;}
-.fl a{color:rgba(255,255,255,0.85);text-decoration:none;font-size:0.85rem;transition:color 0.2s;}
-.fl a:hover{color:var(--yellow);}
-.footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
-.footer-bottom p{color:rgba(255,255,255,0.25);font-size:0.75rem;}
-#vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;}
-#vox-overlay iframe{width:100%;height:100%;border:none;}
-#vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;}
-@media(max-width:768px){.two-col{grid-template-columns:1fr;gap:40px;}.process-steps{grid-template-columns:repeat(2,1fr);}.benefits-grid{grid-template-columns:1fr;}.why-grid{grid-template-columns:1fr;}}
-
-
-
-
-
-
-
-
-
-
-
-
-.has-drop:hover 
+<div style="background:#111;padding:48px 60px;border-top:1px solid rgba(255,255,255,0.06);">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:48px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:250px;">
+      <div style="font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#F5C518;margin-bottom:12px;">Owner Podcast</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#fff;margin-bottom:8px;">Hear It Straight From Joe</div>
+      <p style="color:rgba(255,255,255,0.7);font-size:0.9rem;line-height:1.6;">Joe talks about how A1 grew to a national level and why AI is changing the game for commercial asphalt.</p>
+    </div>
+    <div style="flex:1;min-width:280px;background:#1a1a1a;border-radius:8px;padding:24px;border:1px solid rgba(255,255,255,0.08);">
+      <div style="font-size:0.78rem;font-weight:800;color:#F5C518;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">🎙️ Scaling an Asphalt Empire with AI</div>
+      <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:12px;">Joe Schanz — Owner, A1 Professional Asphalt & Sealing LLC</div>
+      <audio controls preload="metadata" style="width:100%;border-radius:4px;">
+        <source src="Scaling_an_asphalt_empire_with_AI.mp3" type="audio/mpeg"/>
+      </audio>
+    </div>
+  </div>
+</div>
+<div class="cta-strip">
+  <h2>Ready to Get Started?</h2>
+  <p style="color:rgba(0,0,0,0.85);font-weight:700;font-size:1.1rem;">Call Joe directly. We pick up.</p>
+  <div class="btns">
+    <a href="tel:6189293301" class="btn-dark">Call (618) 929-3301</a>
+    <a href="https://a1asphaltpro.com/contact-us/" class="btn-dark">Get a Free Estimate</a>
+  </div>
+</div>
+<footer>
+  <p>© 2025 A1 Professional Asphalt & Sealing LLC · 107 Southern Dr, Lebanon, IL 62254 · (618) 929-3301 · 888-223-3797 · Nationwide</p>
+  <p><a href="index.html">← Home</a> &nbsp;·&nbsp; <a href="tel:6189293301">(618) 929-3301</a> &nbsp;·&nbsp; <a href="tel:8882233797">888-223-3797</a></p>
+</footer>
+<div id="vox-overlay" style="display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid #F5C518;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;"><button onclick="closeVox()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;">✕</button><iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="width:100%;height:100%;border:none;"></iframe></div><script>function openVox(){document.getElementById("vox-overlay").style.display="block";}function closeVox(){document.getElementById("vox-overlay").style.display="none";}document.addEventListener("keydown",function(e){if(e.key==="Escape")closeVox();});</script></body>
+</html>
