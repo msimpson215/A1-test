@@ -3,100 +3,50 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Asphalt Sealcoating | A1 Professional Asphalt & Sealing LLC</title>
-<meta name="description" content="Commercial asphalt sealcoating by A1 Professional Asphalt & Sealing. SealMaster and Eco Green products. Serving St. Louis, Illinois, and nationwide."/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<title>Our Work | A1 Professional Asphalt</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
-:root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--gray:#1E1E1E;}
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;overflow-x:hidden;}
+/* ... (Same Nav CSS as above for consistency) ... */
+:root { --yellow: #F5C518; --black: #0A0A0A; }
+body { background: var(--black); color: #fff; font-family: 'Barlow', sans-serif; padding-top: 100px; }
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; height: 80px; background: #000; border-bottom: 2px solid var(--yellow); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; }
+.logo img { height: 50px; width: auto; }
+.nav-links { display: flex; gap: 25px; align-items: center; }
+.nav-links a { color: #fff; text-decoration: none; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
 
+.container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+h1 { font-family: 'Bebas Neue', sans-serif; font-size: 4rem; color: var(--yellow); margin-bottom: 40px; }
 
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+.work-card { background: #111; border: 1px solid #222; overflow: hidden; border-radius: 8px; }
+.work-card img { width: 100%; height: 250px; object-fit: cover; }
+.work-info { padding: 20px; }
+.work-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--yellow); }
+</style>
+</head>
+<body>
 
+<nav>
+  <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Logo"></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="our-work.html" style="color:var(--yellow)">Our Work</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
 
+<div class="container">
+  <h1>Our <span>Work</span></h1>
+  <div class="gallery-grid">
+    <div class="work-card">
+      <img src="asphalt-sealcoating-difference.jpg" alt="Sealcoating Comparison">
+      <div class="work-info">
+        <h3>Sealcoating: Before & After</h3>
+        <p>Commercial-grade protection for high-traffic retail lots.</p>
+      </div>
+    </div>
+    </div>
+</div>
 
-
-
-
-
-
-
-.has-drop:hover 
-
-
-
-
-.section-label{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
-.section-label::before{content:'';width:28px;height:2px;background:var(--yellow);}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);line-height:0.95;color:#fff;margin-bottom:20px;}
-.hero-title span{color:var(--yellow);}
-.hero-sub{color:rgba(255,255,255,0.75);font-size:1.05rem;max-width:560px;line-height:1.6;margin-bottom:32px;}
-.hero-btns{display:flex;gap:16px;flex-wrap:wrap;}
-.btn-primary{background:var(--yellow);color:var(--black);padding:16px 32px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s,transform 0.2s;display:inline-block;}
-.btn-primary:hover{opacity:0.88;transform:translateY(-2px);}
-.btn-outline{background:transparent;color:#fff;padding:16px 32px;border-radius:4px;font-weight:700;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:2px solid rgba(255,255,255,0.35);transition:border-color 0.2s,color 0.2s;display:inline-block;}
-.btn-outline:hover{border-color:var(--yellow);color:var(--yellow);}
-.content-section{padding:96px 40px;}
-.container{max-width:1200px;margin:0 auto;}
-.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,4vw,3.5rem);line-height:1.05;margin-bottom:24px;}
-.section-title span{color:var(--yellow);}
-.lead-text{font-size:1.05rem;color:rgba(255,255,255,0.85);line-height:1.75;margin-bottom:20px;max-width:760px;}
-.two-col{display:grid;grid-template-columns:1.2fr 1fr;gap:80px;align-items:start;}
-.benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:48px;}
-.benefit-card{background:var(--gray);padding:32px 28px;border-top:3px solid transparent;transition:border-color 0.2s;}
-.benefit-card:hover{border-top-color:var(--yellow);}
-.benefit-icon{font-size:1.8rem;margin-bottom:14px;}
-.benefit-title{font-weight:800;font-size:0.95rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:8px;color:#fff;}
-.benefit-desc{font-size:0.88rem;color:rgba(255,255,255,0.75);line-height:1.6;}
-.process-section{background:var(--dark);padding:96px 40px;}
-.process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:48px;}
-.step{background:#1a1a1a;padding:36px 28px;position:relative;}
-.step-num{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:rgba(245,197,24,0.12);line-height:1;margin-bottom:12px;}
-.step-title{font-weight:800;font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--yellow);margin-bottom:10px;}
-.step-desc{font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.6;}
-.photo-section{padding:0;}
-.photo-section img{width:100%;height:420px;object-fit:cover;filter:contrast(1.05) brightness(0.88);}
-.why-section{background:var(--black);padding:96px 40px;}
-.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:48px;}
-.why-card{background:var(--gray);padding:36px 28px;}
-.why-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--yellow);line-height:1;margin-bottom:8px;}
-.why-label{font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
-.cta-band{background:var(--yellow);padding:80px 40px;text-align:center;}
-.cta-band h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);color:var(--black);margin-bottom:16px;}
-.cta-band p{color:rgba(0,0,0,0.65);font-size:1rem;margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto;}
-.work-link-band{background:#0d0d0d;padding:48px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);}
-.work-link-band p{color:rgba(255,255,255,0.5);font-size:0.85rem;margin-bottom:12px;letter-spacing:0.06em;text-transform:uppercase;}
-.tagline-band{background:#000;padding:56px 40px;text-align:center;}
-.tagline-band .quote{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4vw,3.5rem);color:#fff;letter-spacing:0.04em;line-height:1.1;}
-.tagline-band .attr{margin-top:14px;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
-footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yellow);}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;max-width:1400px;margin:0 auto 48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);}
-.footer-logo img{height:56px;width:auto;margin-bottom:16px;}
-.footer-about{color:rgba(255,255,255,0.8);font-size:0.85rem;line-height:1.7;margin-bottom:20px;}
-.footer-ci{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:#fff;font-size:0.85rem;}
-.footer-ci strong{color:var(--yellow);min-width:80px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
-.fh{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px;}
-.fl{list-style:none;}
-.fl li{margin-bottom:10px;}
-.fl a{color:rgba(255,255,255,0.85);text-decoration:none;font-size:0.85rem;transition:color 0.2s;}
-.fl a:hover{color:var(--yellow);}
-.footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
-.footer-bottom p{color:rgba(255,255,255,0.25);font-size:0.75rem;}
-#vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;}
-#vox-overlay iframe{width:100%;height:100%;border:none;}
-#vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;}
-@media(max-width:768px){.two-col{grid-template-columns:1fr;gap:40px;}.process-steps{grid-template-columns:repeat(2,1fr);}.benefits-grid{grid-template-columns:1fr;}.why-grid{grid-template-columns:1fr;}}
-
-
-
-
-
-
-
-
-
-
-
-
-.has-drop:hover 
+</body>
+</html>
