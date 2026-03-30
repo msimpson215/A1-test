@@ -17,8 +17,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
 .btn-ai{background:var(--yellow);color:var(--black);padding:10px 16px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
 .call{background:#16a34a;color:#fff;padding:10px 22px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
 .hero{position:relative;height:420px;display:flex;align-items:center;overflow:hidden;margin-top:72px;}
-.hero-bg{position:absolute;inset:0;background:url('images/commercial.jpg') center/cover no-repeat;filter:brightness(0.75);}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.2) 100%);}
+.hero-bg{position:absolute;inset:0;background:url('images/commercial.jpg') center/cover no-repeat;filter:brightness(1.1);}
+.hero-overlay{position:absolute;inset:0;background:none;}
 .hero-content{position:relative;z-index:2;padding:0 60px;max-width:1200px;margin:0 auto;width:100%;}
 .lbl{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
 .lbl::before{content:'';width:28px;height:2px;background:var(--yellow);}
@@ -48,35 +48,6 @@ footer{background:#050505;border-top:3px solid var(--yellow);padding:32px 60px;d
 footer p{color:#ffffff;font-size:0.78rem;}
 footer a{color:var(--yellow);text-decoration:none;}
 footer a:hover{color:#fff;}
-nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;}
-.logo img{height:48px;width:auto;display:block;}
-.nav-center{display:flex;align-items:center;gap:0;}
-.nav-center a{color:#fff;text-decoration:none;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0 14px;transition:color 0.2s;display:flex;align-items:center;height:72px;}
-.nav-center a:hover{color:var(--yellow);}
-.has-drop{position:relative;}
-.has-drop>a::after{content:' ▾';}
-.drop{display:none;position:absolute;top:72px;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:220px;list-style:none;padding:6px 0;z-index:1000;}
-.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.85);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;height:auto;}
-.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
-.has-drop:hover .drop{display:block;}
-.nav-right{display:flex;align-items:center;gap:12px;}
-.btn-ai{background:var(--yellow);color:var(--black);height:44px;padding:0 18px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
-.btn-ai:hover{opacity:0.88;}
-.call{background:#16a34a;color:#fff;height:44px;padding:0 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
-.call:hover{opacity:0.88;}
-footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yellow);}
-.footer-logo img{height:56px;width:auto;margin-bottom:16px;}
-.footer-about{color:rgba(255,255,255,0.8);font-size:0.85rem;line-height:1.7;margin-bottom:20px;}
-.footer-contact-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;color:#ffffff;font-size:0.85rem;}
-.footer-contact-item strong{color:var(--yellow);min-width:80px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
-.footer-heading{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px;}
-.footer-links{list-style:none;}
-.footer-links li{margin-bottom:10px;}
-.footer-links a{color:rgba(255,255,255,0.85);text-decoration:none;font-size:0.85rem;transition:color 0.2s;}
-.footer-links a:hover{color:var(--yellow);}
-.footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
-.footer-bottom p{color:rgba(255,255,255,0.25);font-size:0.75rem;}
-.footer-seo{color:rgba(255,255,255,0.18);font-size:0.72rem;}
 </style>
 </head>
 <body>
@@ -164,17 +135,23 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <a href="https://a1asphaltpro.com/contact-us/" class="btn-dark">Get a Free Estimate</a>
   </div>
 </div>
-<div style="background:#000;padding:56px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
-  <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4vw,3.5rem);color:#fff;letter-spacing:0.04em;line-height:1.1;">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:#F5C518;">ASPHALT</span>"</div>
-  <div style="margin-top:14px;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.4);">— Joe Schanz, Owner · A1 Professional Asphalt &amp; Sealing LLC</div>
+<footer>
+  <p>© 2025 A1 Professional Asphalt & Sealing LLC · 107 Southern Dr, Lebanon, IL 62254 · (618) 929-3301 · 888-223-3797 · Nationwide</p>
+  <p><a href="index.html">← Home</a> &nbsp;·&nbsp; <a href="tel:6189293301">(618) 929-3301</a> &nbsp;·&nbsp; <a href="tel:8882233797">888-223-3797</a></p>
+</footer>
+<div id="vox-overlay" style="display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid #F5C518;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;"><button onclick="closeVox()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;">✕</button><iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="width:100%;height:100%;border:none;"></iframe></div><script>function openVox(){document.getElementById("vox-overlay").style.display="block";}function closeVox(){document.getElementById("vox-overlay").style.display="none";}document.addEventListener("keydown",function(e){if(e.key==="Escape")closeVox();});</script><!-- TAGLINE -->
+<div style="background:#000;padding:72px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5.5vw,5rem);color:#fff;letter-spacing:0.03em;line-height:1.05;">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:#F5C518;">ASPHALT</span>"</div>
+  <div style="margin-top:18px;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);">— Joe Schanz, Owner · A1 Professional Asphalt &amp; Sealing LLC</div>
 </div>
+<!-- FOOTER -->
 <footer>
   <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);">
     <div>
       <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt &amp; Sealing"/></div>
       <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
-      <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
-      <div class="footer-contact-item"><strong>Email</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f993969cb998c8988a899198958d898b96d79a9694">[email&#160;protected]</a></span></div>
+      <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301)</span></div>
+      <div class="footer-contact-item"><strong>Email</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3b51545e7b5a0a5a484b535a574f4b495415585456">[email&#160;protected]</a></span></div>
       <div class="footer-contact-item"><strong>Estimate</strong><span><a href="contact.html" style="color:var(--yellow);text-decoration:none;">Request Free Estimate →</a></span></div>
       <div style="display:flex;gap:14px;margin-top:20px;align-items:center;">
         <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:6px;" onmouseover="this.style.background='rgba(245,197,24,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></a>
@@ -216,4 +193,5 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <p class="footer-seo">Asphalt sealcoating St. Louis · Parking lot striping Illinois · Crack filling commercial · Asphalt patching St. Louis · Commercial paving nationwide</p>
   </div>
 </footer>
-<div id="vox-overlay" style="display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid #F5C518;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9999;"><button onclick="closeVox()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;">✕</button><iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="width:100%;height:100%;border:none;"></iframe></div><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>function openVox(){document.getElement
+</body>
+</html>
