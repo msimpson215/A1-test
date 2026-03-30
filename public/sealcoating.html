@@ -48,6 +48,13 @@ footer{background:#050505;border-top:3px solid var(--yellow);padding:32px 60px;d
 footer p{color:#ffffff;font-size:0.78rem;}
 footer a{color:var(--yellow);text-decoration:none;}
 footer a:hover{color:#fff;}
+
+.has-drop{position:relative;}
+.has-drop>a::after{content:' ▾';}
+.drop{display:none;position:absolute;top:72px;left:0;background:#0d0d0d;border:1px solid rgba(245,197,24,0.2);border-top:2px solid var(--yellow);min-width:220px;list-style:none;padding:6px 0;z-index:1000;}
+.drop li a{display:block;padding:10px 20px;color:rgba(255,255,255,0.85);font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;height:auto;}
+.drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
+.has-drop:hover .drop{display:block;}
 </style>
 </head>
 <body>
