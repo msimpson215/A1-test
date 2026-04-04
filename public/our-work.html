@@ -18,7 +18,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-botto
 .btn-nav-call{background:#16a34a;color:#fff;padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
 .btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;border:none;white-space:nowrap;cursor:pointer;}
 .page-header{padding:140px 40px 80px;background:var(--dark);position:relative;overflow:hidden;}
-.page-header::before{content:'';position:absolute;inset:0;background:url('a1-arch-hero.jpg') center 60%/cover no-repeat;filter:brightness(0.75);z-index:0;}
+.page-header::before{content:'';position:absolute;inset:0;background:#111;z-index:0;}
 .page-header .inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;}
 .section-label{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
 .section-label::before{content:'';width:28px;height:2px;background:var(--yellow);}
@@ -368,6 +368,36 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
 </div>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+function openLight(src,title,loc){
+  document.getElementById('lbImg').src=src;
+  document.getElementById('lbTitle').textContent=title;
+  document.getElementById('lbLoc').textContent=loc;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLB(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow='';
+}
+var btns=document.querySelectorAll('.filter-btn');
+var cards=document.querySelectorAll('.photo-card');
+btns.forEach(function(btn){
+  btn.addEventListener('click',function(){
+    btns.forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    var f=this.dataset.filter;
+    var count=0;
+    cards.forEach(function(c){
+      var cats=c.dataset.cat||'';
+      if(f==='all'||cats.includes(f)){c.style.display='';count++;}
+      else{c.style.display='none';}
+    });
+    document.getElementById('photoCount').textContent=count;
+    document.getElementById('emptyState').style.display=count===0?'block':'none';
+  });
+});
+
 function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
 function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
