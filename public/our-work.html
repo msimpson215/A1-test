@@ -18,7 +18,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:#000;border-botto
 .btn-nav-call{background:#16a34a;color:#fff;padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
 .btn-nav-ai{background:var(--yellow);color:var(--black);padding:10px 20px;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;border:none;white-space:nowrap;cursor:pointer;}
 .page-header{padding:140px 40px 80px;background:var(--dark);position:relative;overflow:hidden;}
-.page-header::before{content:'';position:absolute;inset:0;background:#111;z-index:0;}
+.page-header::before{content:'';position:absolute;inset:0;background:url('a1-arch-hero.jpg') center 60%/cover no-repeat;filter:brightness(0.75);z-index:0;}
 .page-header .inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;}
 .section-label{display:inline-flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
 .section-label::before{content:'';width:28px;height:2px;background:var(--yellow);}
@@ -155,145 +155,29 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
 </section>
 
-<div class="feature-row">
-  <div class="feature-card" onclick="openLight('A1-Asphalt-Truck-in-front-of-St_-Louis-Arch.jpg','A1 Asphalt — St. Louis, MO','Gateway City')">
-    <img src="images/A1-Asphalt-Truck-in-front-of-St_-Louis-Arch.jpg" alt="A1 truck in front of St. Louis Arch"/>
-    <div class="feature-info">
-      <div class="feature-tag">A1 Professional Asphalt</div>
-      <div class="feature-title">Home Base — St. Louis, MO</div>
-      <div class="feature-loc">Gateway to the Nation</div>
-    </div>
-  </div>
-  <div class="feature-card" onclick="openLight('striping-34-400x284.jpg','School Complex — Aerial View','Southern Illinois')">
-    <img src="images/striping-34-400x284.jpg" alt="Aerial school parking lot striping"/>
-    <div class="feature-info">
-      <div class="feature-tag">Striping · Aerial</div>
-      <div class="feature-title">School Complex — Aerial View</div>
-      <div class="feature-loc">Southern Illinois</div>
-    </div>
-  </div>
-</div>
-
-<div class="filter-bar">
-  <div class="filter-inner">
-    <button class="filter-btn active" data-filter="all">All Work</button>
-    <button class="filter-btn" data-filter="sealcoating">Sealcoating</button>
-    <button class="filter-btn" data-filter="striping">Striping</button>
-    <button class="filter-btn" data-filter="concrete">Concrete</button>
-    <button class="filter-btn" data-filter="patching">Patching & Paving</button>
-    <button class="filter-btn" data-filter="commercial">Commercial</button>
-  </div>
-</div>
-
 <section class="gallery-section">
-  <div class="count-bar">
-    <div class="count-text">Showing <span id="photoCount">20</span> projects</div>
-    <div class="count-text">More added regularly — <a href="contact.html" style="color:var(--yellow);text-decoration:none;font-weight:700;">get your estimate →</a></div>
-  </div>
   <div class="gallery-grid" id="galleryGrid">
-
-    <div class="photo-card" data-cat="striping commercial" onclick="openLight('sealing-striping-52-400x284.jpg','Walmart — Full Crosswalk Restripe','Midwest Location')">
-      <img src="images/sealing-striping-52-400x284.jpg" alt="Walmart crosswalk striping"/><div class="brand-badge">Walmart</div>
-      <div class="photo-info"><div class="photo-tag">Striping</div><div class="photo-title">Full Crosswalk Restripe</div><div class="photo-loc">Walmart</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="commercial sealcoating" onclick="openLight('striping-12-1-400x284.jpg','Walmart — Night Crew Operations','Midwest Location')">
-      <img src="images/striping-12-1-400x284.jpg" alt="Walmart night crew A1 truck"/><div class="brand-badge">Walmart</div>
-      <div class="photo-info"><div class="photo-tag">Commercial</div><div class="photo-title">Night Crew Operations</div><div class="photo-loc">Walmart</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="striping commercial" onclick="openLight('sealing-striping-58-400x284.jpeg','Walmart Pickup Zone — Custom Striping','Midwest Location')">
-      <img src="images/sealing-striping-58-400x284.jpeg" alt="Walmart pickup zone orange striping"/><div class="brand-badge">Walmart</div>
-      <div class="photo-info"><div class="photo-tag">Striping</div><div class="photo-title">Pickup Zone — Custom Striping</div><div class="photo-loc">Walmart</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating commercial" onclick="openLight('Sealing-10-400x284.jpg','Sam\'s Club — Full Lot Sealcoat','Midwest Location')">
-      <img src="images/Sealing-10-400x284.jpg" alt="Sam's Club golden hour sealcoat"/><div class="brand-badge">Sam's Club</div>
-      <div class="photo-info"><div class="photo-tag">Sealcoating</div><div class="photo-title">Full Lot Sealcoat</div><div class="photo-loc">Sam's Club</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="striping commercial" onclick="openLight('sealing-striping-38-400x284.jpg','Lowe\'s — Line Striping In Progress','St. Louis Region')">
-      <img src="images/sealing-striping-38-400x284.jpg" alt="Lowe's line striping machine"/><div class="brand-badge">Lowe's</div>
-      <div class="photo-info"><div class="photo-tag">Striping</div><div class="photo-title">Line Striping In Progress</div><div class="photo-loc">Lowe's</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating commercial" onclick="openLight('Sealing-8-400x284.jpg','CVS Pharmacy — Sealcoat In Progress','St. Louis Metro')">
-      <img src="images/Sealing-8-400x284.jpg" alt="CVS pharmacy sealcoating in progress"/><div class="brand-badge">CVS Pharmacy</div>
-      <div class="photo-info"><div class="photo-tag">Sealcoating</div><div class="photo-title">Sealcoat In Progress</div><div class="photo-loc">CVS Pharmacy</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating commercial" onclick="openLight('sealing-39-400x284.jpg','CVS Pharmacy — Finished Result','St. Louis Metro')">
-      <img src="images/sealing-39-400x284.jpg" alt="CVS pharmacy finished lot"/><div class="brand-badge">CVS Pharmacy</div>
-      <div class="photo-info"><div class="photo-tag">Sealcoating</div><div class="photo-title">Finished Result</div><div class="photo-loc">CVS Pharmacy</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating commercial" onclick="openLight('Sealing-7-400x284.jpg','Cracker Barrel — Fresh Sealcoat','Midwest Location')">
-      <img src="images/Sealing-7-400x284.jpg" alt="Cracker Barrel fresh sealcoat"/><div class="brand-badge">Cracker Barrel</div>
-      <div class="photo-info"><div class="photo-tag">Sealcoating</div><div class="photo-title">Fresh Sealcoat — Finished</div><div class="photo-loc">Cracker Barrel</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating commercial" onclick="openLight('sealing-22-400x284.jpg','Schnucks — Crew On-Site','St. Louis, MO')">
-      <img src="images/sealing-22-400x284.jpg" alt="Schnucks crew on site"/><div class="brand-badge">Schnucks</div>
-      <div class="photo-info"><div class="photo-tag">Sealcoating</div><div class="photo-title">Crew On-Site</div><div class="photo-loc">Schnucks — St. Louis</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating" onclick="openLight('sealing-24-400x284.jpg','Schnucks — Sealer Machine In Progress','St. Louis, MO')">
-      <img src="images/sealing-24-400x284.jpg" alt="Schnucks sealer machine"/><div class="brand-badge">Schnucks</div>
-      <div class="photo-info"><div class="photo-tag">Sealcoating</div><div class="photo-title">Sealer Machine In Progress</div><div class="photo-loc">Schnucks — St. Louis</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="patching commercial" onclick="openLight('A1-Concrete-Paving-Spectrum-Brands-800.jpg','Spectrum Brands — Full Paving','St. Louis Region')">
-      <img src="images/A1-Concrete-Paving-Spectrum-Brands-800.jpg" alt="Spectrum Brands paving"/><div class="brand-badge">Spectrum Brands</div>
-      <div class="photo-info"><div class="photo-tag">Paving</div><div class="photo-title">Full Paving Project</div><div class="photo-loc">Spectrum Brands</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="striping commercial" onclick="openLight('sealing-striping-27-400x284.jpg','Strip Mall — Full Seal & Stripe','St. Louis Region')">
-      <img src="images/sealing-striping-27-400x284.jpg" alt="Strip mall seal and stripe"/>
-      <div class="photo-info"><div class="photo-tag">Sealcoating · Striping</div><div class="photo-title">Strip Mall — Full Service</div><div class="photo-loc">St. Louis Region</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating commercial" onclick="openLight('sealing-26-400x284.jpg','Big Box — Early Morning Sealcoat','Midwest Location')">
-      <img src="images/sealing-26-400x284.jpg" alt="Big box store early morning sealcoat"/>
-      <div class="photo-info"><div class="photo-tag">Sealcoating</div><div class="photo-title">Early Morning — In Progress</div><div class="photo-loc">Big Box Store — Midwest</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="concrete commercial" onclick="openLight('concrete-400x284.jpg','Amazon — Concrete Repair','Midwest Location')">
-      <img src="images/concrete-400x284.jpg" alt="Amazon concrete repair"/><div class="brand-badge">Amazon</div>
-      <div class="photo-info"><div class="photo-tag">Concrete</div><div class="photo-title">Concrete Repair & Demo</div><div class="photo-loc">Amazon</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="concrete commercial" onclick="openLight('concrete-21-400x284.jpg','Walmart — Concrete Sidewalk Work','Midwest Location')">
-      <img src="images/concrete-21-400x284.jpg" alt="Walmart concrete sidewalk work"/><div class="brand-badge">Walmart</div>
-      <div class="photo-info"><div class="photo-tag">Concrete</div><div class="photo-title">Concrete Sidewalk Work</div><div class="photo-loc">Walmart</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="concrete" onclick="openLight('Concrete-34-400x284.jpg','ADA Curb Cut — Fresh Pour','Southern Illinois')">
-      <img src="images/Concrete-34-400x284.jpg" alt="ADA curb cut fresh pour"/>
-      <div class="photo-info"><div class="photo-tag">Concrete · ADA</div><div class="photo-title">ADA Curb Cut — Fresh Pour</div><div class="photo-loc">Southern Illinois</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating" onclick="openLight('sealing-28-400x284.jpg','Private Estate — Winding Path','Metro East, IL')">
-      <img src="images/sealing-28-400x284.jpg" alt="Winding path sealcoat"/>
-      <div class="photo-info"><div class="photo-tag">Sealcoating</div><div class="photo-title">Winding Path Sealcoat</div><div class="photo-loc">Private Estate — Metro East</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="patching" onclick="openLight('crack-filling-18-400x284.jpeg','Commercial Lot — Crack Fill','St. Louis Region')">
-      <img src="images/crack-filling-18-400x284.jpeg" alt="Crack filling commercial lot"/>
-      <div class="photo-info"><div class="photo-tag">Crack Filling</div><div class="photo-title">Commercial Lot — Crack Fill</div><div class="photo-loc">St. Louis Region</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating striping" onclick="openLight('Sealing-striping-12-400x284.jpg','Full Seal & Stripe — Finished','Metro East, IL')">
-      <img src="images/Sealing-striping-12-400x284.jpg" alt="Full seal and stripe finished"/>
-      <div class="photo-info"><div class="photo-tag">Sealcoating · Striping</div><div class="photo-title">Full Seal & Stripe — Finished</div><div class="photo-loc">Metro East, IL</div></div>
-    </div>
-
-    <div class="photo-card" data-cat="sealcoating striping" onclick="openLight('sealing-striping-27-400x284.jpg','Church Lot — Seal & Restripe','Southern Illinois')">
-      <img src="images/sealing-42-400x284.jpg" alt="Church lot seal and restripe"/>
-      <div class="photo-info"><div class="photo-tag">Sealcoating · Striping</div><div class="photo-title">Church Lot — Seal & Restripe</div><div class="photo-loc">Southern Illinois</div></div>
-    </div>
-
+    <div class="photo-card"><img src="images/sealing-striping-52-400x284.jpg" alt="Walmart crosswalk striping"/><div class="brand-badge">Walmart</div></div>
+    <div class="photo-card"><img src="images/striping-12-1-400x284.jpg" alt="Walmart night crew"/><div class="brand-badge">Walmart</div></div>
+    <div class="photo-card"><img src="images/sealing-striping-58-400x284.jpeg" alt="Walmart pickup zone"/><div class="brand-badge">Walmart</div></div>
+    <div class="photo-card"><img src="images/Sealing-10-400x284.jpg" alt="Sams Club sealcoat"/><div class="brand-badge">Sam's Club</div></div>
+    <div class="photo-card"><img src="images/sealing-striping-38-400x284.jpg" alt="Lowes striping"/><div class="brand-badge">Lowe's</div></div>
+    <div class="photo-card"><img src="images/Sealing-8-400x284.jpg" alt="CVS sealcoat"/><div class="brand-badge">CVS Pharmacy</div></div>
+    <div class="photo-card"><img src="images/sealing-39-400x284.jpg" alt="CVS finished"/><div class="brand-badge">CVS Pharmacy</div></div>
+    <div class="photo-card"><img src="images/Sealing-7-400x284.jpg" alt="Cracker Barrel sealcoat"/><div class="brand-badge">Cracker Barrel</div></div>
+    <div class="photo-card"><img src="images/sealing-22-400x284.jpg" alt="Schnucks crew"/><div class="brand-badge">Schnucks</div></div>
+    <div class="photo-card"><img src="images/sealing-24-400x284.jpg" alt="Schnucks sealer"/><div class="brand-badge">Schnucks</div></div>
+    <div class="photo-card"><img src="images/A1-Concrete-Paving-Spectrum-Brands-800.jpg" alt="Spectrum Brands paving"/><div class="brand-badge">Spectrum Brands</div></div>
+    <div class="photo-card"><img src="images/sealing-striping-27-400x284.jpg" alt="Strip mall"/></div>
+    <div class="photo-card"><img src="images/sealing-26-400x284.jpg" alt="Big box sealcoat"/></div>
+    <div class="photo-card"><img src="images/concrete-400x284.jpg" alt="Amazon concrete"/><div class="brand-badge">Amazon</div></div>
+    <div class="photo-card"><img src="images/concrete-21-400x284.jpg" alt="Walmart concrete"/><div class="brand-badge">Walmart</div></div>
+    <div class="photo-card"><img src="images/Concrete-34-400x284.jpg" alt="ADA curb cut"/></div>
+    <div class="photo-card"><img src="images/sealing-28-400x284.jpg" alt="Winding path"/></div>
+    <div class="photo-card"><img src="images/crack-filling-18-400x284.jpeg" alt="Crack filling"/></div>
+    <div class="photo-card"><img src="images/Sealing-striping-12-400x284.jpg" alt="Full seal stripe"/></div>
+    <div class="photo-card"><img src="images/sealing-42-400x284.jpg" alt="Church lot"/></div>
   </div>
-  <div class="empty-state" id="emptyState"><p>No photos in this category yet — check back soon</p></div>
 </section>
 
 <div class="work-cta">
@@ -303,10 +187,9 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 </div>
 
 <div class="tagline-band">
-  <div class="quote">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:var(--yellow);">ASPHALT</span>"</div>
-  <div class="attr">— Joe Schanz, Owner · A1 Professional Asphalt & Sealing LLC</div>
+  <div class="quote">“If you don't use A1 Asphalt,<br/>it's your own <span style="color:var(--yellow);">ASPHALT</span>”</div>
+  <div class="attr">— Joe Schanz, Owner · A1 Professional Asphalt &amp; Sealing LLC</div>
 </div>
-
 
 <footer>
   <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08);">
@@ -368,36 +251,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
 </div>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-
-function openLight(src,title,loc){
-  document.getElementById('lbImg').src=src;
-  document.getElementById('lbTitle').textContent=title;
-  document.getElementById('lbLoc').textContent=loc;
-  document.getElementById('lightbox').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function closeLB(){
-  document.getElementById('lightbox').classList.remove('open');
-  document.body.style.overflow='';
-}
-var btns=document.querySelectorAll('.filter-btn');
-var cards=document.querySelectorAll('.photo-card');
-btns.forEach(function(btn){
-  btn.addEventListener('click',function(){
-    btns.forEach(function(b){b.classList.remove('active');});
-    this.classList.add('active');
-    var f=this.dataset.filter;
-    var count=0;
-    cards.forEach(function(c){
-      var cats=c.dataset.cat||'';
-      if(f==='all'||cats.includes(f)){c.style.display='';count++;}
-      else{c.style.display='none';}
-    });
-    document.getElementById('photoCount').textContent=count;
-    document.getElementById('emptyState').style.display=count===0?'block':'none';
-  });
-});
-
 function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
 function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
