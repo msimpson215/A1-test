@@ -16,7 +16,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;}
+body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;max-width:100vw;}
 
 /* ── NAV ── */
 
@@ -276,6 +276,42 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
   .ai-inner{grid-template-columns:1fr;}
   .section{padding:64px 20px;}
 }
+
+/* ── MOBILE NAV ── */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;}
+.hamburger span{display:block;width:24px;height:2px;background:#fff;transition:all 0.3s;}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:#000;border-top:1px solid rgba(245,197,24,0.3);z-index:998;padding:16px 0;}
+.mobile-menu.open{display:block;}
+.mobile-menu a{display:block;padding:12px 24px;color:#fff;text-decoration:none;font-size:0.85rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.06);}
+.mobile-menu a:hover{color:var(--yellow);}
+.mobile-menu .mobile-submenu{padding-left:16px;}
+.mobile-menu .mobile-submenu a{font-size:0.78rem;color:rgba(255,255,255,0.7);padding:10px 24px;}
+
+@media(max-width:768px){
+  html,body{overflow-x:hidden;max-width:100%;}
+  *{max-width:100%;}
+  nav{padding:0 16px;}
+  .nav-center{display:none !important;}
+  .hamburger{display:flex;}
+  .btn-ai{display:none;}
+  .call{font-size:0.72rem;padding:0 12px;height:38px;}
+  .hero-content{padding:0 20px;padding-top:72px;}
+  .hero-tagline{font-size:clamp(2.8rem,10vw,5rem);}
+  .hero-sub{font-size:0.95rem;}
+  .hero-stats{flex-wrap:wrap;gap:20px;}
+  .section{padding:56px 20px;}
+  .services-grid{grid-template-columns:1fr 1fr;}
+  .reviews-grid{grid-template-columns:1fr;}
+  .ai-inner{grid-template-columns:1fr;}
+  .photo-strip{grid-template-columns:1fr 1fr;}
+  .ticker-item img{height:36px;}
+  footer > div{grid-template-columns:1fr 1fr !important;}
+}
+@media(max-width:480px){
+  .hero-tagline{font-size:clamp(2.2rem,9vw,4rem);}
+  .services-grid{grid-template-columns:1fr;}
+  footer > div{grid-template-columns:1fr !important;}
+}
 </style>
 </head>
 <body>
@@ -299,11 +335,29 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
     <a href="our-work.html">Our Work</a>
     <a href="about.html">About</a>
   </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="nav-right">
     <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" class="btn-ai">Talk with Our A.I. Team Member</a>
     <a href="tel:6189293301" class="call">📞 (618) 929-3301</a>
   </div>
 </nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html#services">Services</a>
+  <div class="mobile-submenu">
+    <a href="sealcoating.html">Sealcoating</a>
+    <a href="crack-filling.html">Crack Filling</a>
+    <a href="parking-lot-striping.html">Parking Lot Striping</a>
+    <a href="asphalt-patching.html">Asphalt Patching</a>
+    <a href="concrete-work.html">Concrete Work</a>
+    <a href="bollard-installation.html">Bollard Installation</a>
+    <a href="ada-compliance.html">ADA Compliance</a>
+  </div>
+  <a href="our-work.html">Our Work</a>
+  <a href="about.html">About</a>
+  <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" style="color:var(--yellow);">Talk with Our A.I. Team Member</a>
+  <a href="tel:6189293301">📞 (618) 929-3301</a>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -566,6 +620,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
   <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
 </div>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+function toggleMenu(){
+  var m = document.getElementById('mobileMenu');
+  m.classList.toggle('open');
+}
+document.addEventListener('click', function(e){
+  var m = document.getElementById('mobileMenu');
+  if(m.classList.contains('open') && !m.contains(e.target) && !e.target.closest('.hamburger')){
+    m.classList.remove('open');
+  }
+});
+
 function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
 function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
