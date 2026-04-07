@@ -43,11 +43,11 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
 .hero-bg{position:absolute;inset:0;background:url('Sams-Club-Parking-Lot-Painting-980x429.jpg') center/cover no-repeat;filter:brightness(.85);}
 .hero-overlay{position:absolute;inset:0;background:none;}
 .hero-stripe{position:absolute;bottom:0;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--yellow) 0px,var(--yellow) 60px,transparent 60px,transparent 90px);}
-.hero-content{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 40px;padding-top:72px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;}.hero-tagline{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,11vw,10rem);color:#ffffff;line-height:0.9;letter-spacing:0.01em;margin-bottom:24px;text-align:left;}
+.hero-content{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 40px;padding-top:40px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;}.hero-tagline{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,11vw,10rem);color:#ffffff;line-height:0.9;letter-spacing:0.01em;margin-bottom:24px;text-align:left;}
 .hero-badge{display:inline-flex;align-items:center;gap:10px;background:transparent;color:#ffffff;font-size:0.9rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:20px;}.hero-badge::before{content:"";width:28px;height:2px;background:var(--yellow);}
 .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,7rem);line-height:0.95;letter-spacing:0.02em;margin-bottom:24px;text-align:center;}
 .hero h1 span{color:var(--yellow);}
-.hero-sub{font-size:1.1rem;color:#ffffff;max-width:700px;line-height:1.6;margin-bottom:36px;text-align:left;}
+.hero-sub{font-size:1.3rem;color:#ffffff;max-width:700px;line-height:1.6;margin-bottom:36px;text-align:left;font-weight:600;}
 .hero-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-start;}
 .btn-primary{background:var(--yellow);color:var(--black);padding:16px 32px;border-radius:4px;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:transform 0.2s,opacity 0.2s;}
 .btn-primary:hover{transform:translateY(-2px);opacity:0.9;}
@@ -60,7 +60,7 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
 /* ── TICKER ── */
 .ticker-label{background:var(--black);text-align:center;padding:10px;font-size:0.7rem;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--yellow);}
 .ticker-wrap{background:var(--yellow);padding:16px 0;overflow:hidden;position:relative;}
-.ticker-track{display:flex;align-items:center;width:max-content;animation:tickerMove 18s linear infinite;}
+.ticker-track{display:flex;align-items:center;width:max-content;animation:tickerMove 12s linear infinite;}
 .ticker-item{display:inline-flex;align-items:center;margin-right:80px;flex-shrink:0;}
 .ticker-item img{height:48px;width:auto;max-width:130px;object-fit:contain;opacity:0.85;}
 .ticker-dot{width:5px;height:5px;background:var(--black);border-radius:50%;opacity:0.3;margin-right:80px;flex-shrink:0;}
@@ -85,7 +85,7 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
 .service-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:rgba(245,197,24,0.15);line-height:1;margin-bottom:12px;}
 .service-icon{font-size:1.8rem;margin-bottom:14px;}
 .service-name{font-weight:800;font-size:1rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:8px;color:#fff;}
-.service-desc{font-size:0.85rem;color:#ffffff;line-height:1.6;}
+.service-desc{font-size:0.95rem;color:#ffffff;line-height:1.6;}
 .service-arrow{position:absolute;bottom:20px;right:20px;color:var(--yellow);font-size:1.1rem;opacity:0;transition:opacity 0.2s,transform 0.2s;}
 .service-card:hover .service-arrow{opacity:1;transform:translateX(4px);}
 /* Photo backgrounds on service cards */
@@ -278,8 +278,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
 }
 
 /* ── MOBILE NAV ── */
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;}
-.hamburger span{display:block;width:24px;height:2px;background:#fff;transition:all 0.3s;}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:none;border:none;}
+..hamburger span{display:block;width:24px;height:2px;background:#fff;transition:all 0.3s;}
 .mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:#000;border-top:1px solid rgba(245,197,24,0.3);z-index:998;padding:16px 0;}
 .mobile-menu.open{display:block;}
 .mobile-menu a{display:block;padding:12px 24px;color:#fff;text-decoration:none;font-size:0.85rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.06);}
@@ -296,7 +296,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
   .btn-ai{display:none;}
   .call{font-size:0.72rem;padding:0 12px;height:38px;}
   .hero-content{padding:0 20px;padding-top:72px;}
-  .hero-tagline{font-size:clamp(2.8rem,10vw,5rem);}
+  .hero-tagline{font-size:clamp(3.2rem,11vw,5.5rem);}  .hero-sub{font-size:1.1rem;font-weight:600;}
   .hero-sub{font-size:0.95rem;}
   .hero-stats{flex-wrap:wrap;gap:20px;}
   .section{padding:56px 20px;}
@@ -365,7 +365,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
   <div class="hero-overlay"></div>
   <div class="hero-stripe"></div>
   <div class="hero-content container">
-    <div class="hero-badge">ST. LOUIS &amp; NATIONWIDE</div>
+    <div class="hero-badge">ST. LOUIS &amp; THE MIDWEST</div>
     <div class="hero-tagline"><span style="color:var(--yellow)">THE LAST</span><br/>ASPHALT COMPANY<br/>YOU'LL EVER CALL</div>
 
     <p class="hero-sub">Commercial sealcoating, striping, paving, and concrete — done right the first time.</p>
