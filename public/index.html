@@ -40,7 +40,7 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
 
 /* ── HERO ── */
 .hero{position:relative;height:100vh;min-height:640px;display:flex;align-items:center;overflow:hidden;}
-.hero-bg{position:absolute;inset:0;background:url('Sams-Club-Parking-Lot-Painting-980x429.jpg') center/cover no-repeat;filter:brightness(.45);}
+.hero-bg{position:absolute;inset:0;background:url('Sams-Club-Parking-Lot-Painting-980x429.jpg') center/cover no-repeat;filter:brightness(.85);}
 .hero-overlay{position:absolute;inset:0;background:none;}
 .hero-stripe{position:absolute;bottom:0;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--yellow) 0px,var(--yellow) 60px,transparent 60px,transparent 90px);}
 .hero-content{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 40px;padding-top:72px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;}.hero-tagline{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,11vw,10rem);color:#ffffff;line-height:0.9;letter-spacing:0.01em;margin-bottom:24px;text-align:left;}
@@ -246,6 +246,36 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
 .call{background:#16a34a;color:#fff;height:44px;padding:0 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
 .call:hover{opacity:0.88;}
 .nav-links{display:none;}
+
+/* ── RESPONSIVE LARGE SCREENS ── */
+@media(min-width:1400px){
+  .hero-tagline{font-size:12rem;}
+  .hero-sub{font-size:1.3rem;}
+  nav{height:84px;}
+  .logo img{height:56px;}
+  .nav-center a{height:84px;font-size:0.9rem;padding:0 18px;}
+  .btn-ai{height:50px;font-size:0.82rem;padding:0 22px;}
+  .call{height:50px;font-size:0.88rem;padding:0 24px;}
+  .section{padding:120px 60px;}
+  .container{max-width:1400px;}
+}
+@media(min-width:1800px){
+  .hero-tagline{font-size:14rem;}
+  nav{height:96px;}
+  .logo img{height:64px;}
+  .nav-center a{height:96px;font-size:1rem;padding:0 22px;}
+  .btn-ai{height:56px;font-size:0.9rem;padding:0 28px;}
+  .call{height:56px;font-size:0.95rem;padding:0 28px;}
+}
+@media(max-width:768px){
+  .hero-tagline{font-size:clamp(3rem,12vw,6rem);}
+  .nav-center{display:none;}
+  .hero-stats{gap:24px;}
+  .services-grid{grid-template-columns:1fr;}
+  .reviews-grid{grid-template-columns:1fr;}
+  .ai-inner{grid-template-columns:1fr;}
+  .section{padding:64px 20px;}
+}
 </style>
 </head>
 <body>
@@ -282,7 +312,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
   <div class="hero-stripe"></div>
   <div class="hero-content container">
     <div class="hero-badge">ST. LOUIS &amp; NATIONWIDE</div>
-    <div class="hero-tagline">THE LAST<br/>ASPHALT COMPANY<br/><span style="color:var(--yellow)">YOU'LL EVER CALL</span></div>
+    <div class="hero-tagline"><span style="color:var(--yellow)">THE LAST</span><br/>ASPHALT COMPANY<br/>YOU'LL EVER CALL</div>
 
     <p class="hero-sub">Commercial sealcoating, striping, paving, and concrete — done right the first time.</p>
 
@@ -475,9 +505,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
 </section>
 
 <!-- TAGLINE -->
-<div style="background:#000;padding:72px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+<div style="position:relative;overflow:hidden;padding:72px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+  <div style="position:absolute;inset:0;background:url('images/unitedstatesflag.jpg') center/cover no-repeat;filter:brightness(0.3);z-index:0;"></div>
+  <div style="position:relative;z-index:1;">
   <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5.5vw,5rem);color:#fff;letter-spacing:0.03em;line-height:1.05;">"If you don't use A1 Asphalt,<br/>it's your own <span style="color:#F5C518;">ASPHALT</span>"</div>
   <div style="margin-top:18px;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);">— Joe Schanz, Owner · A1 Professional Asphalt &amp; Sealing LLC</div>
+
+  </div>
 </div>
 <!-- FOOTER -->
 <footer>
