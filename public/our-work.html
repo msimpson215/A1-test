@@ -401,7 +401,7 @@ function switchTab(cat) {
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   event.target.classList.add('active');
   document.getElementById('tab-'+cat).classList.add('active');
-  if(!state[cat]) { state[cat]=1; buildGrid(cat,1); }
+  buildGrid(cat,1);
 }
 
 function openLightbox(src) {
