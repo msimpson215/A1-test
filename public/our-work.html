@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Our Work — A1 Professional Asphalt & Sealing LLC</title>
+<title>Our Work — A1 Professional Asphalt & Sealing LLC | St. Louis Commercial Asphalt</title>
+<meta name="description" content="View A1 Professional Asphalt's project gallery. Sealcoating, striping, concrete, crack filling, patching and paving across St. Louis and 15 states."/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 :root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--gray:#1E1E1E;}
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:var(--black);color:#fff;font-family:'Barlow',sans-serif;overflow-x:hidden;}
-/* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);border-bottom:2px solid var(--yellow);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;}
 .logo img{height:60px;width:auto;display:block;}
 .nav-center{display:flex;align-items:center;}
@@ -26,48 +26,71 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(0,0,0,0.97);
 .btn-ai{background:var(--yellow);color:var(--black);height:44px;padding:0 18px;border-radius:4px;font-weight:800;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
 .btn-ai:hover{opacity:0.88;}
 .call{background:#16a34a;color:#fff;height:44px;padding:0 20px;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;}
-.call:hover{opacity:0.88;}
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:none;border:none;}
 .hamburger span{display:block;width:24px;height:2px;background:#fff;}
 .mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:#000;border-top:1px solid rgba(245,197,24,0.3);z-index:998;padding:16px 0;}
 .mobile-menu.open{display:block;}
 .mobile-menu a{display:block;padding:12px 24px;color:#fff;text-decoration:none;font-size:0.85rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.06);}
 .mobile-menu a:hover{color:var(--yellow);}
-.mobile-menu .mobile-submenu a{font-size:0.78rem;color:#fff;padding:10px 32px;}
 /* HERO */
-.hero{position:relative;height:60vh;min-height:400px;display:flex;align-items:center;overflow:hidden;margin-top:72px;}
+.hero{position:relative;height:60vh;min-height:420px;display:flex;align-items:center;overflow:hidden;margin-top:72px;}
 .hero-bg{position:absolute;inset:0;background:url('images/1080x360.jpg') center center/cover no-repeat;filter:brightness(0.55);}
-.hero-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.15);}
+.hero-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.2);}
 .hero-stripe{position:absolute;bottom:0;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--yellow) 0px,var(--yellow) 60px,transparent 60px,transparent 90px);}
-.hero-content{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 40px;}
+.hero-content{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 40px;padding-top:80px;}
 .hero-badge{display:inline-flex;align-items:center;gap:10px;color:#fff;font-size:0.78rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:16px;}
 .hero-badge::before{content:'';width:28px;height:2px;background:var(--yellow);}
-.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,6rem);color:#fff;line-height:0.95;margin-bottom:16px;}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,7rem);color:#fff;line-height:0.95;margin-bottom:16px;}
 .hero h1 span{color:var(--yellow);}
 .hero-sub{font-size:1.1rem;color:#fff;font-weight:600;}
-/* GALLERY SECTION */
+/* INTRO */
+.intro-section{background:#fff;padding:64px 40px;}
+.intro-section .container{max-width:1200px;margin:0 auto;text-align:center;}
+.intro-section h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,4vw,3rem);color:#0A0A0A;margin-bottom:20px;}
+.intro-section p{color:#333;font-size:1rem;line-height:1.8;max-width:800px;margin:0 auto 16px;}
+.intro-section .tagline-yellow{color:var(--yellow);font-weight:800;font-size:1.05rem;font-style:italic;margin-top:8px;}
+/* REGION */
+.region-section{background:var(--dark);padding:72px 40px;}
+.region-section .container{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.region-text .section-label{font-size:0.72rem;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--yellow);margin-bottom:12px;}
+.region-text h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);color:#fff;line-height:1;margin-bottom:24px;}
+.region-text p{color:#fff;font-size:0.95rem;line-height:1.8;margin-bottom:16px;}
+.region-text ul{list-style:none;margin-top:8px;}
+.region-text ul li{color:#fff;font-size:0.9rem;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:10px;}
+.region-text ul li::before{content:'▶';color:var(--yellow);font-size:0.6rem;}
+.region-img{position:relative;}
+.region-img img{width:100%;border-radius:4px;filter:brightness(0.9);}
+/* WHY CHOOSE */
+.why-section{background:var(--black);padding:72px 40px;}
+.why-section .container{max-width:1200px;margin:0 auto;}
+.section-header{text-align:center;margin-bottom:56px;}
+.section-header .section-label{font-size:0.72rem;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--yellow);margin-bottom:12px;display:block;}
+.section-header h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);color:#fff;line-height:1;}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.why-card{background:var(--gray);border:1px solid rgba(245,197,24,0.1);border-radius:6px;padding:32px 28px;}
+.why-card .icon{font-size:2rem;margin-bottom:16px;}
+.why-card h3{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--yellow);margin-bottom:12px;letter-spacing:0.05em;}
+.why-card p{color:#fff;font-size:0.88rem;line-height:1.7;}
+/* SERVICE GALLERY GRID */
 .gallery-section{background:var(--dark);padding:72px 40px;}
-.container{max-width:1200px;margin:0 auto;}
-/* TABS */
-.tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:48px;border-bottom:2px solid rgba(255,255,255,0.08);padding-bottom:0;}
-.tab-btn{background:transparent;border:none;color:rgba(255,255,255,0.55);font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:14px 20px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color 0.2s,border-color 0.2s;}
-.tab-btn:hover{color:#fff;}
-.tab-btn.active{color:var(--yellow);border-bottom-color:var(--yellow);}
-/* GRID */
-.tab-panel{display:none;}
-.tab-panel.active{display:block;}
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
-.photo-item{position:relative;overflow:hidden;aspect-ratio:4/3;background:#1a1a1a;cursor:pointer;}
-.photo-item img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
-.photo-item:hover img{transform:scale(1.05);}
-.photo-item .photo-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:20px 12px 10px;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--yellow);opacity:0;transition:opacity 0.3s;}
-.photo-item:hover .photo-label{opacity:1;}
-/* PAGINATION */
-.pagination{display:flex;gap:8px;justify-content:center;margin-top:40px;}
-.page-btn{width:40px;height:40px;border:2px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.6);font-family:'Barlow',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;border-radius:4px;transition:all 0.2s;}
-.page-btn:hover,.page-btn.active{border-color:var(--yellow);color:var(--yellow);background:rgba(245,197,24,0.08);}
+.gallery-section .container{max-width:1200px;margin:0 auto;}
+.service-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:0;}
+.service-card{position:relative;overflow:hidden;aspect-ratio:4/3;display:block;text-decoration:none;}
+.service-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s;filter:brightness(0.7);}
+.service-card:hover img{transform:scale(1.05);filter:brightness(0.5);}
+.service-card-label{position:absolute;bottom:0;left:0;right:0;padding:32px 24px 20px;background:linear-gradient(transparent,rgba(0,0,0,0.85));transition:all 0.3s;}
+.service-card-label h3{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;letter-spacing:0.05em;margin-bottom:6px;}
+.service-card-label p{color:rgba(255,255,255,0.8);font-size:0.82rem;line-height:1.5;max-height:0;overflow:hidden;transition:max-height 0.4s ease;}
+.service-card:hover .service-card-label p{max-height:80px;}
+.service-card-label .view-link{display:inline-flex;align-items:center;gap:6px;color:var(--yellow);font-size:0.75rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-top:8px;opacity:0;transition:opacity 0.3s;}
+.service-card:hover .view-link{opacity:1;}
+/* STATS */
+.stats-band{background:var(--yellow);padding:48px 40px;}
+.stats-band .container{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center;}
+.stat-item .num{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--black);line-height:1;}
+.stat-item .lbl{font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--black);margin-top:4px;}
 /* TAGLINE */
-.tagline-section{position:relative;overflow:hidden;padding:72px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);}
+.tagline-section{position:relative;overflow:hidden;padding:80px 40px;text-align:center;}
 .tagline-bg{position:absolute;inset:0;background:url('images/unitedstatesflag.jpg') center/cover no-repeat;filter:brightness(0.45);z-index:0;}
 .tagline-content{position:relative;z-index:1;}
 .tagline-text{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,5vw,4.5rem);color:#fff;letter-spacing:0.03em;line-height:1.05;}
@@ -83,38 +106,18 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 .footer-heading{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px;}
 .footer-links{list-style:none;}
 .footer-links li{margin-bottom:10px;}
-.footer-links a{color:#fff;text-decoration:none;font-size:0.85rem;transition:color 0.2s;}
+.footer-links a{color:#fff;text-decoration:none;font-size:0.85rem;}
 .footer-links a:hover{color:var(--yellow);}
 .footer-bottom{max-width:1200px;margin:32px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .footer-bottom p{color:#fff;font-size:0.75rem;}
-/* LIGHTBOX */
-#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;}
-#lightbox.open{display:flex;}
-#lightbox img{max-width:90vw;max-height:88vh;object-fit:contain;border:2px solid rgba(255,255,255,0.1);}
-#lightbox-close{position:absolute;top:20px;right:28px;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none;line-height:1;}
-/* RESPONSIVE */
-@media(max-width:768px){
-  nav{padding:0 16px;}
-  .nav-center{display:none !important;}
-  .hamburger{display:flex;}
-  .btn-ai{display:none;}
-  .call{font-size:0.72rem;padding:0 12px;height:38px;}
-  .photo-grid{grid-template-columns:repeat(2,1fr);}
-  .tabs{gap:2px;}
-  .tab-btn{font-size:0.72rem;padding:10px 12px;}
-  .gallery-section{padding:48px 20px;}
-  .footer-grid{grid-template-columns:1fr 1fr;}
-}
-@media(max-width:480px){
-  .photo-grid{grid-template-columns:1fr;}
-  .footer-grid{grid-template-columns:1fr;}
-}
-/* VOX */
 #vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9998;}
 #vox-overlay.open{display:block;animation:voxIn 0.25s ease forwards;}
 @keyframes voxIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 #vox-overlay iframe{width:100%;height:100%;border:none;}
 #vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;}
+@media(max-width:900px){.region-section .container{grid-template-columns:1fr;}.why-grid{grid-template-columns:1fr 1fr;}.service-grid{grid-template-columns:1fr 1fr;}.stats-band .container{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){nav{padding:0 16px;}.nav-center{display:none !important;}.hamburger{display:flex;}.btn-ai{display:none;}.call{font-size:0.72rem;padding:0 12px;height:38px;}.intro-section{padding:48px 20px;}.region-section{padding:48px 20px;}.why-section{padding:48px 20px;}.gallery-section{padding:48px 20px;}.footer-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.why-grid{grid-template-columns:1fr;}.service-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}.stats-band .container{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
@@ -146,21 +149,13 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="index.html#services">Services</a>
-  <div class="mobile-submenu">
-    <a href="sealcoating.html">Sealcoating</a>
-    <a href="crack-filling.html">Crack Filling</a>
-    <a href="parking-lot-striping.html">Parking Lot Striping</a>
-    <a href="asphalt-patching.html">Asphalt Patching</a>
-    <a href="concrete-work.html">Concrete Work</a>
-    <a href="bollard-installation.html">Bollard Installation</a>
-    <a href="ada-compliance.html">ADA Compliance</a>
-  </div>
   <a href="our-work.html">Our Work</a>
   <a href="about.html">About</a>
   <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" style="color:var(--yellow);">Talk with Our A.I. Team Member</a>
   <a href="tel:6189293301">&#128222; (618) 929-3301</a>
 </div>
 
+<!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-overlay"></div>
@@ -172,55 +167,148 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
 </section>
 
-<section class="gallery-section">
+<!-- INTRO -->
+<section class="intro-section">
   <div class="container">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('all')">All Work</button>
-      <button class="tab-btn" onclick="switchTab('sealcoating')">Sealcoating</button>
-      <button class="tab-btn" onclick="switchTab('striping')">Striping</button>
-      <button class="tab-btn" onclick="switchTab('concrete')">Concrete</button>
-      <button class="tab-btn" onclick="switchTab('crackfill')">Crack Filling</button>
-      <button class="tab-btn" onclick="switchTab('patching')">Patching</button>
-      <button class="tab-btn" onclick="switchTab('paving')">Paving</button>
-    </div>
+    <h2>Welcome to A1 Professional Asphalt &amp; Sealing, LLC</h2>
+    <p>A1 Professional Asphalt &amp; Sealing, LLC takes pride in our work and the relationships we build with every client. We are a full-service commercial asphalt company serving St. Louis, Missouri and clients across 15 states. We use only industry-leading products — SealMaster, Sherwin Williams, and CrafCo — because quality materials produce quality results.</p>
+    <p>Every project we take on gets the same commitment: show up on time, do it right, and stand behind the work. Browse our project gallery below and see what A1 quality looks like in the real world.</p>
+    <p class="tagline-yellow">"Offering outstanding customer service and reliable work with integrity."</p>
+  </div>
+</section>
 
-    <!-- ALL -->
-    <div class="tab-panel active" id="tab-all">
-      <div class="photo-grid" id="grid-all"></div>
-      <div class="pagination" id="pages-all"></div>
+<!-- REGION -->
+<section class="region-section">
+  <div class="container">
+    <div class="region-text">
+      <p class="section-label">Service Area</p>
+      <h2>St. Louis &amp; The Midwest</h2>
+      <p>While our headquarters is in Lebanon, IL, A1 Professional Asphalt serves commercial clients across the entire Midwest region and beyond. We operate in 15 states with crews ready to handle any size commercial project.</p>
+      <ul>
+        <li>Missouri &amp; Illinois — our home market</li>
+        <li>Kentucky, Tennessee, Iowa</li>
+        <li>Indiana, Mississippi, Arkansas, Kansas</li>
+        <li>Nebraska, Texas, Oklahoma, Louisiana</li>
+        <li>Ohio, North Carolina, Alabama &amp; Georgia</li>
+      </ul>
     </div>
-    <!-- SEALCOATING -->
-    <div class="tab-panel" id="tab-sealcoating">
-      <div class="photo-grid" id="grid-sealcoating"></div>
-      <div class="pagination" id="pages-sealcoating"></div>
-    </div>
-    <!-- STRIPING -->
-    <div class="tab-panel" id="tab-striping">
-      <div class="photo-grid" id="grid-striping"></div>
-      <div class="pagination" id="pages-striping"></div>
-    </div>
-    <!-- CONCRETE -->
-    <div class="tab-panel" id="tab-concrete">
-      <div class="photo-grid" id="grid-concrete"></div>
-      <div class="pagination" id="pages-concrete"></div>
-    </div>
-    <!-- CRACK FILL -->
-    <div class="tab-panel" id="tab-crackfill">
-      <div class="photo-grid" id="grid-crackfill"></div>
-      <div class="pagination" id="pages-crackfill"></div>
-    </div>
-    <!-- PATCHING -->
-    <div class="tab-panel" id="tab-patching">
-      <div class="photo-grid" id="grid-patching"></div>
-      <div class="pagination" id="pages-patching"></div>
-    </div>
-    <!-- PAVING -->
-    <div class="tab-panel" id="tab-paving">
-      <div class="photo-grid" id="grid-paving"></div>
-      <div class="pagination" id="pages-paving"></div>
+    <div class="region-img">
+      <img src="images/roads.jpg" alt="A1 Asphalt service region map" onerror="this.parentElement.style.background='#1E1E1E';this.style.display='none'"/>
     </div>
   </div>
 </section>
+
+<!-- WHY CHOOSE -->
+<section class="why-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Why A1</span>
+      <h2>Why You Should Choose Us</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="icon">🏆</div>
+        <h3>Industry-Leading Products</h3>
+        <p>We use SealMaster, Sherwin Williams, and CrafCo — the best products available. We never cut corners on materials because your pavement is an investment that should last.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">📞</div>
+        <h3>Owner Answers the Phone</h3>
+        <p>Joe Schanz personally handles your project from estimate to completion. No runarounds, no voicemail loops. You get a real person who knows your property.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">🌙</div>
+        <h3>Night &amp; Weekend Crews</h3>
+        <p>We work around your business schedule. Our crews operate nights and weekends so your parking lot, customers, and revenue are never disrupted.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">📍</div>
+        <h3>Regional Coverage</h3>
+        <p>With 4 office locations and crews covering 15 states, we can handle multi-location commercial accounts across the entire Midwest region efficiently.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">✅</div>
+        <h3>Full-Service Capabilities</h3>
+        <p>From sealcoating and striping to full-depth milling and repaving — A1 is a one-stop shop. No need to coordinate multiple contractors for your parking lot needs.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">⭐</div>
+        <h3>5-Star Rated</h3>
+        <p>Our Google reviews speak for themselves. Facility managers, property managers, and general contractors keep coming back because we deliver what we promise — every time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT GALLERY -->
+<section class="gallery-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Project Gallery</span>
+      <h2>Browse Our Work by Category</h2>
+    </div>
+    <div class="service-grid">
+      <a href="gallery-sealcoating.html" class="service-card">
+        <img src="images/Sealing-1-400x284.jpg" alt="Asphalt Sealcoating St. Louis" onerror="this.src='images/Sams-Club-Parking-Lot-Painting-980x429.jpg'"/>
+        <div class="service-card-label">
+          <h3>Asphalt Sealcoating</h3>
+          <p>SealMaster's Ultra Blend Pavement Sealer protects your asphalt and extends its lifespan. See our commercial sealcoating projects.</p>
+          <span class="view-link">View Gallery &#8594;</span>
+        </div>
+      </a>
+      <a href="gallery-striping.html" class="service-card">
+        <img src="images/striping-1-400x284.jpg" alt="Parking Lot Striping St. Louis" onerror="this.src='images/lot-striping.jpg'"/>
+        <div class="service-card-label">
+          <h3>Lot Striping &amp; Signage</h3>
+          <p>Your one-stop shop for parking lot striping, lot markings, ADA signage, and bollard installation.</p>
+          <span class="view-link">View Gallery &#8594;</span>
+        </div>
+      </a>
+      <a href="gallery-crackfill.html" class="service-card">
+        <img src="images/crack-filling-1-400x284.jpg" alt="Crack Filling and Patching" onerror="this.src='images/crack-filling-10-400x284.jpg'"/>
+        <div class="service-card-label">
+          <h3>Crack Filling &amp; Patching</h3>
+          <p>Fill major cracks before sealcoating to prevent further deterioration. We patch damaged areas to a minimum depth of 2 inches.</p>
+          <span class="view-link">View Gallery &#8594;</span>
+        </div>
+      </a>
+      <a href="gallery-paving.html" class="service-card">
+        <img src="images/paving-striping-12-400x284.jpg" alt="Asphalt Paving St. Louis" onerror="this.src='images/pavingpatchingmilling-10-400x284.jpg'"/>
+        <div class="service-card-label">
+          <h3>Asphalt Paving</h3>
+          <p>Full-depth milling and repaving for parking lots, access roads, and commercial properties across the Midwest.</p>
+          <span class="view-link">View Gallery &#8594;</span>
+        </div>
+      </a>
+      <a href="gallery-concrete.html" class="service-card">
+        <img src="images/concrete-1-400x284.jpg" alt="Concrete Work St. Louis" onerror="this.src='images/126690-400x284.jpg'"/>
+        <div class="service-card-label">
+          <h3>Concrete</h3>
+          <p>Curbing repair, trip hazard removal, concrete replacement, and ADA-compliant ramp installation for commercial properties.</p>
+          <span class="view-link">View Gallery &#8594;</span>
+        </div>
+      </a>
+      <a href="gallery-patching.html" class="service-card">
+        <img src="images/patching-2-400x284.jpg" alt="Asphalt Patching St. Louis" onerror="this.src='images/patching-3-400x284.jpg'"/>
+        <div class="service-card-label">
+          <h3>Patching &amp; Milling</h3>
+          <p>Targeted patching for potholes and failed sections. Full milling and overlay when large areas need to be restored.</p>
+          <span class="view-link">View Gallery &#8594;</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="container">
+    <div class="stat-item"><div class="num">2012</div><div class="lbl">Est. — 13+ Years</div></div>
+    <div class="stat-item"><div class="num">500+</div><div class="lbl">Commercial Projects</div></div>
+    <div class="stat-item"><div class="num">15</div><div class="lbl">States Served</div></div>
+    <div class="stat-item"><div class="num">4</div><div class="lbl">Office Locations</div></div>
+  </div>
+</div>
 
 <!-- TAGLINE -->
 <div class="tagline-section">
@@ -231,14 +319,13 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
 </div>
 
-<!-- FOOTER -->
 <footer>
   <div class="footer-grid">
     <div>
       <div class="footer-logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt &amp; Sealing"/></div>
       <p class="footer-about">Full-service asphalt and concrete company serving St. Louis and commercial clients nationwide.</p>
       <div class="footer-contact-item"><strong>Local</strong><span>(618) 929-3301</span></div>
-      <div class="footer-contact-item"><strong>Email</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9ff6f1f9f0dffeaefeeceff7fef3ebefedf0b1fcf0f2">[email&#160;protected]</a></span></div>
+      <div class="footer-contact-item"><strong>Email</strong><span>info@a1asphaltpro.com</span></div>
       <div class="footer-contact-item"><strong>Estimate</strong><span><a href="contact.html" style="color:var(--yellow);text-decoration:none;">Request Free Estimate &#8594;</a></span></div>
       <div style="display:flex;gap:14px;margin-top:20px;">
         <a href="https://www.facebook.com/A1AsphaltPros" target="_blank" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:6px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></a>
@@ -263,164 +350,23 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
   <div class="footer-bottom">
     <p>&copy; 2025 A1 Professional Asphalt &amp; Sealing LLC &middot; All Rights Reserved</p>
-    <p style="color:rgba(255,255,255,0.3);font-size:0.72rem;">Asphalt sealcoating St. Louis &middot; Parking lot striping Illinois &middot; Commercial paving nationwide</p>
+    <p style="color:rgba(255,255,255,0.3);font-size:0.72rem;">Asphalt sealcoating St. Louis &middot; Parking lot striping Illinois &middot; Commercial paving Midwest</p>
   </div>
 </footer>
-
-<div id="lightbox">
-  <button id="lightbox-close" onclick="closeLightbox()">&#10005;</button>
-  <img id="lightbox-img" src="" alt=""/>
-</div>
 
 <div id="vox-overlay">
   <button id="vox-close-btn" onclick="closeVox()">&#10005;</button>
   <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// Photo data by category — filenames from public/images/
-const photos = {
-  sealcoating: [
-    'Sealing-1-400x284.jpg','Sealing-10-1-400x284.jpg','sealing-11-1-400x284.jpg',
-    'sealing-12-1-400x284.jpg','sealing-13-400x284.jpeg','sealing-14-400x284.jpeg',
-    'sealing-16-400x284.jpg','sealing-17-400x284.jpg','sealing-57-400x284.jpg',
-    'sealing-59-400x284.jpg','sealing-6-400x284.jpg','sealing-8-1-400x284.jpg',
-    'sealing-9-1-400x284.jpg','Sams-Club-Parking-Lot-Painting-980x429.jpg'
-  ],
-  striping: [
-    'sealing-striping-1-400x284.jpg','sealing-striping-16-400x284.jpg',
-    'sealing-striping-17-400x284.jpg','sealing-striping-19-400x284.jpg',
-    'sealing-striping-21-400x284.jpg','sealing-striping-23-400x284.jpg',
-    'sealing-striping-56-400x284.jpg','sealing-striping-60-400x284.jpg',
-    'striping-1-1-400x284.jpg','striping-1-400x284.jpg','striping-12-400x284.jpg',
-    'striping-14-400x284.jpg','striping-16-400x284.jpg','striping-2-400x284.jpg',
-    'striping-24-400x284.jpeg','striping-26-400x284.jpg','striping-29-400x284.jpeg',
-    'striping-29-400x284.jpg','striping-64-400x284.jpg','striping-69-400x284.jpg',
-    'striping-8-400x284.jpg','striping-9-400x284.jpg','striping-crack-filling-41-400x284.jpg',
-    'lot-striping.jpg','Striping-3-400x284.jpg','Striping-400x284.jpg',
-    'Sealing-striping-3-400x284.jpg','Sealing-striping-400x284.jpg','Sealing-striping-9-400x284.jpg'
-  ],
-  concrete: [
-    'concrete-1-400x284.jpg','concrete-11-400x284.jpg','concrete-15-400x284.jpg',
-    'concrete20240819_110526-400x284.jpg','concrete20240819_114952-400x284.jpg',
-    'concrete20240819_114959-400x284.jpg','126690-400x284.jpg',
-    '20240819_110526-400x284.jpg','20240819_114952-400x284.jpg','20240819_114959-400x284.jpg'
-  ],
-  crackfill: [
-    'crack-filling-1-1-400x284.jpg','crack-filling-1-400x284.jpg','crack-filling-10-400x284.jpg',
-    'crack-filling-11-400x284.jpg','crack-filling-12-400x284.jpg','crack-filling-13-400x284.jpg',
-    'crack-filling-14-400x284.jpg','crack-filling-15-400x284.jpg','crack-filling-2-400x284.jpg'
-  ],
-  patching: [
-    'patching-2-400x284.jpg','patching-3-400x284.jpg','patching-7-400x284.jpg'
-  ],
-  paving: [
-    'paving-striping-12-400x284.jpg','paving-striping-13-400x284.jpg',
-    'paving-striping-21-400x284.jpg','paving-striping-25-400x284.jpg',
-    'paving-striping-37-400x284.jpg','paving-striping-4-400x284.jpg',
-    'paving-striping-8-400x284.jpg','paving-striping-9-400x284.jpg',
-    'pavingpatchingmilling-10-400x284.jpg','pavingpatchingmilling-11-400x284.jpg',
-    'pavingpatchingmilling-12-1-400x284.jpg','pavingpatchingmilling-12-400x284.jpg',
-    'pavingpatchingmilling-13-400x284.jpg','pavingpatchingmilling-14-400x284.jpg',
-    'pavingpatchingmilling-16-400x284.jpg','pavingpatchingmilling-8-400x284.jpg',
-    'pavingpatchingmilling-9-400x284.jpg','pavingpatchingmilling35-400x284.jpg',
-    'milling-24-400x284.jpg','milling-25-400x284.jpg','milling-26-400x284.jpg',
-    'milling-27-400x284.jpg','milling-28-400x284.jpg','milling-32-400x284.jpg',
-    'milling-34-400x284.jpg','milling-37-400x284.jpg','milling-38-400x284.jpg',
-    'milling-42-400x284.jpg','milling-45-400x284.jpg'
-  ]
-};
-  sealcoating: [
-    'sealing-1.jpg','sealing-2.jpg','sealing-3.jpg','sealing-4.jpg','sealing-5.jpg',
-    'sealing-6.jpg','sealing-7.jpg','sealing-8.jpg','sealing-9.jpg','sealing-10.jpg',
-    'sealing-11.jpg','sealing-12.jpg','Sealing-10-400x284.jpg','Sealing-7-400x284.jpg',
-    'Sealing-8-400x284.jpg','sealing-22-400x284.jpg','sealing-24-400x284.jpg',
-    'sealing-26-400x284.jpg','sealing-28-400x284.jpg','sealing-39-400x284.jpg',
-    'sealing-striping-52-400x284.jpg','Sams-Club-Parking-Lot-Painting-980x429.jpg'
-  ],
-  striping: [
-    'striping-1.jpg','striping-2.jpg','striping-3.jpg','striping-4.jpg','striping-5.jpg',
-    'striping-6.jpg','Sealing-striping-12-400x284.jpg','sealing-striping-27-400x284.jpg',
-    'sealing-striping-38-400x284.jpg','sealing-striping-58-400x284.jpeg',
-    'parking-lot-striping-1.jpg','parking-lot-striping-2.jpg','parking-lot-striping-3.jpg'
-  ],
-  concrete: [
-    'concrete-1.jpg','concrete-2.jpg','concrete-3.jpg','concrete-4.jpg','concrete-5.jpg',
-    'concrete-6.jpg','concrete-7.jpg','concrete-8.jpg','concrete-9.jpg',
-    'concrete-400x284.jpg','concrete-21-400x284.jpg','Concrete-34-400x284.jpg',
-    'A1-Concrete-Paving-Spectrum-Brands-800.jpg'
-  ],
-  crackfill: [
-    'crack-filling-1.jpg','crack-filling-2.jpg','crack-filling-3.jpg','crack-filling-4.jpg',
-    'crack-filling-5.jpg','crack-filling-18-400x284.jpeg','crackfill-1.jpg','crackfill-2.jpg'
-  ],
-  patching: [
-    'patching-1.jpg','patching-2.jpg','patching-3.jpg','patching-4.jpg','patching-5.jpg',
-    'asphalt-patching-1.jpg','asphalt-patching-2.jpg','asphalt-patching-3.jpg'
-  ],
-  paving: [
-    'paving-1.jpg','paving-2.jpg','paving-3.jpg','paving-4.jpg','paving-5.jpg',
-    'asphalt-paving-1.jpg','asphalt-paving-2.jpg','asphalt-paving-3.jpg'
-  ]
-};
-
-// Build all array
-photos.all = [
-  ...photos.sealcoating.slice(0,4),
-  ...photos.striping.slice(0,4),
-  ...photos.concrete.slice(0,4),
-  ...photos.crackfill.slice(0,3),
-  ...photos.patching.slice(0,3),
-  ...photos.paving.slice(0,3)
-];
-
-const PER_PAGE = 9;
-const state = {};
-
-function buildGrid(cat, page) {
-  const imgs = photos[cat] || [];
-  const start = (page-1)*PER_PAGE;
-  const slice = imgs.slice(start, start+PER_PAGE);
-  const grid = document.getElementById('grid-'+cat);
-  grid.innerHTML = slice.map(f => `
-    <div class="photo-item" onclick="openLightbox('images/${f}')">
-      <img src="images/${f}" alt="A1 Asphalt Work" loading="lazy" onerror="this.parentElement.style.display='none'"/>
-      <div class="photo-label">A1 Professional Asphalt</div>
-    </div>`).join('');
-  // Pagination
-  const pages = document.getElementById('pages-'+cat);
-  const total = Math.ceil(imgs.length/PER_PAGE);
-  if(total <= 1){ pages.innerHTML=''; return; }
-  pages.innerHTML = Array.from({length:total},(_,i)=>
-    `<button class="page-btn ${i+1===page?'active':''}" onclick="buildGrid('${cat}',${i+1})">${i+1}</button>`
-  ).join('');
-}
-
-function switchTab(cat) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('tab-'+cat).classList.add('active');
-  buildGrid(cat,1);
-}
-
-function openLightbox(src) {
-  document.getElementById('lightbox-img').src = src;
-  document.getElementById('lightbox').classList.add('open');
-}
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-}
-document.getElementById('lightbox').addEventListener('click', function(e) {
-  if(e.target === this) closeLightbox();
-});
-
+<script>
 function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
 function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
 function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
-
-// Init all tab on load
-buildGrid('all',1);
 document.addEventListener('click',function(e){
   var m=document.getElementById('mobileMenu');
-  if(m.classList.contains('open')&&!m.contains(e.target)&&!e.
+  if(m.classList.contains('open')&&!m.contains(e.target)&&!e.target.closest('.hamburger'))m.classList.remove('open');
+});
+</script>
+</body>
+</html>
