@@ -418,6 +418,9 @@ document.getElementById('lightbox').addEventListener('click', function(e) {
 function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
 function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
 function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
+
+// Init all tab on load
+buildGrid('all',1);
 document.addEventListener('click',function(e){
   var m=document.getElementById('mobileMenu');
   if(m.classList.contains('open')&&!m.contains(e.target)&&!e.
