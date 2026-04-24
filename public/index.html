@@ -112,7 +112,27 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
 @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
 .orb-label{font-size:0.85rem;color:#ffffff !important;text-align:center;letter-spacing:0.08em;text-transform:uppercase;}
 /* CTA */
-.cta-section{background:#0a0a0a;padding:80px 40px;text-align:center;border-top:3px solid var(--yellow);}
+.cta-section{
+  position:relative;
+  background:#0a0a0a;
+  padding:80px 40px;
+  text-align:center;
+  border-top:3px solid var(--yellow);
+}
+
+.cta-section::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:url('/images/asphalt-texture.jpg') center/cover no-repeat;
+  opacity:0.18;
+  z-index:0;
+}
+
+.cta-section > *{
+  position:relative;
+  z-index:1;
+}
 .cta-section h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4.5rem);color:var(--yellow);margin-bottom:16px;}
 .cta-section p{color:#ffffff;font-size:1.1rem;margin-bottom:36px;}
 .cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
