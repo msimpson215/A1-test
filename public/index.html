@@ -41,7 +41,24 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
 .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.4rem,5vw,4rem);line-height:1.05;margin-bottom:24px;}
 .section-title span{color:var(--yellow);}
 /* SERVICES */
-.services-section{background:var(--dark);position:relative;}.services-section::before{content:'';position:absolute;inset:0;background:url('/images/asphalt-road.jpg') center/cover no-repeat;opacity:0.55;z-index:0;}.services-section .container{position:relative;z-index:1;}
+.services-section{
+  background:var(--dark);
+  position:relative;
+}
+
+.services-section::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:url('/images/asphalt-texture.jpg') center/cover no-repeat;
+  opacity:0.18;
+  z-index:0;
+}
+
+.services-section .container{
+  position:relative;
+  z-index:1;
+}
 .services-intro{max-width:560px;margin-bottom:56px;}
 .services-intro p{color:#ffffff;line-height:1.7;font-size:1rem;}
 .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:32px;}
