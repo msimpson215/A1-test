@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Asphalt Estimator | A1 Professional Asphalt & Sealing LLC</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --yellow:#F5C518;
+      --black:#0A0A0A;
+      --dark:#111111;
+      --gray:#1E1E1E;
+      --text:#FFFFFF;
+      --muted:rgba(255,255,255,0.55);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;max-width:100vw;}
+
+    /* NAV (matches index look) */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:999;
+      background:rgba(0,0,0,0.97);
+      border-bottom:2px solid var(--yellow);
+      padding:0 40px;
+      display:flex;align-items:center;justify-content:space-between;
+      height:72px;
+    }
+    .logo img{height:60px;width:auto;display:block;}
+    .nav-center{display:flex;align-items:center;gap:0;}
+    .nav-center a{
+      color:#fff;text-decoration:none;font-size:0.82rem;font-weight:700;
+      letter-spacing:0.08em;text-transform:uppercase;
+      padding:0 14px;transition:color 0.2s;
+      display:flex;align-items:center;height:72px;
+    }
+    .nav-center a:hover{color:var(--yellow);}
+    .has-drop{position:relative;}
+    .has-drop>a::after{content:' ▾';}
+    .drop{
+      display:none;position:absolute;top:72px;left:0;background:#0d0d0d;
+      border:1px solid rgba(245,197,24,0.2);
+      border-top:2px solid var(--yellow);
+      min-width:220px;list-style:none;padding:6px 0;z-index:1000;
+    }
+    .drop li a{
+      display:block;padding:10px 20px;color:#ffffff;
+      font-size:0.78rem;font-weight:600;letter-spacing:0.07em;
+      text-transform:uppercase;text-decoration:none;height:auto;
+    }
+    .drop li a:hover{color:var(--yellow);background:rgba(245,197,24,0.05);}
+    .has-drop:hover .drop{display:block;}
+
+    .nav-right{display:flex;align-items:center;gap:12px;}
+    .btn-ai{
+      background:var(--yellow);color:var(--black);
+      height:44px;padding:0 18px;border-radius:4px;
+      font-weight:800;font-size:0.75rem;letter-spacing:0.05em;
+      text-transform:uppercase;text-decoration:none;display:inline-flex;
+      align-items:center;justify-content:center;
+      transition:opacity 0.2s, transform 0.2s;
+    }
+    .btn-ai:hover{opacity:0.88;transform:translateY(-1px);}
+    .call{
+      background:#16a34a;color:#fff;height:44px;padding:0 20px;border-radius:4px;
+      font-weight:800;font-size:0.8rem;letter-spacing:0.08em;
+      text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;
+      transition:opacity 0.2s, transform 0.2s;
+    }
+    .call:hover{opacity:0.88;transform:translateY(-1px);}
+
+    .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:none;border:none;}
+    .hamburger span{display:block;width:24px;height:2px;background:#fff;transition:all 0.3s;}
+
+    .mobile-menu{
+      display:none;position:fixed;top:72px;left:0;right:0;background:#000;
+      border-top:1px solid rgba(245,197,24,0.3);
+      z-index:998;padding:16px 0;
+    }
+    .mobile-menu.open{display:block;}
+    .mobile-menu a{
+      display:block;padding:12px 24px;color:#fff;text-decoration:none;
+      font-size:0.85rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .mobile-menu a:hover{color:var(--yellow);}
+    .mobile-menu .mobile-submenu a{font-size:0.78rem;color:#ffffff;padding:10px 32px;}
+
+    /* PAGE LAYOUT */
+    .container{max-width:1200px;margin:0 auto;}
+    .section{padding:96px 40px;}
+
+    /* Buttons */
+    .btn-primary{
+      background:var(--yellow);color:var(--black);
+      padding:16px 32px;border-radius:4px;
+      font-weight:800;font-size:0.9rem;letter-spacing:0.08em;
+      text-transform:uppercase;text-decoration:none;
+      transition:transform 0.2s, opacity 0.2s;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .btn-primary:hover{transform:translateY(-2px);opacity:0.92;}
+    .btn-outline{
+      background:transparent;color:#fff;
+      padding:16px 32px;border-radius:4px;
+      font-weight:700;font-size:0.9rem;letter-spacing:0.08em;
+      text-transform:uppercase;text-decoration:none;
+      border:2px solid rgba(255,255,255,0.5);
+      transition:border-color 0.2s,color 0.2s, transform 0.2s, opacity 0.2s;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .btn-outline:hover{border-color:var(--yellow);color:var(--yellow);transform:translateY(-2px);opacity:0.95;}
+
+    /* HERO */
+    .hero{
+      padding-top:120px;
+      padding-bottom:64px;
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.65)),
+        url('images/asphalt-road.jpg') center/cover no-repeat;
+      border-bottom:3px solid var(--yellow);
+    }
+    .hero h1{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(3rem,6vw,5.2rem);
+      line-height:0.95;
+      letter-spacing:0.02em;
+      margin-bottom:16px;
+    }
+    .hero h1 span{color:var(--yellow);}
+    .hero p{
+      max-width:760px;
+      color:#ffffff;
+      line-height:1.7;
+      font-size:1.05rem;
+      font-weight:600;
+      text-shadow:0 2px 10px rgba(0,0,0,0.7);
+      margin-bottom:26px;
+    }
+    .hero-actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+
+    /* AI ORB (same vibe as index) */
+    .ai-row{
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:64px;
+      align-items:center;
+      margin-top:28px;
+    }
+    .panel{
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-top:3px solid var(--yellow);
+      border-radius:10px;
+      padding:28px;
+    }
+    .panel h2{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(2.2rem,4vw,3.2rem);
+      line-height:1.05;
+      margin-bottom:12px;
+    }
+    .panel h2 span{color:var(--yellow);}
+    .panel ul{margin-top:10px;margin-left:18px;color:#fff;line-height:1.8;}
+    .muted{color:rgba(255,255,255,0.72);}
+
+    .ai-orb-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;}
+    .ai-orb{
+      width:220px;height:220px;border-radius:50%;
+      background:url('A1__asphalt_logo.jpeg') center center/contain no-repeat;
+      background-color:#F5C518;
+      box-shadow:0 0 60px rgba(245,197,24,0.40),0 0 120px rgba(245,197,24,0.15);
+      cursor:pointer;
+      animation:pulse 2.8s infinite;
+      border:6px solid rgba(0,0,0,0.55);
+    }
+    @keyframes pulse{
+      0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.40),0 0 120px rgba(245,197,24,0.15);}
+      50%{transform:scale(1.05);box-shadow:0 0 80px rgba(245,197,24,0.55),0 0 160px rgba(245,197,24,0.20);}
+    }
+    .orb-label{
+      font-size:0.85rem;color:#ffffff;text-align:center;
+      letter-spacing:0.08em;text-transform:uppercase;
+    }
+
+    /* FOOTER (simple match) */
+    footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yellow);margin-top:40px;}
+    .footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+    .footer-bottom p{color:#ffffff;font-size:0.75rem;}
+    .footer-seo{color:rgba(255,255,255,0.5);font-size:0.72rem;}
+
+    /* VOX overlay */
+    #vox-overlay{
+      display:none;position:fixed;bottom:90px;right:24px;
+      width:340px;height:480px;background:var(--black);
+      border-radius:12px;overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,0.8);
+      z-index:9999;
+    }
+    #vox-overlay.open{display:block;animation:voxIn 0.25s ease forwards;}
+    @keyframes voxIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+    #vox-overlay iframe{width:100%;height:100%;border:none;}
+    #vox-close-btn{
+      position:absolute;top:8px;right:12px;background:none;border:none;
+      color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;
+      z-index:10;line-height:1;
+    }
+
+    @media(max-width:768px){
+      nav{padding:0 16px;}
+      .nav-center{display:none !important;}
+      .hamburger{display:flex;}
+      .btn-ai{display:none;}
+      .ai-row{grid-template-columns:1fr;gap:28px;}
+      .section{padding:72px 20px;}
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <a href="index.html" class="logo"><img src="A1__asphalt_logo.jpeg" alt="A1 Professional Asphalt"/></a>
+
+    <div class="nav-center">
+      <div class="has-drop">
+        <a href="index.html#services">Services</a>
+        <ul class="drop">
+          <li><a href="ai-estimator.html" style="color:var(--yellow);font-weight:700;">AI Estimator</a></li>
+          <li><a href="sealcoating.html">Sealcoating</a></li>
+          <li><a href="crack-filling.html">Crack Filling</a></li>
+          <li><a href="parking-lot-striping.html">Parking Lot Striping</a></li>
+          <li><a href="asphalt-patching.html">Asphalt Patching</a></li>
+          <li><a href="concrete-work.html">Concrete Work</a></li>
+          <li><a href="bollard-installation.html">Bollard Installation</a></li>
+        </ul>
+      </div>
+      <a href="our-work.html">Our Work</a>
+      <a href="about.html">About</a>
+    </div>
+
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
+
+    <div class="nav-right">
+      <a href="javascript:void(0)" class="btn-ai" onclick="openVox()">Talk to Our AI Asphalt Estimator</a>
+      <a href="tel:6189293301" class="call">&#128222; (618) 929-3301</a>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html#services">Services</a>
+    <div class="mobile-submenu">
+      <a href="ai-estimator.html" style="color:var(--yellow);font-weight:700;">AI Estimator</a>
+      <a href="sealcoating.html">Sealcoating</a>
+      <a href="crack-filling.html">Crack Filling</a>
+      <a href="parking-lot-striping.html">Parking Lot Striping</a>
+      <a href="asphalt-patching.html">Asphalt Patching</a>
+      <a href="concrete-work.html">Concrete Work</a>
+      <a href="bollard-installation.html">Bollard Installation</a>
+    </div>
+    <a href="our-work.html">Our Work</a>
+    <a href="about.html">About</a>
+    <a href="javascript:void(0)" onclick="openVox()" style="color:var(--yellow);">Talk with Our A.I. Team Member</a>
+    <a href="tel:6189293301">&#128222; (618) 929-3301</a>
+  </div>
+
+  <header class="hero">
+    <div class="container">
+      <h1>Talk to Our <span>AI Asphalt Estimator</span></h1>
+      <p>
+        Available 24/7 to answer questions, help you understand pricing, and guide you through getting an asphalt or concrete estimate started.
+        No hold times. No voicemail. Just fast, accurate answers.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn-primary" href="javascript:void(0)" onclick="openVox()">Start AI Estimate &#8594;</a>
+        <a class="btn-outline" href="tel:6189293301">Call Now</a>
+      </div>
+
+      <div class="ai-row">
+        <div class="panel">
+          <h2>How it <span>works</span></h2>
+          <ul>
+            <li>Tell the AI what type of work you need (sealcoating, striping, paving, concrete, etc.).</li>
+            <li>Get quick guidance on scope, prep, scheduling, and what affects pricing.</li>
+            <li>When you’re ready, we’ll walk you through the next steps to capture your lot and move toward an estimate.</li>
+          </ul>
+          <p class="muted" style="margin-top:14px;">
+            Prefer a human? Call us anytime and we’ll take care of you.
+          </p>
+        </div>
+
+        <div class="ai-orb-wrap">
+          <div class="ai-orb" onclick="openVox()" title="Click to talk with our AI"></div>
+          <div class="orb-label">Click to start a conversation</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <footer>
+    <div class="footer-bottom">
+      <p>&copy; 2025 A1 Professional Asphalt &amp; Sealing LLC &middot; All Rights Reserved</p>
+      <p class="footer-seo">Asphalt sealcoating St. Louis &middot; Parking lot striping Illinois &middot; Crack filling commercial &middot; Asphalt patching St. Louis</p>
+    </div>
+  </footer>
+
+  <div id="vox-overlay">
+    <button id="vox-close-btn" onclick="closeVox()">&#10005;</button>
+    <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
+  </div>
+
+  <script>
+    function toggleMenu(){
+      var m=document.getElementById('mobileMenu');
+      m.classList.toggle('open');
+    }
+    function openVox(){
+      var o=document.getElementById('vox-overlay');
+      o.classList.add('open');
+      o.style.display='block';
+    }
+    function closeVox(){
+      var o=document.getElementById('vox-overlay');
+      o.style.display='none';
+      o.classList.remove('open');
+    }
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape') closeVox();
+    });
+    document.addEventListener('click',function(e){
+      var o=document.getElementById('vox-overlay');
+      if(o.style.display==='block' && !o.contains(e.target) && !e.target.closest('[onclick="openVox()"]')){
+        closeVox();
+      }
+    });
+  </script>
+</body>
+</html>
