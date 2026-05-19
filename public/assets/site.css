@@ -9,7 +9,7 @@
   --dark:#111111;
   --gray:#1E1E1E;
   --text:#FFFFFF;
-  --muted:rgba(255,255,255,0.55);
+  --muted:#ffffff;
 }
 
 *{ margin:0; padding:0; box-sizing:border-box; }
