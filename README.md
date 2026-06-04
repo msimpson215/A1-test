@@ -17,7 +17,7 @@
 6. Connect your GitHub account → select `a1-website`
 7. Settings:
    - **Build Command:** `npm install`
-   - **Start Command:** `node server.js`
+   - **Start Command:** `npm start` (or `node server/server.js`)
 8. Click **Deploy** — done in 2 minutes
 9. Render gives you a live URL like `a1-website.onrender.com`
 
