@@ -1,0 +1,264 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --green-dark: #1a3d2e;
+  --green: #2d6a4f;
+  --green-light: #40916c;
+  --cream: #f8f6f0;
+  --text: #1b1b1b;
+  --muted: #4a4a4a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: var(--cream);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--green);
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1.25rem;
+  background: var(--green-dark);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.main-nav {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.main-nav a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  padding: 0.5rem 0.85rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.header-phone {
+  color: #b7e4c7;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.header-phone:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem;
+}
+
+.hero-image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.hero-text h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  color: var(--green-dark);
+  margin-bottom: 0.75rem;
+}
+
+.hero-text p {
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  max-width: 36ch;
+}
+
+.btn-call {
+  display: inline-block;
+  background: var(--green);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.btn-call:hover {
+  background: var(--green-light);
+}
+
+.section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem;
+}
+
+.section-alt {
+  background: #fff;
+}
+
+.section h2 {
+  color: var(--green-dark);
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+}
+
+.service-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.service-grid li {
+  background: #fff;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--green);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.service-grid h3 {
+  font-size: 1.05rem;
+  color: var(--green-dark);
+  margin-bottom: 0.5rem;
+}
+
+.contact-phone {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0.75rem 0;
+}
+
+.contact-phone a {
+  text-decoration: none;
+}
+
+.contact-phone a:hover {
+  text-decoration: underline;
+}
+
+.contact-note {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.site-footer {
+  background: var(--green-dark);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 2rem 1.25rem;
+  margin-top: 2rem;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer-brand {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.footer-nav a {
+  color: #b7e4c7;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-nav a:hover {
+  color: #fff;
+}
+
+.footer-phone {
+  margin-bottom: 0.75rem;
+}
+
+.footer-phone a {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+}
+
+.footer-phone a:hover {
+  text-decoration: underline;
+}
+
+.footer-copy {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .site-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .main-nav {
+    justify-content: center;
+  }
+
+  .header-phone {
+    text-align: center;
+  }
+}
