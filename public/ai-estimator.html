@@ -297,26 +297,17 @@
   </div>
 </footer>
 
-  <div id="vox-overlay">
-    <button id="vox-close-btn" onclick="closeVox()">&#10005;</button>
-    <iframe src="/voice/" title="A1 AI Team Member" allow="microphone"></iframe>
-  </div>
-
-  <script>
+  <div id="vox-overlay" onclick="if(event.target===this)closeVox()">
+  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close">&#10005;</button>
+  <iframe id="vox-iframe" src="/voice/" title="A1 AI Team Member" allow="microphone *" style="display:none;position:fixed;inset:0;width:100%;height:100%;border:none;z-index:10001;"></iframe>
+</div>
+<script>
     function toggleMenu(){
       var m=document.getElementById('mobileMenu');
       m.classList.toggle('open');
     }
-    function openVox(){
-      var o=document.getElementById('vox-overlay');
-      o.classList.add('open');
-      o.style.display='block';
-    }
-    function closeVox(){
-      var o=document.getElementById('vox-overlay');
-      o.style.display='none';
-      o.classList.remove('open');
-    }
+    function openVox(){var o=document.getElementById('vox-overlay');if(!o)return;o.classList.add('open');o.style.display=o.style.display==='flex'?'flex':'block';var f=document.getElementById('vox-iframe')||o.querySelector('iframe');if(f){f.style.display='block';try{f.contentWindow.postMessage({type:'voxtalk-start'},'*');}catch(e){}}}
+    function closeVox(){var f=document.getElementById('vox-iframe')||document.querySelector('#vox-overlay iframe');if(f){try{f.contentWindow.postMessage({type:'voxtalk-stop'},'*');}catch(e){}}var o=document.getElementById('vox-overlay');if(o){o.style.display='none';o.classList.remove('open');}}
     document.addEventListener('keydown',function(e){
       if(e.key==='Escape') closeVox();
     });

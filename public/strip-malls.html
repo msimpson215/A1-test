@@ -158,15 +158,12 @@ document.addEventListener('click', function(e){
 });
 </script>
 <div id="vox-overlay" onclick="if(event.target===this)closeVox()">
-  <button id="vox-close-btn" onclick="closeVox()">&#10005;</button>
-  <div class="vox-orb" onclick="document.getElementById('vox-iframe').style.display='block';this.style.display='none';document.getElementById('vox-start').style.display='none';"></div>
-  <div id="vox-start" class="vox-text" style="cursor:pointer;" onclick="document.getElementById('vox-iframe').style.display='block';document.querySelector('.vox-orb').style.display='none';this.style.display='none';">Click to Start</div>
-  <iframe id="vox-iframe" src="/voice/" title="A1 AI Team Member" allow="microphone" style="display:none;"></iframe>
-  <div class="vox-hint">Click outside to return</div>
+  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close">&#10005;</button>
+  <iframe id="vox-iframe" src="/voice/" title="A1 AI Team Member" allow="microphone *" style="display:none;position:fixed;inset:0;width:100%;height:100%;border:none;z-index:10001;"></iframe>
 </div>
 <script>
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='flex';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
+function openVox(){var o=document.getElementById('vox-overlay');if(!o)return;o.classList.add('open');o.style.display=o.style.display==='flex'?'flex':'block';var f=document.getElementById('vox-iframe')||o.querySelector('iframe');if(f){f.style.display='block';try{f.contentWindow.postMessage({type:'voxtalk-start'},'*');}catch(e){}}}
+function closeVox(){var f=document.getElementById('vox-iframe')||document.querySelector('#vox-overlay iframe');if(f){try{f.contentWindow.postMessage({type:'voxtalk-stop'},'*');}catch(e){}}var o=document.getElementById('vox-overlay');if(o){o.style.display='none';o.classList.remove('open');}}
 </script>
 <style id="footer-mobile-fix">
 @media(max-width:768px){

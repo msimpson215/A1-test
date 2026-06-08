@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260608-v2-wait-audio-stop -->
+  <!-- voxtalk-build: 20260608-v3-single-start -->
 
   <style>
     :root{
@@ -274,7 +274,7 @@
     <div id="panel">
       <div id="headline">Click to Start a Conversation</div>
 
-      <div id="orb-container" onclick="toggleAssistant()">
+      <div id="orb-container" onclick="handleOrbClick()">
         <div class="orb"></div>
       </div>
 
@@ -297,6 +297,7 @@
     let starting = false
     let sessionStarted = false
     let embedStarted = false
+    let startLock = false
 
     const isEmbedded = window.self !== window.top
     const statusEl = document.getElementById('status-text')
@@ -381,6 +382,11 @@
       try { window.close() } catch {}
       try { history.back() } catch {}
     })
+
+    function handleOrbClick() {
+      if (isEmbedded) return
+      toggleAssistant()
+    }
 
     async function toggleAssistant(){
       if (starting) return
@@ -536,26 +542,19 @@
       }
     }
 
-    function startWhenVisible() {
-      if (embedStarted || pc || starting) return
+    async function startWhenVisible() {
+      if (startLock || embedStarted || pc || starting || sessionStarted) return
+      startLock = true
       embedStarted = true
-      toggleAssistant()
-    }
-
-    function waitUntilVisible(callback) {
-      function check() {
-        if (document.body.offsetWidth > 0 && document.body.offsetHeight > 0) {
-          callback()
-        } else {
-          requestAnimationFrame(check)
-        }
+      try {
+        await toggleAssistant()
+      } finally {
+        startLock = false
       }
-      check()
     }
 
     if (isEmbedded) {
       setBodyState('idle')
-      waitUntilVisible(startWhenVisible)
       window.addEventListener('message', (e) => {
         if (e.data?.type === 'voxtalk-start') startWhenVisible()
         if (e.data?.type === 'voxtalk-stop') stopAndClose()
