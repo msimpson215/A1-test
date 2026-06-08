@@ -2,11 +2,12 @@
   "name": "a1-professional-asphalt",
   "version": "1.0.0",
   "description": "A1 Professional Asphalt & Sealing LLC - Website",
-  "main": "server.js",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server/server.js"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.18.2"
   }
 }
