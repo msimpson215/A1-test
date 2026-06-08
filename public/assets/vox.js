@@ -15,13 +15,20 @@
   };
 
   window.closeVox = function () {
+    var iframe = byId('vox-iframe');
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage({ type: 'voxtalk-stop' }, '*');
+      } catch (err) {}
+    }
     var overlay = byId('vox-overlay');
     if (!overlay) return;
     overlay.style.display = 'none';
     overlay.classList.remove('open');
-    var iframe = byId('vox-iframe');
     if (iframe) {
-      iframe.src = iframe.src;
+      setTimeout(function () {
+        iframe.src = iframe.src;
+      }, 150);
     }
   };
 

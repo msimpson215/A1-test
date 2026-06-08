@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260608-a1-embed-greeting-fix -->
+  <!-- voxtalk-build: 20260608-a1-embed-clean-ui -->
 
   <style>
     :root{
@@ -167,6 +167,7 @@
     #footer .phone { font-size: 0.78rem; opacity: 0.9; margin-top: 4px; }
 
     body.starting #orb-container { pointer-events: none; opacity: 0.95; }
+    body.embedded #orb-container { pointer-events: auto; opacity: 1; }
 
     /* Embedded in the main A1 website iframe: no second box or black backdrop */
     body.embedded {
@@ -181,7 +182,7 @@
 
     body.embedded #panel {
       width: 260px;
-      height: 320px;
+      height: 260px;
       padding: 0;
       background: transparent;
       border: none;
@@ -238,17 +239,11 @@
     }
 
     body.embedded #stop-btn {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 3;
-      margin-top: 0;
+      display: none !important;
     }
 
-    body.embedded.idle #hint,
-    body.embedded.starting #status-text {
-      display: none;
+    body.embedded #status-text {
+      display: none !important;
     }
 
     /* Embedded orb stays fixed — glow only, no scale shift */
@@ -310,9 +305,15 @@
   <script>
     let pc = null
     let localStream = null
+    let remoteAudio = null
     let starting = false
     let sessionStarted = false
     let embedStarted = false
+
+    const COMPANY_INSTRUCTIONS =
+      'You are the AI team member for A1 Professional Asphalt and Sealing LLC. ' +
+      'Always say Sealing, never Ceiling. You only help with A1 asphalt, sealcoating, ' +
+      'paving, striping, crack filling, and related services.'
 
     const isEmbedded = window.self !== window.top
     const autoStart = new URLSearchParams(window.location.search).get('autostart') === '1'
@@ -322,7 +323,7 @@
     const hintEl = document.getElementById('hint')
 
     function setBodyState(state) {
-      document.body.className = isEmbedded ? `${state} embedded` : state
+      document.body.className = isEmbedded ? 'embedded' : state
     }
 
     function setIdle(){
@@ -344,7 +345,7 @@
       setBodyState('active')
       statusEl.textContent = ''
       headlineEl.classList.add('hide-soft')
-      hintEl.textContent = isEmbedded ? '' : 'Click Stop to end'
+      hintEl.textContent = isEmbedded ? '' : 'Click outside this box to return to the website'
     }
 
     function setMicEnabled(enabled) {
@@ -364,13 +365,19 @@
 
     async function hardStop(){
       try{
+        if (remoteAudio) {
+          try { remoteAudio.pause() } catch {}
+          remoteAudio.srcObject = null
+        }
         if (pc) { try { pc.close() } catch {} pc = null }
         if (localStream) {
           try { localStream.getTracks().forEach(t => t.stop()) } catch {}
           localStream = null
         }
       } finally {
+        starting = false
         sessionStarted = false
+        embedStarted = false
         setIdle()
       }
     }
@@ -399,7 +406,7 @@
       try {
 
         const GREETING_LINE =
-          "Hello! I'm the artificial human team member for A1 Professional Asphalt and Sealing. How can I help you today?"
+          "Hello! I'm the A.I. team member for A1 Professional Asphalt and Sealing L.L.C. How can I help you today?"
 
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
@@ -417,6 +424,7 @@
                 type: 'session.update',
                 session: {
                   type: 'realtime',
+                  instructions: COMPANY_INSTRUCTIONS,
                   audio: {
                     input: { turn_detection: null }
                   }
@@ -426,7 +434,7 @@
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
-                  instructions: 'Say exactly this and nothing else: "' + GREETING_LINE + '"'
+                  instructions: 'Say exactly this and nothing else, word for word: "' + GREETING_LINE + '"'
                 }
               }))
               return
@@ -462,12 +470,14 @@
         pc = new RTCPeerConnection()
         setupRealtimeChannel(pc)
 
-        const audio = document.createElement('audio')
-        audio.autoplay = true
+        if (!remoteAudio) {
+          remoteAudio = document.createElement('audio')
+          remoteAudio.autoplay = true
+        }
 
         pc.ontrack = (e) => {
-          if (audio.srcObject !== e.streams[0]) {
-            audio.srcObject = e.streams[0]
+          if (remoteAudio.srcObject !== e.streams[0]) {
+            remoteAudio.srcObject = e.streams[0]
           }
         }
 
@@ -544,6 +554,7 @@
       }
       window.addEventListener('message', (e) => {
         if (e.data?.type === 'voxtalk-start') startWhenVisible()
+        if (e.data?.type === 'voxtalk-stop') hardStop()
       })
     } else {
       setIdle()
