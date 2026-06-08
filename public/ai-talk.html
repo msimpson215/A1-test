@@ -4,45 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Talk with A1 Professional Asphalt</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
-:root{--yellow:#F5C518;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#040404;color:#fff;font-family:'Barlow',sans-serif;overflow:hidden;height:100vh;display:flex;justify-content:center;align-items:center;flex-direction:column;}
-.orb-container{display:flex;flex-direction:column;align-items:center;cursor:pointer;}
-.orb{width:280px;height:280px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center/70% no-repeat;background-color:#111;border:3px solid var(--yellow);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15),0 0 200px rgba(245,197,24,0.08);animation:orbPulse 3s ease-in-out infinite;margin-bottom:28px;}
-@keyframes orbPulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15),0 0 200px rgba(245,197,24,0.08);border-color:var(--yellow);}50%{transform:scale(1.05);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25),0 0 260px rgba(245,197,24,0.12);border-color:#fff;}}
-.start-text{color:var(--yellow);font-size:1.2rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;transition:opacity 0.3s;}
-.sub-text{color:#ffffff;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;}
-.chat-frame{display:none;width:90vw;max-width:440px;height:70vh;border:none;border-radius:16px;box-shadow:0 0 80px rgba(245,197,24,0.3);animation:fadeUp 0.4s ease;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-.back-btn{display:none;margin-top:20px;color:#ffffff;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;cursor:pointer;background:none;border:none;transition:color 0.2s;}
-.back-btn:hover{color:var(--yellow);}
-.powered{position:fixed;bottom:20px;color:#ffffff;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;}
+  body { margin: 0; overflow: hidden; background: #040404; }
+  iframe { width: 100vw; height: 100vh; border: none; display: block; }
 </style>
-<link rel="stylesheet" href="assets/vox.css"/>
 </head>
 <body>
-<div class="orb-container" id="orbContainer" onclick="startChat()">
-  <div class="orb" id="orb"></div>
-  <div class="start-text" id="startText">Click to Start a Conversation</div>
-  <div class="sub-text">A1 Professional Asphalt &amp; Sealing</div>
-</div>
-<iframe id="chatFrame" class="chat-frame" src="voxtalk-embed.html" title="A1 AI Team Member" allow="microphone"></iframe>
-<button class="back-btn" id="backBtn" onclick="resetChat()">← Back</button>
-<div class="powered">Powered by Axon AI</div>
-<script>
-function startChat(){
-  document.getElementById('orbContainer').style.display='none';
-  document.getElementById('chatFrame').style.display='block';
-  document.getElementById('backBtn').style.display='block';
-}
-function resetChat(){
-  document.getElementById('orbContainer').style.display='flex';
-  document.getElementById('chatFrame').style.display='none';
-  document.getElementById('backBtn').style.display='none';
-}
-</script>
-<script src="assets/vox.js"></script>
+<iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
 </body>
 </html>
