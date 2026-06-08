@@ -159,8 +159,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
 </footer>
 <script>
-function openVox(){var o=document.getElementById('vox-overlay');if(!o)return;o.classList.add('open');o.style.display=o.style.display==='flex'?'flex':'block';var f=document.getElementById('vox-iframe')||o.querySelector('iframe');if(f){f.style.display='block';try{f.contentWindow.postMessage({type:'voxtalk-start'},'*');}catch(e){}}}
-function closeVox(){var f=document.getElementById('vox-iframe')||document.querySelector('#vox-overlay iframe');if(f){try{f.contentWindow.postMessage({type:'voxtalk-stop'},'*');}catch(e){}}var o=document.getElementById('vox-overlay');if(o){o.style.display='none';o.classList.remove('open');}}
 function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
 document.addEventListener('click',function(e){
   var m=document.getElementById('mobileMenu');
@@ -173,5 +171,6 @@ document.addEventListener('click',function(e){
   footer{padding:40px 20px 24px !important;}
 }
 </style>
+<script src="assets/vox-bridge.js"></script>
 </body>
 </html>

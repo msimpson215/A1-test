@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260608-v3-single-start -->
+  <!-- voxtalk-build: 20260608-v4-handshake-greeting -->
 
   <style>
     :root{
@@ -404,6 +404,7 @@
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
           let greetingSent = false
+          let greetingGenerationDone = false
           let listeningOn = false
           let listenTimer = null
 
@@ -463,19 +464,17 @@
               return
             }
 
-            // WebRTC: greeting finished playing (not just finished streaming)
-            if (msg.type === 'output_audio_buffer.stopped' && greetingSent && !listeningOn) {
-              scheduleListening(600)
+            if (msg.type === 'response.done' && greetingSent && !listeningOn) {
+              greetingGenerationDone = true
               return
             }
 
-            // Fallback when buffer event is missing
             if (
-              (msg.type === 'response.output_audio.done' || msg.type === 'response.audio.done') &&
-              greetingSent &&
+              msg.type === 'output_audio_buffer.stopped' &&
+              greetingGenerationDone &&
               !listeningOn
             ) {
-              scheduleListening(2200)
+              scheduleListening(1000)
             }
           })
         }
@@ -559,6 +558,7 @@
         if (e.data?.type === 'voxtalk-start') startWhenVisible()
         if (e.data?.type === 'voxtalk-stop') stopAndClose()
       })
+      try { window.parent.postMessage({ type: 'voxtalk-ready' }, '*') } catch {}
     } else {
       setIdle()
     }
