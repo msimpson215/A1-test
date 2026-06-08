@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260608-a1-embed-noise-stable -->
+  <!-- voxtalk-build: 20260608-a1-embed-greeting-fix -->
 
   <style>
     :root{
@@ -180,13 +180,16 @@
     }
 
     body.embedded #panel {
-      width: auto;
+      width: 260px;
+      height: 320px;
       padding: 0;
       background: transparent;
       border: none;
       box-shadow: none;
       backdrop-filter: none;
       pointer-events: auto;
+      position: relative;
+      display: block;
     }
 
     body.embedded #headline,
@@ -197,14 +200,13 @@
     body.embedded #orb-container {
       width: 260px;
       height: 260px;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
     body.embedded #hint {
-      color: rgba(255, 255, 255, 0.55);
-      font-size: 0.72rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      margin-top: 16px;
+      display: none !important;
     }
 
 
@@ -236,11 +238,11 @@
     }
 
     body.embedded #stop-btn {
-      position: fixed;
-      bottom: 72px;
+      position: absolute;
+      bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 10003;
+      z-index: 3;
       margin-top: 0;
     }
 
@@ -282,7 +284,6 @@
       }
     }
   </style>
-<link rel="stylesheet" href="assets/vox.css"/>
 </head>
 
 <body class="idle">
@@ -343,7 +344,14 @@
       setBodyState('active')
       statusEl.textContent = ''
       headlineEl.classList.add('hide-soft')
-      hintEl.textContent = isEmbedded ? 'Tap Stop to end' : 'Click Stop to end'
+      hintEl.textContent = isEmbedded ? '' : 'Click Stop to end'
+    }
+
+    function setMicEnabled(enabled) {
+      if (!localStream) return
+      localStream.getAudioTracks().forEach(function (track) {
+        track.enabled = enabled
+      })
     }
 
     async function stopAndClose(e){
@@ -395,46 +403,58 @@
 
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
-          let greetingPlayed = false
+          let greetingSent = false
           let listeningOn = false
 
           dc.addEventListener('message', (event) => {
             let msg
             try { msg = JSON.parse(event.data) } catch { return }
 
-            if (msg.type === 'session.created' && !greetingPlayed) {
-              greetingPlayed = true
-              dc.send(JSON.stringify({
-                type: 'response.create',
-                response: {
-                  output_modalities: ['audio'],
-                  instructions:
-                    `Speak in a warm, cheerful, upbeat female tone. Say exactly this, word for word, then stop: "${GREETING_LINE}"`
-                }
-              }))
-              return
-            }
-
-            if (msg.type === 'response.done' && greetingPlayed && !listeningOn) {
-              listeningOn = true
+            if (msg.type === 'session.created' && !greetingSent) {
+              greetingSent = true
+              setMicEnabled(false)
               dc.send(JSON.stringify({
                 type: 'session.update',
                 session: {
                   type: 'realtime',
                   audio: {
-                    input: {
-                      turn_detection: {
-                        type: 'server_vad',
-                        threshold: 0.65,
-                        silence_duration_ms: 3500,
-                        prefix_padding_ms: 500,
-                        create_response: true,
-                        interrupt_response: false
-                      }
-                    }
+                    input: { turn_detection: null }
                   }
                 }
               }))
+              dc.send(JSON.stringify({
+                type: 'response.create',
+                response: {
+                  output_modalities: ['audio'],
+                  instructions: 'Say exactly this and nothing else: "' + GREETING_LINE + '"'
+                }
+              }))
+              return
+            }
+
+            if (msg.type === 'response.done' && greetingSent && !listeningOn) {
+              listeningOn = true
+              setTimeout(function () {
+                setMicEnabled(true)
+                dc.send(JSON.stringify({
+                  type: 'session.update',
+                  session: {
+                    type: 'realtime',
+                    audio: {
+                      input: {
+                        turn_detection: {
+                          type: 'server_vad',
+                          threshold: 0.65,
+                          silence_duration_ms: 3500,
+                          prefix_padding_ms: 500,
+                          create_response: true,
+                          interrupt_response: false
+                        }
+                      }
+                    }
+                  }
+                }))
+              }, 900)
             }
           })
         }
@@ -529,6 +549,5 @@
       setIdle()
     }
   </script>
-<script src="assets/vox.js"></script>
 </body>
 </html>
