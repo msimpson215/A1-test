@@ -5,11 +5,243 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Talk with A1 Professional Asphalt</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #040404; }
-  iframe { width: 100vw; height: 100vh; border: none; display: block; }
+  :root { --yellow: #F5C518; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #040404; }
+  #backdrop {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #040404 70%);
+  }
+  #orb-hit {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 280px;
+    height: 280px;
+    margin: -140px 0 0 -140px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 2;
+  }
+  #orb {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: url('A1__asphalt_logo.jpeg') center / 70% no-repeat;
+    background-color: #111;
+    border: 3px solid var(--yellow);
+    box-shadow:
+      0 0 60px rgba(245, 197, 24, 0.4),
+      0 0 120px rgba(245, 197, 24, 0.15);
+    animation: glow 3s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 60px rgba(245,197,24,0.4), 0 0 120px rgba(245,197,24,0.15);
+      border-color: var(--yellow);
+    }
+    50% {
+      box-shadow: 0 0 80px rgba(245,197,24,0.6), 0 0 160px rgba(245,197,24,0.25);
+      border-color: #fff;
+    }
+  }
+  #hint {
+    position: fixed;
+    bottom: 36px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.45);
+    font: 700 0.72rem/1.4 Arial, sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    z-index: 1;
+    pointer-events: none;
+  }
+  #back {
+    position: fixed;
+    top: 20px;
+    left: 24px;
+    z-index: 3;
+    color: #fff;
+    text-decoration: none;
+    font: 700 0.72rem/1 Arial, sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  #back:hover { opacity: 1; color: var(--yellow); }
 </style>
 </head>
 <body>
-<iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
+<a id="back" href="index.html">&#8592; Back to site</a>
+<div id="backdrop"></div>
+<p id="hint">Click outside the orb to stop</p>
+<div id="orb-hit" aria-label="Start conversation"><div id="orb"></div></div>
+
+<script>
+(function () {
+  var SESSION_URL = 'https://a1-asphalt-voxtalk-3.onrender.com/session'
+  var GREETING = "Hello! I'm the A.I. team member for A1 Professional Asphalt and Sealing L.L.C. How can I help you today?"
+  var INSTRUCTIONS = 'You represent A1 Professional Asphalt and Sealing LLC. Always say the word Sealing, never Ceiling. You only help with A1 asphalt and sealing services.'
+
+  var pc = null
+  var localStream = null
+  var remoteAudio = null
+  var busy = false
+  var active = false
+  var greetingSent = false
+
+  var backdrop = document.getElementById('backdrop')
+  var orbHit = document.getElementById('orb-hit')
+
+  function setMic(on) {
+    if (!localStream) return
+    localStream.getAudioTracks().forEach(function (t) { t.enabled = on })
+  }
+
+  function stopAudio() {
+    if (remoteAudio) {
+      try { remoteAudio.pause() } catch (e) {}
+      remoteAudio.srcObject = null
+    }
+  }
+
+  function hardStop() {
+    stopAudio()
+    if (pc) { try { pc.close() } catch (e) {} pc = null }
+    if (localStream) {
+      try { localStream.getTracks().forEach(function (t) { t.stop() }) } catch (e) {}
+      localStream = null
+    }
+    busy = false
+    active = false
+    greetingSent = false
+  }
+
+  function leave() {
+    hardStop()
+    if (history.length > 1) history.back()
+    else location.href = 'index.html'
+  }
+
+  backdrop.addEventListener('click', leave)
+
+  orbHit.addEventListener('click', function (e) {
+    e.stopPropagation()
+    if (busy) return
+    if (active) return
+    start()
+  })
+
+  function setupChannel(connection) {
+    var dc = connection.createDataChannel('oai-events')
+    var listeningOn = false
+
+    dc.addEventListener('message', function (event) {
+      var msg
+      try { msg = JSON.parse(event.data) } catch (e) { return }
+
+      if (msg.type === 'session.created' && !greetingSent) {
+        greetingSent = true
+        setMic(false)
+        dc.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            type: 'realtime',
+            instructions: INSTRUCTIONS,
+            audio: { input: { turn_detection: null } }
+          }
+        }))
+        dc.send(JSON.stringify({
+          type: 'response.create',
+          response: {
+            output_modalities: ['audio'],
+            instructions: 'Say exactly this and nothing else: "' + GREETING + '"'
+          }
+        }))
+        return
+      }
+
+      if (msg.type === 'response.done' && greetingSent && !listeningOn) {
+        listeningOn = true
+        setTimeout(function () {
+          setMic(true)
+          dc.send(JSON.stringify({
+            type: 'session.update',
+            session: {
+              type: 'realtime',
+              audio: {
+                input: {
+                  turn_detection: {
+                    type: 'server_vad',
+                    threshold: 0.65,
+                    silence_duration_ms: 3500,
+                    prefix_padding_ms: 500,
+                    create_response: true,
+                    interrupt_response: false
+                  }
+                }
+              }
+            }
+          }))
+        }, 900)
+      }
+    })
+  }
+
+  async function start() {
+    busy = true
+    try {
+      if (!remoteAudio) {
+        remoteAudio = document.createElement('audio')
+        remoteAudio.autoplay = true
+      }
+
+      pc = new RTCPeerConnection()
+      setupChannel(pc)
+
+      pc.ontrack = function (e) {
+        if (remoteAudio.srcObject !== e.streams[0]) {
+          remoteAudio.srcObject = e.streams[0]
+        }
+      }
+
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      })
+      pc.addTrack(localStream.getTracks()[0])
+
+      var offer = await pc.createOffer()
+      await pc.setLocalDescription(offer)
+
+      var res = await fetch(SESSION_URL, {
+        method: 'POST',
+        body: offer.sdp,
+        headers: { 'Content-Type': 'application/sdp' }
+      })
+      if (!res.ok) throw new Error(await res.text())
+
+      await pc.setRemoteDescription({
+        type: 'answer',
+        sdp: await res.text()
+      })
+
+      active = true
+    } catch (err) {
+      console.error(err)
+      hardStop()
+      alert('Could not start conversation. Please allow microphone access and try again.')
+    } finally {
+      busy = false
+    }
+  }
+})()
+</script>
 </body>
 </html>
