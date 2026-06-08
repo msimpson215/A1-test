@@ -12,13 +12,14 @@ body{background:transparent;overflow:hidden;height:100vh;display:flex;justify-co
 .label{color:#F5C518;font-size:0.9rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;}
 .chat{display:none;width:100%;height:100%;border:none;}
 </style>
+<link rel="stylesheet" href="assets/vox.css"/>
 </head>
 <body>
 <div id="orbWrap" onclick="startChat()">
   <div class="orb"></div>
   <div class="label">Click to Start</div>
 </div>
-<iframe id="chat" class="chat" src="https://a1-asphalt-voxtalk-3.onrender.com/" allow="microphone"></iframe>
+<iframe id="chat" class="chat" src="voxtalk-embed.html" allow="microphone"></iframe>
 <script>
 function startChat(){
   document.getElementById('orbWrap').style.display='none';
@@ -28,5 +29,6 @@ function startChat(){
   c.style.height='100vh';
 }
 </script>
+<script src="assets/vox.js"></script>
 </body>
 </html>

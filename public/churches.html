@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Churches & Apartments — A1 Professional Asphalt & Sealing LLC</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/vox.css"/>
 <link rel="stylesheet" href="assets/site-nav.css?v=2" />
 <style>
 :root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--muted:#ffffff;}
@@ -158,8 +159,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
 </footer>
 <script>
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
 function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
 document.addEventListener('click',function(e){
   var m=document.getElementById('mobileMenu');
@@ -172,5 +171,10 @@ document.addEventListener('click',function(e){
   footer{padding:40px 20px 24px !important;}
 }
 </style>
+<script src="assets/vox.js"></script>
+<div id="vox-overlay" class="vox-widget">
+  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
+  <iframe id="vox-iframe" src="voxtalk-embed.html?autostart=1" title="A1 AI Team Member" allow="microphone"></iframe>
+</div>
 </body>
 </html>

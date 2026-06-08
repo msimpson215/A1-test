@@ -8,6 +8,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
 
+<link rel="stylesheet" href="assets/vox.css"/>
 <link rel="stylesheet" href="assets/site-nav.css?v=2" />
 <style>
 :root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--gray:#1E1E1E;--text:#FFFFFF;--muted:#ffffff;}
@@ -133,7 +134,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
   document.getElementById('status').innerText = "Uploading..."
 
-  const res = await fetch("https://a1-asphalt-voxtalk-3.onrender.com/upload", {
+  const res = await fetch("voxtalk-embed.htmlupload", {
     method: 'POST',
     body: formData
   })
@@ -155,17 +156,13 @@ document.addEventListener('click', function(e){
   if(menu && button && !menu.contains(e.target) && !button.contains(e.target)) menu.classList.remove('open');
 });
 </script>
-<div id="vox-overlay" onclick="if(event.target===this)closeVox()">
-  <button id="vox-close-btn" onclick="closeVox()">&#10005;</button>
-  <div class="vox-orb" onclick="document.getElementById('vox-iframe').style.display='block';this.style.display='none';document.getElementById('vox-start').style.display='none';"></div>
-  <div id="vox-start" class="vox-text" style="cursor:pointer;" onclick="document.getElementById('vox-iframe').style.display='block';document.querySelector('.vox-orb').style.display='none';this.style.display='none';">Click to Start</div>
-  <iframe id="vox-iframe" src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="display:none;"></iframe>
+<div id="vox-overlay" class="vox-fullscreen" onclick="if(event.target===this)closeVox()">
+  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
+  <div class="vox-stage">
+    <iframe id="vox-iframe" src="voxtalk-embed.html" title="A1 AI Team Member" allow="microphone"></iframe>
+  </div>
   <div class="vox-hint">Click outside to return</div>
 </div>
-<script>
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='flex';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
-</script>
 <div style="padding:52px 20px;text-align:center;background:linear-gradient(rgba(0,0,0,.58),rgba(0,0,0,.68)),url('images/unitedstatesflag.jpg') center/cover no-repeat;border-bottom:3px solid #F5C518;">
   <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,4vw,4rem);line-height:1.05;color:#fff;text-shadow:0 6px 20px rgba(0,0,0,.7);max-width:900px;margin:0 auto;">&ldquo;If you <span style="color:#F5C518;">don&rsquo;t</span> use A1 Asphalt, it&rsquo;s your own <span style="color:#F5C518;">asphalt</span>&rdquo;</div>
   <p style="margin-top:16px;font-size:.82rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#fff;">&mdash; Joe Schanz, Owner &middot; A1 Professional Asphalt &amp; Sealing LLC</p>
@@ -203,5 +200,6 @@ function closeVox(){var o=document.getElementById('vox-overlay');o.style.display
   footer{padding:40px 20px 24px !important;}
 }
 </style>
+<script src="assets/vox.js"></script>
 </body>
 </html>

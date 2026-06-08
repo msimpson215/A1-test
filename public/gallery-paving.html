@@ -55,10 +55,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 #lightbox.open{display:flex;}
 #lightbox img{max-width:90vw;max-height:88vh;object-fit:contain;}
 #lightbox-close{position:absolute;top:20px;right:28px;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none;}
-#vox-overlay{display:none;position:fixed;bottom:90px;right:24px;width:340px;height:480px;background:#111;border:1px solid var(--yellow);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8);z-index:9998;}
-#vox-overlay.open{display:block;}
-#vox-overlay iframe{width:100%;height:100%;border:none;}
-#vox-close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:10;}
 @media(max-width:768px){
   nav{padding:0 16px;}
         .photo-grid{grid-template-columns:repeat(2,1fr);}
@@ -68,6 +64,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 }
 @media(max-width:480px){.photo-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}}
 </style>
+<link rel="stylesheet" href="assets/vox.css"/>
 <link rel="stylesheet" href="assets/site-nav.css?v=2" />
 </head>
 <body>
@@ -180,11 +177,10 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <button id="lightbox-close" onclick="closeLightbox()">&#10005;</button>
   <img id="lightbox-img" src="" alt=""/>
 </div>
-<div id="vox-overlay">
-  <button id="vox-close-btn" onclick="closeVox()">&#10005;</button>
-  <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
+<div id="vox-overlay" class="vox-widget">
+  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
+  <iframe id="vox-iframe" src="voxtalk-embed.html?autostart=1" title="A1 AI Team Member" allow="microphone"></iframe>
 </div>
-
 <script>
 const photos = ['paving-striping-12-400x284.jpg', 'paving-striping-13-400x284.jpg', 'paving-striping-21-400x284.jpg', 'paving-striping-25-400x284.jpg', 'paving-striping-37-400x284.jpg', 'paving-striping-4-400x284.jpg', 'paving-striping-8-400x284.jpg', 'paving-striping-9-400x284.jpg', 'pavingpatchingmilling-10-400x284.jpg', 'pavingpatchingmilling-11-400x284.jpg', 'pavingpatchingmilling-12-1-400x284.jpg', 'pavingpatchingmilling-12-400x284.jpg', 'pavingpatchingmilling-13-400x284.jpg', 'pavingpatchingmilling-14-400x284.jpg', 'pavingpatchingmilling-16-400x284.jpg', 'pavingpatchingmilling-8-400x284.jpg', 'pavingpatchingmilling-9-400x284.jpg', 'pavingpatchingmilling35-400x284.jpg', 'milling-24-400x284.jpg', 'milling-25-400x284.jpg', 'milling-26-400x284.jpg', 'milling-27-400x284.jpg', 'milling-28-400x284.jpg', 'milling-32-400x284.jpg', 'milling-34-400x284.jpg', 'milling-37-400x284.jpg', 'milling-38-400x284.jpg', 'milling-42-400x284.jpg', 'milling-45-400x284.jpg'];
 const PER_PAGE = 9;
@@ -210,8 +206,6 @@ function buildGrid(page) {
 function openLightbox(src){document.getElementById('lightbox-img').src=src;document.getElementById('lightbox').classList.add('open');}
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
 document.getElementById('lightbox').addEventListener('click',function(e){if(e.target===this)closeLightbox();});
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='block';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
 function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
 
@@ -223,5 +217,6 @@ buildGrid(1);
   footer{padding:40px 20px 24px !important;}
 }
 </style>
+<script src="assets/vox.js"></script>
 </body>
 </html>

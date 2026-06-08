@@ -20,6 +20,7 @@ body{background:#040404;color:#fff;font-family:'Barlow',sans-serif;overflow:hidd
 .back-btn:hover{color:var(--yellow);}
 .powered{position:fixed;bottom:20px;color:#ffffff;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;}
 </style>
+<link rel="stylesheet" href="assets/vox.css"/>
 </head>
 <body>
 <div class="orb-container" id="orbContainer" onclick="startChat()">
@@ -27,7 +28,7 @@ body{background:#040404;color:#fff;font-family:'Barlow',sans-serif;overflow:hidd
   <div class="start-text" id="startText">Click to Start a Conversation</div>
   <div class="sub-text">A1 Professional Asphalt &amp; Sealing</div>
 </div>
-<iframe id="chatFrame" class="chat-frame" src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
+<iframe id="chatFrame" class="chat-frame" src="voxtalk-embed.html" title="A1 AI Team Member" allow="microphone"></iframe>
 <button class="back-btn" id="backBtn" onclick="resetChat()">← Back</button>
 <div class="powered">Powered by Axon AI</div>
 <script>
@@ -42,5 +43,6 @@ function resetChat(){
   document.getElementById('backBtn').style.display='none';
 }
 </script>
+<script src="assets/vox.js"></script>
 </body>
 </html>

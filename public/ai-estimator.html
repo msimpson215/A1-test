@@ -7,7 +7,8 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
 
-  <link rel="stylesheet" href="assets/site-nav.css?v=2" />
+  <link rel="stylesheet" href="assets/vox.css"/>
+<link rel="stylesheet" href="assets/site-nav.css?v=2" />
 <style>
     :root{
       --yellow:#F5C518;
@@ -142,23 +143,6 @@
     .footer-bottom{max-width:min(1600px,92vw);margin:0 auto;padding-top:24px;border-top:1px solid #ffffff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
     .footer-bottom p{color:#ffffff;font-size:0.75rem;}
     .footer-seo{color:#ffffff;font-size:0.72rem;}
-
-    /* VOX overlay */
-    #vox-overlay{
-      display:none;position:fixed;bottom:90px;right:24px;
-      width:340px;height:480px;background:var(--black);
-      border-radius:12px;overflow:hidden;
-      box-shadow:0 20px 60px rgba(0,0,0,0.8);
-      z-index:9999;
-    }
-    #vox-overlay.open{display:block;animation:voxIn 0.25s ease forwards;}
-    @keyframes voxIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-    #vox-overlay iframe{width:100%;height:100%;border:none;}
-    #vox-close-btn{
-      position:absolute;top:8px;right:12px;background:none;border:none;
-      color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;
-      z-index:10;line-height:1;
-    }
 
     @media(max-width:768px){
       div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important;}
@@ -297,35 +281,15 @@
   </div>
 </footer>
 
-  <div id="vox-overlay">
-    <button id="vox-close-btn" onclick="closeVox()">&#10005;</button>
-    <iframe src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone"></iframe>
-  </div>
-
-  <script>
+  <div id="vox-overlay" class="vox-widget">
+  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
+  <iframe id="vox-iframe" src="voxtalk-embed.html?autostart=1" title="A1 AI Team Member" allow="microphone"></iframe>
+</div>
+<script>
     function toggleMenu(){
       var m=document.getElementById('mobileMenu');
       m.classList.toggle('open');
     }
-    function openVox(){
-      var o=document.getElementById('vox-overlay');
-      o.classList.add('open');
-      o.style.display='block';
-    }
-    function closeVox(){
-      var o=document.getElementById('vox-overlay');
-      o.style.display='none';
-      o.classList.remove('open');
-    }
-    document.addEventListener('keydown',function(e){
-      if(e.key==='Escape') closeVox();
-    });
-    document.addEventListener('click',function(e){
-      var o=document.getElementById('vox-overlay');
-      if(o.style.display==='block' && !o.contains(e.target) && !e.target.closest('[onclick="openVox()"]')){
-        closeVox();
-      }
-    });
   </script>
 <style id="footer-mobile-fix">
 @media(max-width:768px){
@@ -333,5 +297,6 @@
   footer{padding:40px 20px 24px !important;}
 }
 </style>
+<script src="assets/vox.js"></script>
 </body>
 </html>

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>A1 Professional Asphalt &amp; Sealing LLC</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
+<link rel="stylesheet" href="assets/vox.css" />
 </head>
 <body>
 
@@ -304,17 +305,15 @@ document.addEventListener('click', function(e){
   const button = document.querySelector('.hamburger');
   if(menu && button && !menu.contains(e.target) && !button.contains(e.target)) menu.classList.remove('open');
 });
-function openVox(){var o=document.getElementById('vox-overlay');o.classList.add('open');o.style.display='flex';}
-function closeVox(){var o=document.getElementById('vox-overlay');o.style.display='none';o.classList.remove('open');}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox();});
-document.addEventListener('click',function(e){var o=document.getElementById('vox-overlay');if(o.style.display==='block'&&!o.contains(e.target)&&!e.target.closest('#aiOrb')){closeVox();}});
+
 </script>
-<div id="vox-overlay" onclick="if(event.target===this)closeVox()">
-  <button id="vox-close-btn" onclick="closeVox()">&#10005;</button>
-  <div class="vox-orb" onclick="document.getElementById('vox-iframe').style.display='block';this.style.display='none';document.getElementById('vox-start').style.display='none';"></div>
-  <div id="vox-start" class="vox-text" style="cursor:pointer;" onclick="document.getElementById('vox-iframe').style.display='block';document.querySelector('.vox-orb').style.display='none';this.style.display='none';">Click to Start</div>
-  <iframe id="vox-iframe" src="https://a1-asphalt-voxtalk-3.onrender.com/" title="A1 AI Team Member" allow="microphone" style="display:none;"></iframe>
+<div id="vox-overlay" class="vox-fullscreen" onclick="if(event.target===this)closeVox()">
+  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
+  <div class="vox-stage">
+    <iframe id="vox-iframe" src="voxtalk-embed.html" title="A1 AI Team Member" allow="microphone"></iframe>
+  </div>
   <div class="vox-hint">Click outside to return</div>
 </div>
+<script src="assets/vox.js"></script>
 </body>
 </html>

@@ -142,15 +142,7 @@ h2.display span{color:var(--yellow)}
 .ai-orb{width:200px;height:200px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center center/contain no-repeat;background-color:#F5C518;box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);animation:pulse 3s ease-in-out infinite;cursor:pointer}
 @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
 .orb-label{font-size:0.85rem;color:#ffffff;text-align:center;letter-spacing:0.08em;text-transform:uppercase;font-weight:700}
-#vox-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;justify-content:center;align-items:center;flex-direction:column}
-#vox-overlay.open{display:flex;animation:voxIn 0.4s ease forwards}
-@keyframes voxIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-#vox-overlay .vox-orb{width:260px;height:260px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center/70% no-repeat;background-color:#111;border:3px solid var(--yellow);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15),0 0 200px rgba(245,197,24,0.08);animation:orbPulse 3s ease-in-out infinite;cursor:pointer;margin-bottom:24px}
-@keyframes orbPulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15),0 0 200px rgba(245,197,24,0.08);border-color:var(--yellow);}50%{transform:scale(1.05);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25),0 0 260px rgba(245,197,24,0.12);border-color:#fff;}}
-#vox-overlay .vox-text{color:var(--yellow);font-size:1.2rem;font-weight:800;text-align:center;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer}
-#vox-overlay .vox-hint{color:rgba(255,255,255,0.4);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;margin-top:20px}
-#vox-overlay iframe{width:90%;max-width:420px;height:60vh;border:none;border-radius:12px;margin-top:16px}
-#vox-close-btn{position:absolute;top:20px;right:28px;background:none;border:none;color:#fff;font-size:2rem;font-weight:900;cursor:pointer;z-index:10000;line-height:1}
+/* Vox overlay styles live in assets/vox.css */
 
 /* CTA */
 .cta-section{padding:96px 0;background:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.72)),url('images/asphalt-road.jpg') center/cover no-repeat;border-top:2px solid var(--yellow);border-bottom:2px solid var(--yellow);text-align:center}
