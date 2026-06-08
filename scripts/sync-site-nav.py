@@ -35,7 +35,7 @@ HEADER = """<header class="site-header">
   </nav>
 
   <div class="nav-actions">
-    <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank" class="ai-nav">Artificial Intelligence Team Member</a>
+    <a href="ai-talk.html" class="ai-nav">Artificial Intelligence Team Member</a>
     <a href="tel:13149495660" class="phone-nav">(314) 949-5660</a>
   </div>
 </header>
@@ -49,7 +49,7 @@ HEADER = """<header class="site-header">
   <a href="asphalt-patching.html">Asphalt Patching</a>
   <a href="our-work.html">Our Work</a>
   <a href="about.html">About</a>
-  <a href="https://a1-asphalt-voxtalk-3.onrender.com/" target="_blank">Artificial Intelligence Team Member</a>
+  <a href="ai-talk.html">Artificial Intelligence Team Member</a>
   <a href="tel:13149495660">(314) 949-5660</a>
 </div>
 """

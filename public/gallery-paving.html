@@ -64,7 +64,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 }
 @media(max-width:480px){.photo-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}}
 </style>
-<link rel="stylesheet" href="assets/vox.css"/>
 <link rel="stylesheet" href="assets/site-nav.css?v=2" />
 </head>
 <body>
@@ -92,7 +91,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
     <a href="about.html">About</a>
   </nav>
   <div class="nav-actions">
-    <a href="javascript:void(0)" onclick="openVox()" class="ai-nav">Artificial Intelligence Team Member</a>
+    <a href="ai-talk.html" class="ai-nav">Artificial Intelligence Team Member</a>
     <a href="tel:13149495660" class="phone-nav">(314) 949-5660</a>
     <a href="sms:13149495660" class="phone-nav" style="font-size:.7rem;" title="Text a real person - not a chatbot">Text Us</a>
   </div>
@@ -177,10 +176,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <button id="lightbox-close" onclick="closeLightbox()">&#10005;</button>
   <img id="lightbox-img" src="" alt=""/>
 </div>
-<div id="vox-overlay" class="vox-widget">
-  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
-  <iframe id="vox-iframe" src="voxtalk-embed.html?autostart=1" title="A1 AI Team Member" allow="microphone"></iframe>
-</div>
 <script>
 const photos = ['paving-striping-12-400x284.jpg', 'paving-striping-13-400x284.jpg', 'paving-striping-21-400x284.jpg', 'paving-striping-25-400x284.jpg', 'paving-striping-37-400x284.jpg', 'paving-striping-4-400x284.jpg', 'paving-striping-8-400x284.jpg', 'paving-striping-9-400x284.jpg', 'pavingpatchingmilling-10-400x284.jpg', 'pavingpatchingmilling-11-400x284.jpg', 'pavingpatchingmilling-12-1-400x284.jpg', 'pavingpatchingmilling-12-400x284.jpg', 'pavingpatchingmilling-13-400x284.jpg', 'pavingpatchingmilling-14-400x284.jpg', 'pavingpatchingmilling-16-400x284.jpg', 'pavingpatchingmilling-8-400x284.jpg', 'pavingpatchingmilling-9-400x284.jpg', 'pavingpatchingmilling35-400x284.jpg', 'milling-24-400x284.jpg', 'milling-25-400x284.jpg', 'milling-26-400x284.jpg', 'milling-27-400x284.jpg', 'milling-28-400x284.jpg', 'milling-32-400x284.jpg', 'milling-34-400x284.jpg', 'milling-37-400x284.jpg', 'milling-38-400x284.jpg', 'milling-42-400x284.jpg', 'milling-45-400x284.jpg'];
 const PER_PAGE = 9;
@@ -217,6 +212,5 @@ buildGrid(1);
   footer{padding:40px 20px 24px !important;}
 }
 </style>
-<script src="assets/vox.js"></script>
 </body>
 </html>

@@ -7,8 +7,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
 
-  <link rel="stylesheet" href="assets/vox.css"/>
-<link rel="stylesheet" href="assets/site-nav.css?v=2" />
+  <link rel="stylesheet" href="assets/site-nav.css?v=2" />
 <style>
     :root{
       --yellow:#F5C518;
@@ -182,7 +181,7 @@
   </nav>
 
   <div class="nav-actions">
-    <a href="javascript:void(0)" onclick="openVox()" class="ai-nav">Artificial Intelligence Team Member</a>
+    <a href="ai-talk.html" class="ai-nav">Artificial Intelligence Team Member</a>
     <a href="tel:13149495660" class="phone-nav">(314) 949-5660</a>
     <a href="sms:13149495660" class="phone-nav" style="font-size:.7rem;" title="Text a real person — not a chatbot">Text Us</a>
   </div>
@@ -197,7 +196,7 @@
   <a href="asphalt-patching.html">Asphalt Paving / Sealing</a>
   <a href="our-work.html">Our Work</a>
   <a href="about.html">About</a>
-  <a href="javascript:void(0)" onclick="openVox()">Artificial Intelligence Team Member</a>
+  <a href="ai-talk.html">Artificial Intelligence Team Member</a>
   <a href="tel:13149495660">(314) 949-5660</a>
 </div>
 
@@ -214,7 +213,7 @@
     </div>
     <a href="our-work.html">Our Work</a>
     <a href="about.html">About</a>
-    <a href="javascript:void(0)" onclick="openVox()" style="color:var(--yellow);">Talk with Our A.I. Team Member</a>
+    <a href="ai-talk.html" style="color:var(--yellow);">Talk with Our A.I. Team Member</a>
     <a href="tel:13149495660">&#128222; (314) 949-5660</a>
   </div>
 
@@ -281,11 +280,7 @@
   </div>
 </footer>
 
-  <div id="vox-overlay" class="vox-widget">
-  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
-  <iframe id="vox-iframe" src="voxtalk-embed.html?autostart=1" title="A1 AI Team Member" allow="microphone"></iframe>
-</div>
-<script>
+  <script>
     function toggleMenu(){
       var m=document.getElementById('mobileMenu');
       m.classList.toggle('open');
@@ -297,6 +292,5 @@
   footer{padding:40px 20px 24px !important;}
 }
 </style>
-<script src="assets/vox.js"></script>
 </body>
 </html>

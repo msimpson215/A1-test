@@ -8,7 +8,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
 
-<link rel="stylesheet" href="assets/vox.css"/>
 <link rel="stylesheet" href="assets/site-nav.css?v=2" />
 <style>
 :root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--gray:#1E1E1E;--text:#FFFFFF;--muted:#ffffff;}
@@ -48,7 +47,7 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
   </nav>
 
   <div class="nav-actions">
-    <a href="javascript:void(0)" onclick="openVox()" class="ai-nav">Artificial Intelligence Team Member</a>
+    <a href="ai-talk.html" class="ai-nav">Artificial Intelligence Team Member</a>
     <a href="tel:13149495660" class="phone-nav">(314) 949-5660</a>
     <a href="sms:13149495660" class="phone-nav" style="font-size:.7rem;" title="Text a real person — not a chatbot">Text Us</a>
   </div>
@@ -63,7 +62,7 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;o
   <a href="asphalt-patching.html">Asphalt Paving / Sealing</a>
   <a href="our-work.html">Our Work</a>
   <a href="about.html">About</a>
-  <a href="javascript:void(0)" onclick="openVox()">Artificial Intelligence Team Member</a>
+  <a href="ai-talk.html">Artificial Intelligence Team Member</a>
   <a href="tel:13149495660">(314) 949-5660</a>
 </div>
 
@@ -134,7 +133,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
   document.getElementById('status').innerText = "Uploading..."
 
-  const res = await fetch("voxtalk-embed.htmlupload", {
+  const res = await fetch("https://a1-asphalt-voxtalk-3.onrender.com/upload", {
     method: 'POST',
     body: formData
   })
@@ -156,12 +155,7 @@ document.addEventListener('click', function(e){
   if(menu && button && !menu.contains(e.target) && !button.contains(e.target)) menu.classList.remove('open');
 });
 </script>
-<div id="vox-overlay" class="vox-fullscreen" onclick="if(event.target===this)closeVox()">
-  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
-  <div class="vox-stage">
-    <iframe id="vox-iframe" src="voxtalk-embed.html" title="A1 AI Team Member" allow="microphone"></iframe>
-  </div>
-  <div class="vox-hint">Click outside to return</div>
+<div class="vox-hint">Click outside to return</div>
 </div>
 <div style="padding:52px 20px;text-align:center;background:linear-gradient(rgba(0,0,0,.58),rgba(0,0,0,.68)),url('images/unitedstatesflag.jpg') center/cover no-repeat;border-bottom:3px solid #F5C518;">
   <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,4vw,4rem);line-height:1.05;color:#fff;text-shadow:0 6px 20px rgba(0,0,0,.7);max-width:900px;margin:0 auto;">&ldquo;If you <span style="color:#F5C518;">don&rsquo;t</span> use A1 Asphalt, it&rsquo;s your own <span style="color:#F5C518;">asphalt</span>&rdquo;</div>
@@ -200,6 +194,5 @@ document.addEventListener('click', function(e){
   footer{padding:40px 20px 24px !important;}
 }
 </style>
-<script src="assets/vox.js"></script>
 </body>
 </html>

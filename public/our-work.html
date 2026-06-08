@@ -6,7 +6,6 @@
 <title>Our Work — A1 Professional Asphalt & Sealing LLC | St. Louis Commercial Asphalt</title>
 <meta name="description" content="View A1 Professional Asphalt's project gallery. Sealcoating, striping, concrete, crack filling, patching and paving across St. Louis and 17 states."/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="assets/vox.css"/>
 <link rel="stylesheet" href="assets/site-nav.css?v=2" />
 <style>
 :root{--yellow:#F5C518;--black:#0A0A0A;--dark:#111111;--gray:#1E1E1E;}
@@ -130,7 +129,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </nav>
 
   <div class="nav-actions">
-    <a href="javascript:void(0)" onclick="openVox()" class="ai-nav">Artificial Intelligence Team Member</a>
+    <a href="ai-talk.html" class="ai-nav">Artificial Intelligence Team Member</a>
     <a href="tel:13149495660" class="phone-nav">(314) 949-5660</a>
     <a href="sms:13149495660" class="phone-nav" style="font-size:.7rem;" title="Text a real person — not a chatbot">Text Us</a>
   </div>
@@ -145,7 +144,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <a href="asphalt-patching.html">Asphalt Paving / Sealing</a>
   <a href="our-work.html">Our Work</a>
   <a href="about.html">About</a>
-  <a href="javascript:void(0)" onclick="openVox()">Artificial Intelligence Team Member</a>
+  <a href="ai-talk.html">Artificial Intelligence Team Member</a>
   <a href="tel:13149495660">(314) 949-5660</a>
 </div>
 
@@ -153,7 +152,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <a href="index.html#services">Services</a>
   <a href="our-work.html">Our Work</a>
   <a href="about.html">About</a>
-  <a href="voxtalk-embed.html?autostart=1" target="_blank" style="color:var(--yellow);">Talk with Our A.I. Team Member</a>
+  <a href="ai-talk.html">Talk with Our A.I. Team Member</a>
   <a href="tel:13149495660">&#128222; (314) 949-5660</a>
 </div>
 
@@ -306,11 +305,6 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   </div>
 </footer>
 
-<div id="vox-overlay" class="vox-widget">
-  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close AI chat">&#10005;</button>
-  <iframe id="vox-iframe" src="voxtalk-embed.html?autostart=1" title="A1 AI Team Member" allow="microphone"></iframe>
-</div>
-
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
 addEventListener('click',function(e){
@@ -324,6 +318,5 @@ addEventListener('click',function(e){
   footer{padding:40px 20px 24px !important;}
 }
 </style>
-<script src="assets/vox.js"></script>
 </body>
 </html>

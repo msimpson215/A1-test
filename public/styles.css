@@ -142,7 +142,6 @@ h2.display span{color:var(--yellow)}
 .ai-orb{width:200px;height:200px;border-radius:50%;background:url('A1__asphalt_logo.jpeg') center center/contain no-repeat;background-color:#F5C518;box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);animation:pulse 3s ease-in-out infinite;cursor:pointer}
 @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15);}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25);}}
 .orb-label{font-size:0.85rem;color:#ffffff;text-align:center;letter-spacing:0.08em;text-transform:uppercase;font-weight:700}
-/* Vox overlay styles live in assets/vox.css */
 
 /* CTA */
 .cta-section{padding:96px 0;background:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.72)),url('images/asphalt-road.jpg') center/cover no-repeat;border-top:2px solid var(--yellow);border-bottom:2px solid var(--yellow);text-align:center}

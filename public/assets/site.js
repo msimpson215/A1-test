@@ -17,16 +17,4 @@
     }
   });
 
-  // ESC closes Vox overlay and stops conversation (if present)
-  document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape') return;
-    if (typeof window.closeVox === 'function') {
-      window.closeVox();
-      return;
-    }
-    var o = byId('vox-overlay');
-    if (!o) return;
-    o.style.display = 'none';
-    o.classList.remove('open');
-  });
 })();
