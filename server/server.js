@@ -51,36 +51,80 @@ const sessionConfig = JSON.stringify({
   }
 });
 
+/* VoxTalk 3 standalone — tuned for loud job-site / field environments */
+const voxtalk3SessionConfig = JSON.stringify({
+  type: 'realtime',
+  model: 'gpt-realtime-1.5',
+  output_modalities: ['audio'],
+  instructions: INSTRUCTIONS + '\nThe caller may be in a loud environment (job site, traffic, equipment). Ignore background noise. Only respond to clear speech directed at you.',
+  audio: {
+    input: {
+      noise_reduction: { type: 'far_field' },
+      turn_detection: {
+        type: 'server_vad',
+        threshold: 0.65,
+        silence_duration_ms: 2500,
+        prefix_padding_ms: 400,
+        create_response: false,
+        interrupt_response: false
+      }
+    },
+    output: {
+      voice: 'coral'
+    }
+  }
+});
+
+async function createRealtimeSession(sdp, configJson, res) {
+  const fd = new FormData();
+  fd.set('sdp', sdp);
+  fd.set('session', configJson);
+
+  const response = await fetch('https://api.openai.com/v1/realtime/calls', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: fd
+  });
+
+  const body = await response.text();
+  if (!response.ok) {
+    console.error('Realtime call error:', response.status, body);
+    return res.status(response.status).type('application/json').send(body);
+  }
+
+  res.type('application/sdp').send(body);
+}
+
 app.post('/session', express.text({ type: ['application/sdp', 'text/plain'] }), async (req, res) => {
   try {
-    const fd = new FormData();
-    fd.set('sdp', req.body);
-    fd.set('session', sessionConfig);
-
-    const response = await fetch('https://api.openai.com/v1/realtime/calls', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: fd
-    });
-
-    const body = await response.text();
-    if (!response.ok) {
-      console.error('Realtime call error:', response.status, body);
-      return res.status(response.status).type('application/json').send(body);
-    }
-
-    res.type('application/sdp').send(body);
+    await createRealtimeSession(req.body, sessionConfig, res);
   } catch (error) {
     console.error('Session error:', error);
     res.status(500).json({ error: 'API Failure' });
   }
 });
 
+app.post('/voxtalk3/session', express.text({ type: ['application/sdp', 'text/plain'] }), async (req, res) => {
+  try {
+    await createRealtimeSession(req.body, voxtalk3SessionConfig, res);
+  } catch (error) {
+    console.error('VoxTalk3 session error:', error);
+    res.status(500).json({ error: 'API Failure' });
+  }
+});
+
 app.use(express.static(publicDir));
 
+app.get('/voxtalk3', (req, res) => {
+  res.sendFile(path.join(publicDir, 'voxtalk3', 'index.html'));
+});
+
 app.get('/', (req, res) => {
+  if (process.env.VOXTALK3_ROOT === '1') {
+    return res.sendFile(path.join(publicDir, 'voxtalk3', 'index.html'));
+  }
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
