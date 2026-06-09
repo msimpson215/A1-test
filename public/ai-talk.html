@@ -26,57 +26,56 @@ body{background:#040404;color:#fff;font-family:'Barlow',sans-serif;overflow:hidd
   <div class="start-text" id="startText">Click to Start a Conversation</div>
   <div class="sub-text">A1 Professional Asphalt &amp; Sealing</div>
 </div>
-<iframe id="chatFrame" class="chat-frame" src="about:blank" title="A1 AI Team Member" allow="microphone"></iframe>
+<iframe id="chatFrame" class="chat-frame" src="about:blank" title="A1 AI Team Member" allow="microphone *"></iframe>
 <button class="back-btn" id="backBtn" onclick="resetChat()">← Back</button>
 <div class="powered">Powered by Axon AI</div>
 <script>
 var VOICE_URL = '/voice/'
+var chatFrame = document.getElementById('chatFrame')
+var wantStart = false
 
-function postStart(frame) {
-  if (!frame || !frame.contentWindow) return
-  try { frame.contentWindow.postMessage({ type: 'voxtalk-start' }, '*') } catch (e) {}
+function postStart() {
+  if (!chatFrame.contentWindow) return
+  try { chatFrame.contentWindow.postMessage({ type: 'voxtalk-start' }, '*') } catch (e) {}
 }
 
-function postStop(frame) {
-  if (!frame || !frame.contentWindow) return
-  try { frame.contentWindow.postMessage({ type: 'voxtalk-stop' }, '*') } catch (e) {}
+function postStop() {
+  if (!chatFrame.contentWindow) return
+  try { chatFrame.contentWindow.postMessage({ type: 'voxtalk-stop' }, '*') } catch (e) {}
 }
+
+function loadVoice() {
+  if (chatFrame.src && chatFrame.src.indexOf('/voice') !== -1) return
+  chatFrame.src = VOICE_URL
+}
+
+window.addEventListener('message', function (e) {
+  if (!e.data || e.data.type !== 'voxtalk-ready') return
+  chatFrame.setAttribute('data-vox-ready', '1')
+  if (wantStart) postStart()
+})
 
 function startChat() {
   document.getElementById('orbContainer').style.display = 'none'
   document.getElementById('backBtn').style.display = 'block'
-  var frame = document.getElementById('chatFrame')
-  frame.style.display = 'block'
+  chatFrame.style.display = 'block'
+  wantStart = true
 
-  function start() {
-    postStart(frame)
-  }
-
-  if (frame.getAttribute('data-vox-ready') === '1') {
-    start()
+  if (chatFrame.getAttribute('data-vox-ready') === '1') {
+    postStart()
     return
   }
 
-  frame.onload = function () {
-    frame.setAttribute('data-vox-ready', '1')
-    start()
-  }
-
-  if (!frame.src || frame.src.indexOf('/voice') === -1) {
-    frame.src = VOICE_URL
-  } else if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
-    frame.setAttribute('data-vox-ready', '1')
-    start()
-  }
+  loadVoice()
 }
 
 function resetChat() {
-  var frame = document.getElementById('chatFrame')
-  postStop(frame)
+  wantStart = false
+  postStop()
   setTimeout(function () {
-    frame.removeAttribute('data-vox-ready')
-    frame.src = 'about:blank'
-    frame.style.display = 'none'
+    chatFrame.removeAttribute('data-vox-ready')
+    chatFrame.src = 'about:blank'
+    chatFrame.style.display = 'none'
     document.getElementById('orbContainer').style.display = 'flex'
     document.getElementById('backBtn').style.display = 'none'
   }, 450)

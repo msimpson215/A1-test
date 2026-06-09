@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260609-v5-single-session -->
+  <!-- voxtalk-build: 20260609-v6-stuck-fix -->
 
   <style>
     :root{
@@ -560,6 +560,7 @@
         embedStarted = false
         setIdle()
         statusEl.textContent = isEmbedded ? '' : 'ERROR'
+        notifyStopped()
       }
     }
 

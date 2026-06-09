@@ -37,7 +37,13 @@ const sessionConfig = JSON.stringify({
   instructions: INSTRUCTIONS,
   audio: {
     input: {
-      turn_detection: null
+      turn_detection: {
+        type: 'server_vad',
+        silence_duration_ms: 2000,
+        prefix_padding_ms: 300,
+        create_response: false,
+        interrupt_response: false
+      }
     },
     output: {
       voice: 'coral'

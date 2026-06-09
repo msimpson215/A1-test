@@ -43,7 +43,7 @@
     normalizeIframe(f)
 
     function start() {
-      if (sessionActive || closing) return
+      if (closing) return
       sessionActive = true
       post(f, 'voxtalk-start')
     }
