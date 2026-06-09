@@ -14,8 +14,7 @@ body{background:#040404;color:#fff;font-family:'Barlow',sans-serif;overflow:hidd
 @keyframes orbPulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(245,197,24,0.4),0 0 120px rgba(245,197,24,0.15),0 0 200px rgba(245,197,24,0.08);border-color:var(--yellow);}50%{transform:scale(1.05);box-shadow:0 0 80px rgba(245,197,24,0.6),0 0 160px rgba(245,197,24,0.25),0 0 260px rgba(245,197,24,0.12);border-color:#fff;}}
 .start-text{color:var(--yellow);font-size:1.2rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;transition:opacity 0.3s;}
 .sub-text{color:#ffffff;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;}
-.chat-frame{display:none;width:90vw;max-width:440px;height:70vh;border:none;border-radius:16px;box-shadow:0 0 80px rgba(245,197,24,0.3);animation:fadeUp 0.4s ease;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.chat-frame{display:none;width:90vw;max-width:440px;height:70vh;border:none;border-radius:16px;box-shadow:0 0 80px rgba(245,197,24,0.3);}
 .back-btn{display:none;margin-top:20px;color:#ffffff;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;cursor:pointer;background:none;border:none;transition:color 0.2s;}
 .back-btn:hover{color:var(--yellow);}
 .powered{position:fixed;bottom:20px;color:#ffffff;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;}
@@ -27,21 +26,61 @@ body{background:#040404;color:#fff;font-family:'Barlow',sans-serif;overflow:hidd
   <div class="start-text" id="startText">Click to Start a Conversation</div>
   <div class="sub-text">A1 Professional Asphalt &amp; Sealing</div>
 </div>
-<iframe id="chatFrame" class="chat-frame" src="/voice/" title="A1 AI Team Member" allow="microphone"></iframe>
+<iframe id="chatFrame" class="chat-frame" src="about:blank" title="A1 AI Team Member" allow="microphone"></iframe>
 <button class="back-btn" id="backBtn" onclick="resetChat()">← Back</button>
 <div class="powered">Powered by Axon AI</div>
 <script>
-function startChat(){
-  document.getElementById('orbContainer').style.display='none';
-  document.getElementById('chatFrame').style.display='block';
-  document.getElementById('backBtn').style.display='block';
+var VOICE_URL = '/voice/'
+
+function postStart(frame) {
+  if (!frame || !frame.contentWindow) return
+  try { frame.contentWindow.postMessage({ type: 'voxtalk-start' }, '*') } catch (e) {}
 }
-function resetChat(){
-  document.getElementById('orbContainer').style.display='flex';
-  document.getElementById('chatFrame').style.display='none';
-  document.getElementById('backBtn').style.display='none';
+
+function postStop(frame) {
+  if (!frame || !frame.contentWindow) return
+  try { frame.contentWindow.postMessage({ type: 'voxtalk-stop' }, '*') } catch (e) {}
+}
+
+function startChat() {
+  document.getElementById('orbContainer').style.display = 'none'
+  document.getElementById('backBtn').style.display = 'block'
+  var frame = document.getElementById('chatFrame')
+  frame.style.display = 'block'
+
+  function start() {
+    postStart(frame)
+  }
+
+  if (frame.getAttribute('data-vox-ready') === '1') {
+    start()
+    return
+  }
+
+  frame.onload = function () {
+    frame.setAttribute('data-vox-ready', '1')
+    start()
+  }
+
+  if (!frame.src || frame.src.indexOf('/voice') === -1) {
+    frame.src = VOICE_URL
+  } else if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
+    frame.setAttribute('data-vox-ready', '1')
+    start()
+  }
+}
+
+function resetChat() {
+  var frame = document.getElementById('chatFrame')
+  postStop(frame)
+  setTimeout(function () {
+    frame.removeAttribute('data-vox-ready')
+    frame.src = 'about:blank'
+    frame.style.display = 'none'
+    document.getElementById('orbContainer').style.display = 'flex'
+    document.getElementById('backBtn').style.display = 'none'
+  }, 450)
 }
 </script>
-<script src="assets/vox-bridge.js"></script>
 </body>
 </html>

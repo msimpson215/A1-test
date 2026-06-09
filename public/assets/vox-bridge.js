@@ -1,5 +1,7 @@
 (function () {
   var VOICE_URL = '/voice/'
+  var sessionActive = false
+  var closing = false
 
   function iframe() {
     var o = document.getElementById('vox-overlay')
@@ -14,17 +16,35 @@
     } catch (e) {}
   }
 
+  function normalizeIframe(frame) {
+    if (!frame) return
+    frame.style.display = 'block'
+    frame.style.position = ''
+    frame.style.inset = ''
+    frame.style.width = ''
+    frame.style.height = ''
+    frame.style.zIndex = ''
+  }
+
+  function lockScroll(on) {
+    document.body.style.overflow = on ? 'hidden' : ''
+  }
+
   window.openVox = function () {
     var o = document.getElementById('vox-overlay')
-    if (!o) return
+    if (!o || closing) return
+
     o.classList.add('open')
-    o.style.display = o.style.display === 'flex' ? 'flex' : 'block'
+    o.style.display = window.getComputedStyle(o).display === 'flex' ? 'flex' : 'block'
+    lockScroll(true)
 
     var f = iframe()
     if (!f) return
-    f.style.display = 'block'
+    normalizeIframe(f)
 
     function start() {
+      if (sessionActive || closing) return
+      sessionActive = true
       post(f, 'voxtalk-start')
     }
 
@@ -47,26 +67,54 @@
   }
 
   window.closeVox = function () {
+    if (closing) return
+    closing = true
+
     var f = iframe()
-    if (f) {
-      post(f, 'voxtalk-stop')
-      f.removeAttribute('data-vox-ready')
-      f.src = 'about:blank'
-      f.style.display = 'none'
+
+    function finishClose() {
+      if (f) {
+        f.removeAttribute('data-vox-ready')
+        f.src = 'about:blank'
+        f.style.display = 'none'
+      }
+      var o = document.getElementById('vox-overlay')
+      if (o) {
+        o.style.display = 'none'
+        o.classList.remove('open')
+      }
+      lockScroll(false)
+      sessionActive = false
+      closing = false
     }
-    var o = document.getElementById('vox-overlay')
-    if (o) {
-      o.style.display = 'none'
-      o.classList.remove('open')
+
+    if (f && f.getAttribute('data-vox-ready') === '1' && sessionActive) {
+      post(f, 'voxtalk-stop')
+      setTimeout(finishClose, 450)
+    } else {
+      finishClose()
     }
   }
 
   window.addEventListener('message', function (e) {
-    if (e.data && e.data.type === 'voxtalk-ready') {
+    if (!e.data || !e.data.type) return
+
+    if (e.data.type === 'voxtalk-ready') {
       var f = iframe()
       if (f && f.contentWindow === e.source) {
         f.setAttribute('data-vox-ready', '1')
       }
+      return
+    }
+
+    if (e.data.type === 'voxtalk-stopped') {
+      sessionActive = false
+      return
+    }
+
+    if (e.data.type === 'voxtalk-close') {
+      sessionActive = false
+      if (!closing) window.closeVox()
     }
   })
 })()

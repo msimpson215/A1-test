@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260608-v4-handshake-greeting -->
+  <!-- voxtalk-build: 20260609-v5-single-session -->
 
   <style>
     :root{
@@ -294,6 +294,8 @@
     let pc = null
     let localStream = null
     let remoteAudio = null
+    let oaiEvents = null
+    let listenTimer = null
     let starting = false
     let sessionStarted = false
     let embedStarted = false
@@ -353,12 +355,28 @@
       try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch {}
     }
 
+    function notifyStopped() {
+      if (!isEmbedded) return
+      try { window.parent.postMessage({ type: 'voxtalk-stopped' }, '*') } catch {}
+    }
+
     async function hardStop(){
       try{
+        if (listenTimer) {
+          clearTimeout(listenTimer)
+          listenTimer = null
+        }
+        if (oaiEvents && oaiEvents.readyState === 'open') {
+          try {
+            oaiEvents.send(JSON.stringify({ type: 'response.cancel' }))
+          } catch {}
+        }
+        oaiEvents = null
         if (remoteAudio) {
           try {
             remoteAudio.pause()
             remoteAudio.srcObject = null
+            remoteAudio.remove()
           } catch {}
           remoteAudio = null
         }
@@ -370,7 +388,9 @@
       } finally {
         sessionStarted = false
         starting = false
+        embedStarted = false
         setIdle()
+        notifyStopped()
       }
     }
 
@@ -403,10 +423,10 @@
       try {
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
+          oaiEvents = dc
           let greetingSent = false
           let greetingGenerationDone = false
           let listeningOn = false
-          let listenTimer = null
 
           function enableListening() {
             if (listeningOn || !pc) return
@@ -432,11 +452,11 @@
           }
 
           function scheduleListening(ms) {
-            if (listeningOn) return
+            if (listeningOn || !pc) return
             if (listenTimer) clearTimeout(listenTimer)
             listenTimer = setTimeout(() => {
               listenTimer = null
-              enableListening()
+              if (pc) enableListening()
             }, ms)
           }
 
@@ -484,6 +504,8 @@
 
         remoteAudio = document.createElement('audio')
         remoteAudio.autoplay = true
+        remoteAudio.setAttribute('playsinline', '')
+        document.body.appendChild(remoteAudio)
 
         pc.ontrack = (e) => {
           if (remoteAudio.srcObject !== e.streams[0]) {

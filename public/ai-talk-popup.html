@@ -18,16 +18,43 @@ body{background:transparent;overflow:hidden;height:100vh;display:flex;justify-co
   <div class="orb"></div>
   <div class="label">Click to Start</div>
 </div>
-<iframe id="chat" class="chat" src="/voice/" allow="microphone"></iframe>
+<iframe id="chat" class="chat" src="about:blank" allow="microphone"></iframe>
 <script>
-function startChat(){
-  document.getElementById('orbWrap').style.display='none';
-  var c=document.getElementById('chat');
-  c.style.display='block';
-  c.style.width='100%';
-  c.style.height='100vh';
+var VOICE_URL = '/voice/'
+
+function postStart(frame) {
+  if (!frame || !frame.contentWindow) return
+  try { frame.contentWindow.postMessage({ type: 'voxtalk-start' }, '*') } catch (e) {}
+}
+
+function startChat() {
+  document.getElementById('orbWrap').style.display = 'none'
+  var frame = document.getElementById('chat')
+  frame.style.display = 'block'
+  frame.style.width = '100%'
+  frame.style.height = '100vh'
+
+  function start() {
+    postStart(frame)
+  }
+
+  if (frame.getAttribute('data-vox-ready') === '1') {
+    start()
+    return
+  }
+
+  frame.onload = function () {
+    frame.setAttribute('data-vox-ready', '1')
+    start()
+  }
+
+  if (!frame.src || frame.src.indexOf('/voice') === -1) {
+    frame.src = VOICE_URL
+  } else if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
+    frame.setAttribute('data-vox-ready', '1')
+    start()
+  }
 }
 </script>
-<script src="assets/vox-bridge.js"></script>
 </body>
 </html>

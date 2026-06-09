@@ -10,7 +10,7 @@ BRIDGE_TAG = '<script src="assets/vox-bridge.js"></script>'
 
 OVERLAY = """<div id="vox-overlay" onclick="if(event.target===this)closeVox()">
   <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close">&#10005;</button>
-  <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *" style="display:none;position:fixed;inset:0;width:100%;height:100%;border:none;z-index:10001;"></iframe>
+  <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *" style="display:none;border:none;"></iframe>
 </div>"""
 
 
@@ -38,10 +38,12 @@ def patch_file(path: Path) -> bool:
     return False
 
 
+SKIP = {"ai-talk.html", "ai-talk-popup.html", "email-orb-launcher.html", "a1_hero_preview.html"}
+
 def main():
     changed = []
     for html in sorted(PUBLIC.glob("*.html")):
-        if html.name == "voice/index.html":
+        if html.name in SKIP or html.name == "voice/index.html":
             continue
         if patch_file(html):
             changed.append(html.name)
