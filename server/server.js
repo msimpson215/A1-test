@@ -110,13 +110,15 @@ app.post('/voxtalk3/session', express.text({ type: ['application/sdp', 'text/pla
 
 app.use(express.static(publicDir));
 
-app.get('/voxtalk3', (req, res) => {
-  res.sendFile(path.join(publicDir, 'voxtalk3', 'index.html'));
+const voxtalk3Page = path.join(publicDir, 'voxtalk3', 'index.html');
+
+app.get(['/voxtalk3', '/voxtalk3/'], (req, res) => {
+  res.sendFile(voxtalk3Page);
 });
 
 app.get('/', (req, res) => {
   if (process.env.VOXTALK3_ROOT === '1') {
-    return res.sendFile(path.join(publicDir, 'voxtalk3', 'index.html'));
+    return res.sendFile(voxtalk3Page);
   }
   res.sendFile(path.join(publicDir, 'index.html'));
 });
