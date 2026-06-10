@@ -111,9 +111,14 @@ app.post('/voxtalk3/session', express.text({ type: ['application/sdp', 'text/pla
 app.use(express.static(publicDir));
 
 const voxtalk3Page = path.join(publicDir, 'voxtalk3', 'index.html');
+const voicePage = path.join(publicDir, 'voice', 'index.html');
 
 app.get(['/voxtalk3', '/voxtalk3/'], (req, res) => {
   res.sendFile(voxtalk3Page);
+});
+
+app.get(['/voice', '/voice/'], (req, res) => {
+  res.sendFile(voicePage);
 });
 
 app.get('/', (req, res) => {

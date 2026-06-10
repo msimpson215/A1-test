@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: a1-asphalt-voxtalk-3
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: VOXTALK3_ROOT
+        value: "1"
+      - key: NODE_VERSION
+        value: "20"
