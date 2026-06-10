@@ -168,7 +168,6 @@
 
     body.starting #orb-container { pointer-events: none; opacity: 0.95; }
 
-    /* Embedded in the main A1 website iframe: no second box or black backdrop */
     body.embedded {
       background: transparent;
     }
@@ -206,7 +205,6 @@
       text-transform: uppercase;
       margin-top: 16px;
     }
-
 
     #stop-btn {
       display: none;
@@ -249,7 +247,6 @@
       display: none;
     }
 
-    /* FIX: alignment only — orb stays centered when start/stop UI appears */
     #headline, #hint, #footer, #status-text, #stop-btn { display: none !important; }
     #overlay { display: block; padding: 0; }
     #panel {
@@ -261,6 +258,7 @@
       position: fixed; top: 50%; left: 50%;
       width: 220px; height: 220px;
       transform: translate(-50%, -50%); z-index: 2;
+      pointer-events: auto;
     }
     body.active #stop-btn, body.starting #stop-btn { display: none !important; }
   </style>
@@ -362,145 +360,4 @@
         await stopAndClose()
         return
       }
-      if (sessionStarted) return
-
-      sessionStarted = true
-      starting = true
-      setStarting()
-
-      try {
-
-        const GREETING_LINE =
-          "Hello! I'm the artificial human team member for A1 Professional Asphalt and Sealing. How can I help you today?"
-
-        function setupRealtimeChannel(peerConnection) {
-          const dc = peerConnection.createDataChannel('oai-events')
-          let greetingPlayed = false
-          let listeningOn = false
-
-          dc.addEventListener('message', (event) => {
-            let msg
-            try { msg = JSON.parse(event.data) } catch { return }
-
-            if (msg.type === 'session.created' && !greetingPlayed) {
-              greetingPlayed = true
-              dc.send(JSON.stringify({
-                type: 'response.create',
-                response: {
-                  output_modalities: ['audio'],
-                  instructions:
-                    `Speak in a warm, cheerful, upbeat female tone. Say exactly this, word for word, then stop: "${GREETING_LINE}"`
-                }
-              }))
-              return
-            }
-
-            if (msg.type === 'response.done' && greetingPlayed && !listeningOn) {
-              listeningOn = true
-              dc.send(JSON.stringify({
-                type: 'session.update',
-                session: {
-                  type: 'realtime',
-                  audio: {
-                    input: {
-                      turn_detection: {
-                        type: 'server_vad',
-                        silence_duration_ms: 2000,
-                        prefix_padding_ms: 300,
-                        create_response: true,
-                        interrupt_response: true
-                      }
-                    }
-                  }
-                }
-              }))
-            }
-          })
-        }
-
-        pc = new RTCPeerConnection()
-        setupRealtimeChannel(pc)
-
-        const audio = document.createElement('audio')
-        audio.autoplay = true
-
-        pc.ontrack = (e) => {
-          if (audio.srcObject !== e.streams[0]) {
-            audio.srcObject = e.streams[0]
-          }
-        }
-
-        localStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          }
-        })
-        pc.addTrack(localStream.getTracks()[0])
-
-        const offer = await pc.createOffer()
-        await pc.setLocalDescription(offer)
-
-        const sdpResponse = await fetch('/session', {
-          method: 'POST',
-          body: offer.sdp,
-          headers: {
-            'Content-Type': 'application/sdp'
-          }
-        })
-
-        if (!sdpResponse.ok) {
-          throw new Error(await sdpResponse.text())
-        }
-
-        const answer = { type: 'answer', sdp: await sdpResponse.text() }
-        await pc.setRemoteDescription(answer)
-
-        setActive()
-      } catch (err) {
-        console.error(err)
-        pc = null
-        if (localStream) {
-          try { localStream.getTracks().forEach(t => t.stop()) } catch {}
-          localStream = null
-        }
-        setBodyState('idle')
-        statusEl.textContent = isEmbedded ? '' : 'ERROR'
-        starting = false
-        sessionStarted = false
-        embedStarted = false
-        headlineEl.classList.remove('hide-soft')
-        hintEl.textContent = isEmbedded ? '' : 'Click outside this box to return to the website'
-      }
-    }
-
-    function startWhenVisible() {
-      if (embedStarted || pc || starting) return
-      embedStarted = true
-      toggleAssistant()
-    }
-
-    function waitUntilVisible(callback) {
-      function check() {
-        if (document.body.offsetWidth > 0 && document.body.offsetHeight > 0) {
-          callback()
-        } else {
-          requestAnimationFrame(check)
-        }
-      }
-      check()
-    }
-
-    if (isEmbedded) {
-      setBodyState('idle')
-      window.addEventListener('message', (e) => {
-        if (e.data?.type === 'voxtalk-stop') { embedStarted = false; hardStop() }
-      })
-      try { window.parent.postMessage({ type: 'voxtalk-ready' }, '*') } catch {}
-    } else {
-      setIdle()
-    }
-  </script>
-</body>
-</html>
+      if (session
