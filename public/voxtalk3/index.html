@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>VoxTalk 3</title>
-  <!-- voxtalk3-build: bare-orb -->
+  <!-- voxtalk3-build: one-voice-fix -->
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
@@ -31,7 +31,7 @@
   <div id="orb"></div>
   <script>
     var pc = null, stream = null, audio = null, dc = null, lock = false
-    var greetingDone = false, listening = false
+    var greetingSent = false, generationDone = false, listening = false, listenTimer = null
 
     var GREETING = "Hello! I'm the A.I. team member for A1 Professional Asphalt and Sealing L.L.C. How can I help you today?"
 
@@ -49,8 +49,10 @@
 
     function stop() {
       lock = false
-      greetingDone = false
+      greetingSent = false
+      generationDone = false
       listening = false
+      if (listenTimer) { clearTimeout(listenTimer); listenTimer = null }
       orb.classList.remove('on')
       if (dc && dc.readyState === 'open') {
         try { dc.send(JSON.stringify({ type: 'response.cancel' })) } catch (e) {}
@@ -61,8 +63,35 @@
       if (stream) { try { stream.getTracks().forEach(function (t) { t.stop() }) } catch (e) {} stream = null }
     }
 
+    function beginListening() {
+      if (listening || !pc || !dc) return
+      listening = true
+      mic(true)
+      dc.send(JSON.stringify({
+        type: 'session.update',
+        session: {
+          type: 'realtime',
+          audio: {
+            input: {
+              turn_detection: {
+                type: 'server_vad',
+                threshold: 0.65,
+                silence_duration_ms: 2500,
+                prefix_padding_ms: 400,
+                create_response: true,
+                interrupt_response: true
+              }
+            }
+          }
+        }
+      }))
+    }
+
     async function start() {
       lock = true
+      greetingSent = false
+      generationDone = false
+      listening = false
       try {
         pc = new RTCPeerConnection()
         dc = pc.createDataChannel('oai-events')
@@ -71,42 +100,30 @@
           var m
           try { m = JSON.parse(ev.data) } catch (e) { return }
 
-          if (m.type === 'session.created' && !greetingDone) {
+          if (m.type === 'session.created' && !greetingSent) {
+            greetingSent = true
             mic(false)
             dc.send(JSON.stringify({
               type: 'response.create',
               response: {
                 output_modalities: ['audio'],
-                instructions: 'Say exactly this once, then stop: "' + GREETING + '"'
+                instructions: 'Say exactly this once, word for word, then stop speaking: "' + GREETING + '"'
               }
             }))
             return
           }
 
-          if (m.type === 'response.done' && !greetingDone) {
-            greetingDone = true
-            mic(true)
-            if (!listening) {
-              listening = true
-              dc.send(JSON.stringify({
-                type: 'session.update',
-                session: {
-                  type: 'realtime',
-                  audio: {
-                    input: {
-                      turn_detection: {
-                        type: 'server_vad',
-                        threshold: 0.65,
-                        silence_duration_ms: 2500,
-                        prefix_padding_ms: 400,
-                        create_response: true,
-                        interrupt_response: true
-                      }
-                    }
-                  }
-                }
-              }))
-            }
+          if (m.type === 'response.done' && greetingSent && !generationDone) {
+            generationDone = true
+            return
+          }
+
+          if (m.type === 'output_audio_buffer.stopped' && generationDone && !listening) {
+            if (listenTimer) clearTimeout(listenTimer)
+            listenTimer = setTimeout(function () {
+              listenTimer = null
+              if (pc && !listening) beginListening()
+            }, 700)
           }
         }
 
