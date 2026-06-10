@@ -168,6 +168,7 @@
 
     body.starting #orb-container { pointer-events: none; opacity: 0.95; }
 
+    /* Embedded in the main A1 website iframe: no second box or black backdrop */
     body.embedded {
       background: transparent;
     }
@@ -205,6 +206,7 @@
       text-transform: uppercase;
       margin-top: 16px;
     }
+
 
     #stop-btn {
       display: none;
@@ -492,9 +494,7 @@
 
     if (isEmbedded) {
       setBodyState('idle')
-      waitUntilVisible(startWhenVisible)
       window.addEventListener('message', (e) => {
-        if (e.data?.type === 'voxtalk-start') startWhenVisible()
         if (e.data?.type === 'voxtalk-stop') { embedStarted = false; hardStop() }
       })
       try { window.parent.postMessage({ type: 'voxtalk-ready' }, '*') } catch {}
