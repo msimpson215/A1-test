@@ -3,437 +3,143 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>VoxTalk 3 — A1 AI Team Member</title>
-  <!-- voxtalk3-build: 20260609-standalone -->
-
+  <title>VoxTalk 3</title>
+  <!-- voxtalk3-build: bare-orb -->
   <style>
-    :root {
-      --bg1: #252525;
-      --bg2: #000000;
-      --yellow: #F5C518;
-      --muted: rgba(245, 197, 24, 0.70);
-      --muted2: rgba(245, 197, 24, 0.45);
-      --stroke: rgba(245, 197, 24, 0.22);
-      --panel: rgba(0, 0, 0, 0.25);
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    body {
-      background: radial-gradient(circle, var(--bg1) 0%, var(--bg2) 100%);
-      color: var(--yellow);
-      font-family: "Arial Narrow", Arial, sans-serif;
-      font-weight: 300;
-      user-select: none;
-    }
-
-    #stage {
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
+    #orb {
       position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-    }
-
-    /* Fixed-size panel — nothing shifts when state changes */
-    #panel {
-      width: min(460px, calc(100vw - 48px));
-      height: 520px;
-      border-radius: 18px;
-      padding: 20px 18px 16px;
-      background: var(--panel);
-      border: 1px solid var(--stroke);
-      backdrop-filter: blur(6px);
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    #headline {
-      font-size: 0.98rem;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      text-align: center;
-      line-height: 1.3;
-      color: var(--muted);
-      min-height: 2.6em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 8px;
-      margin: 0;
-    }
-
-    #orb-wrap {
+      top: 50%;
+      left: 50%;
       width: 220px;
       height: 220px;
-      flex-shrink: 0;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-    }
-
-    #orb-wrap.disabled { pointer-events: none; opacity: 0.85; }
-
-    .orb {
-      width: 220px;
-      height: 220px;
+      margin: -110px 0 0 -110px;
       border-radius: 50%;
-      background: url('/A1__asphalt_logo.jpeg') center / 70% no-repeat;
-      background-color: #111;
-      border: 3px solid var(--yellow);
-      box-shadow:
-        0 0 60px rgba(245, 197, 24, 0.4),
-        0 0 120px rgba(245, 197, 24, 0.15);
-      /* Glow only — no scale/transform so nothing jumps */
-      animation: steadyGlow 3s ease-in-out infinite;
-    }
-
-    @keyframes steadyGlow {
-      0%, 100% {
-        box-shadow:
-          0 0 60px rgba(245, 197, 24, 0.4),
-          0 0 120px rgba(245, 197, 24, 0.15);
-        border-color: var(--yellow);
-      }
-      50% {
-        box-shadow:
-          0 0 75px rgba(245, 197, 24, 0.55),
-          0 0 150px rgba(245, 197, 24, 0.22);
-        border-color: #fff;
-      }
-    }
-
-    body.live .orb {
-      animation: liveGlow 2s ease-in-out infinite;
-    }
-
-    @keyframes liveGlow {
-      0%, 100% {
-        box-shadow:
-          0 0 70px rgba(245, 197, 24, 0.55),
-          0 0 140px rgba(245, 197, 24, 0.25);
-        border-color: #fff;
-      }
-      50% {
-        box-shadow:
-          0 0 85px rgba(245, 197, 24, 0.7),
-          0 0 170px rgba(245, 197, 24, 0.3);
-        border-color: var(--yellow);
-      }
-    }
-
-    #status {
-      font-size: 0.86rem;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      text-align: center;
-      line-height: 1.3;
-      color: var(--yellow);
-      min-height: 1.4em;
-      margin: 0;
-    }
-
-    #hint {
-      font-size: 0.82rem;
-      color: var(--muted2);
-      text-align: center;
-      line-height: 1.3;
-      min-height: 1.3em;
-      margin: 0;
-    }
-
-    #stop-btn {
-      visibility: hidden;
-      margin-top: 4px;
-      padding: 12px 28px;
-      border: 2px solid var(--yellow);
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.55);
-      color: var(--yellow);
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+      background: url('/A1__asphalt_logo.jpeg') center / 70% no-repeat #111;
+      border: 3px solid #F5C518;
+      box-shadow: 0 0 60px rgba(245,197,24,0.35);
       cursor: pointer;
     }
-
-    #stop-btn.visible { visibility: visible; }
-
-    #stop-btn:hover {
-      background: var(--yellow);
-      color: #111;
+    #orb.on {
+      border-color: #fff;
+      box-shadow: 0 0 80px rgba(245,197,24,0.6);
     }
-
-    #footer {
-      text-align: center;
-      opacity: 0.6;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      line-height: 1.3;
-      min-height: 2.4em;
-    }
-
-    #footer .brand { font-size: 0.82rem; display: block; }
-    #footer .tag { font-size: 0.72rem; opacity: 0.85; margin-top: 4px; display: block; }
   </style>
 </head>
-
 <body>
-  <div id="stage">
-    <div id="panel">
-      <p id="headline">Click the orb to start</p>
-
-      <div id="orb-wrap" onclick="startVoice()">
-        <div class="orb"></div>
-      </div>
-
-      <p id="status"></p>
-      <p id="hint">Allow microphone when prompted</p>
-
-      <button id="stop-btn" type="button" onclick="stopVoice(event)">Stop</button>
-
-      <div id="footer">
-        <span class="brand">A1 Professional Asphalt &amp; Sealing</span>
-        <span class="tag">VoxTalk 3 · Powered by Axon AI</span>
-      </div>
-    </div>
-  </div>
-
+  <div id="orb"></div>
   <script>
-    let pc = null
-    let localStream = null
-    let remoteAudio = null
-    let oaiEvents = null
-    let listenTimer = null
-    let busy = false
-    let live = false
+    var pc = null, stream = null, audio = null, dc = null, lock = false
+    var greetingDone = false, listening = false
 
-    const headlineEl = document.getElementById('headline')
-    const statusEl = document.getElementById('status')
-    const hintEl = document.getElementById('hint')
-    const orbWrap = document.getElementById('orb-wrap')
-    const stopBtn = document.getElementById('stop-btn')
+    var GREETING = "Hello! I'm the A.I. team member for A1 Professional Asphalt and Sealing L.L.C. How can I help you today?"
 
-    const GREETING =
-      "Hello! I'm the A.I. team member for A1 Professional Asphalt and Sealing L.L.C. How can I help you today?"
-
-    function setUi(state) {
-      live = state === 'live'
-      document.body.classList.toggle('live', live)
-      orbWrap.classList.toggle('disabled', state === 'starting' || state === 'live')
-      stopBtn.classList.toggle('visible', state === 'live' || state === 'starting')
-
-      if (state === 'idle') {
-        headlineEl.textContent = 'Click the orb to start'
-        statusEl.textContent = ''
-        hintEl.textContent = 'Allow microphone when prompted'
-      } else if (state === 'starting') {
-        headlineEl.textContent = 'Connecting…'
-        statusEl.textContent = 'One moment'
-        hintEl.textContent = 'Allow microphone if asked'
-      } else if (state === 'live') {
-        headlineEl.textContent = 'Listening'
-        statusEl.textContent = 'Speak anytime'
-        hintEl.textContent = 'Tap Stop when finished'
-      } else if (state === 'error') {
-        headlineEl.textContent = 'Could not connect'
-        statusEl.textContent = 'Tap the orb to try again'
-        hintEl.textContent = 'Check mic permission and try again'
-      }
+    var orb = document.getElementById('orb')
+    orb.onclick = function () {
+      if (lock) return
+      if (pc) { stop(); return }
+      start()
     }
 
-    function setMic(on) {
-      if (!localStream) return
-      try {
-        localStream.getAudioTracks().forEach((t) => { t.enabled = on })
-      } catch {}
+    function mic(on) {
+      if (!stream) return
+      stream.getAudioTracks().forEach(function (t) { t.enabled = on })
     }
 
-    async function getMicStream() {
-      const base = {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-        channelCount: 1,
-        sampleRate: 48000
+    function stop() {
+      lock = false
+      greetingDone = false
+      listening = false
+      orb.classList.remove('on')
+      if (dc && dc.readyState === 'open') {
+        try { dc.send(JSON.stringify({ type: 'response.cancel' })) } catch (e) {}
       }
-      const advanced = [
-        { echoCancellation: true },
-        { noiseSuppression: true },
-        { autoGainControl: true },
-        { googEchoCancellation: true },
-        { googNoiseSuppression: true },
-        { googAutoGainControl: true },
-        { googHighpassFilter: true }
-      ]
-      try {
-        return await navigator.mediaDevices.getUserMedia({
-          audio: { ...base, advanced }
-        })
-      } catch {
-        return await navigator.mediaDevices.getUserMedia({ audio: base })
-      }
+      dc = null
+      if (audio) { try { audio.pause(); audio.srcObject = null; audio.remove() } catch (e) {} audio = null }
+      if (pc) { try { pc.close() } catch (e) {} pc = null }
+      if (stream) { try { stream.getTracks().forEach(function (t) { t.stop() }) } catch (e) {} stream = null }
     }
 
-    async function stopVoice(e) {
-      if (e) e.stopPropagation()
-      await teardown()
-      setUi('idle')
-    }
-
-    async function teardown() {
-      busy = false
-      if (listenTimer) { clearTimeout(listenTimer); listenTimer = null }
-      if (oaiEvents && oaiEvents.readyState === 'open') {
-        try { oaiEvents.send(JSON.stringify({ type: 'response.cancel' })) } catch {}
-      }
-      oaiEvents = null
-      if (remoteAudio) {
-        try {
-          remoteAudio.pause()
-          remoteAudio.srcObject = null
-          remoteAudio.remove()
-        } catch {}
-        remoteAudio = null
-      }
-      if (pc) { try { pc.close() } catch {} pc = null }
-      if (localStream) {
-        try { localStream.getTracks().forEach((t) => t.stop()) } catch {}
-        localStream = null
-      }
-    }
-
-    function setupChannel() {
-      const dc = pc.createDataChannel('oai-events')
-      oaiEvents = dc
-      let greetingSent = false
-      let greetingDone = false
-      let listeningOn = false
-
-      function enableListening() {
-        if (listeningOn || !pc) return
-        listeningOn = true
-        setMic(true)
-        dc.send(JSON.stringify({
-          type: 'session.update',
-          session: {
-            type: 'realtime',
-            audio: {
-              input: {
-                turn_detection: {
-                  type: 'server_vad',
-                  threshold: 0.65,
-                  silence_duration_ms: 2500,
-                  prefix_padding_ms: 400,
-                  create_response: true,
-                  interrupt_response: false
-                }
-              }
-            }
-          }
-        }))
-      }
-
-      dc.addEventListener('message', (event) => {
-        let msg
-        try { msg = JSON.parse(event.data) } catch { return }
-
-        if (msg.type === 'session.created' && !greetingSent) {
-          greetingSent = true
-          setMic(false)
-          dc.send(JSON.stringify({
-            type: 'session.update',
-            session: {
-              type: 'realtime',
-              audio: { input: { turn_detection: null } }
-            }
-          }))
-          dc.send(JSON.stringify({
-            type: 'response.create',
-            response: {
-              output_modalities: ['audio'],
-              instructions: 'Say exactly this, word for word, then stop: "' + GREETING + '"'
-            }
-          }))
-          return
-        }
-
-        if (msg.type === 'response.done' && greetingSent && !listeningOn) {
-          greetingDone = true
-          return
-        }
-
-        if (msg.type === 'output_audio_buffer.stopped' && greetingDone && !listeningOn) {
-          if (listenTimer) clearTimeout(listenTimer)
-          listenTimer = setTimeout(() => {
-            listenTimer = null
-            if (pc) enableListening()
-          }, 800)
-        }
-      })
-    }
-
-    async function startVoice() {
-      if (busy || pc) return
-      busy = true
-      setUi('starting')
-
+    async function start() {
+      lock = true
       try {
         pc = new RTCPeerConnection()
-        setupChannel()
+        dc = pc.createDataChannel('oai-events')
 
-        remoteAudio = document.createElement('audio')
-        remoteAudio.autoplay = true
-        remoteAudio.setAttribute('playsinline', '')
-        document.body.appendChild(remoteAudio)
+        dc.onmessage = function (ev) {
+          var m
+          try { m = JSON.parse(ev.data) } catch (e) { return }
 
-        pc.ontrack = (e) => {
-          if (remoteAudio.srcObject !== e.streams[0]) {
-            remoteAudio.srcObject = e.streams[0]
+          if (m.type === 'session.created' && !greetingDone) {
+            mic(false)
+            dc.send(JSON.stringify({
+              type: 'response.create',
+              response: {
+                output_modalities: ['audio'],
+                instructions: 'Say exactly this once, then stop: "' + GREETING + '"'
+              }
+            }))
+            return
+          }
+
+          if (m.type === 'response.done' && !greetingDone) {
+            greetingDone = true
+            mic(true)
+            if (!listening) {
+              listening = true
+              dc.send(JSON.stringify({
+                type: 'session.update',
+                session: {
+                  type: 'realtime',
+                  audio: {
+                    input: {
+                      turn_detection: {
+                        type: 'server_vad',
+                        threshold: 0.65,
+                        silence_duration_ms: 2500,
+                        prefix_padding_ms: 400,
+                        create_response: true,
+                        interrupt_response: true
+                      }
+                    }
+                  }
+                }
+              }))
+            }
           }
         }
 
-        localStream = await getMicStream()
-        setMic(false)
-        pc.addTrack(localStream.getTracks()[0])
+        audio = document.createElement('audio')
+        audio.autoplay = true
+        audio.playsInline = true
+        document.body.appendChild(audio)
+        pc.ontrack = function (e) { audio.srcObject = e.streams[0] }
 
-        const offer = await pc.createOffer()
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        })
+        mic(false)
+        pc.addTrack(stream.getTracks()[0])
+
+        var offer = await pc.createOffer()
         await pc.setLocalDescription(offer)
 
-        const res = await fetch('/voxtalk3/session', {
+        var res = await fetch('/voxtalk3/session', {
           method: 'POST',
-          body: offer.sdp,
-          headers: { 'Content-Type': 'application/sdp' }
+          headers: { 'Content-Type': 'application/sdp' },
+          body: offer.sdp
         })
-
         if (!res.ok) throw new Error(await res.text())
 
-        await pc.setRemoteDescription({
-          type: 'answer',
-          sdp: await res.text()
-        })
-
-        setUi('live')
-      } catch (err) {
-        console.error(err)
-        await teardown()
-        setUi('error')
-      } finally {
-        busy = false
+        await pc.setRemoteDescription({ type: 'answer', sdp: await res.text() })
+        orb.classList.add('on')
+      } catch (e) {
+        console.error(e)
+        stop()
       }
+      lock = false
     }
-
-    setUi('idle')
   </script>
 </body>
 </html>

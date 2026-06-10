@@ -51,23 +51,16 @@ const sessionConfig = JSON.stringify({
   }
 });
 
-/* VoxTalk 3 standalone — tuned for loud job-site / field environments */
+/* VoxTalk 3 — bare orb, one voice, no auto-greet from server */
 const voxtalk3SessionConfig = JSON.stringify({
   type: 'realtime',
   model: 'gpt-realtime-1.5',
   output_modalities: ['audio'],
-  instructions: INSTRUCTIONS + '\nThe caller may be in a loud environment (job site, traffic, equipment). Ignore background noise. Only respond to clear speech directed at you.',
+  instructions: 'You are the A1 Asphalt AI assistant. Keep answers to 1-3 sentences. Say Sealing not Ceiling. No prices — say call (618) 929-3301. Do NOT greet unless the user speaks first.',
   audio: {
     input: {
       noise_reduction: { type: 'far_field' },
-      turn_detection: {
-        type: 'server_vad',
-        threshold: 0.65,
-        silence_duration_ms: 2500,
-        prefix_padding_ms: 400,
-        create_response: false,
-        interrupt_response: false
-      }
+      turn_detection: null
     },
     output: {
       voice: 'coral'
