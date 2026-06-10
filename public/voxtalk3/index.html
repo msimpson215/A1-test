@@ -4,16 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>VoxTalk 3</title>
-  <!-- voxtalk3-build: one-voice-fix -->
+  <!-- build:20260609-nogreet -->
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
     #orb {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 220px;
-      height: 220px;
+      top: 50%; left: 50%;
+      width: 220px; height: 220px;
       margin: -110px 0 0 -110px;
       border-radius: 50%;
       background: url('/A1__asphalt_logo.jpeg') center / 70% no-repeat #111;
@@ -21,109 +19,70 @@
       box-shadow: 0 0 60px rgba(245,197,24,0.35);
       cursor: pointer;
     }
-    #orb.on {
-      border-color: #fff;
-      box-shadow: 0 0 80px rgba(245,197,24,0.6);
-    }
+    #orb.on { border-color: #fff; box-shadow: 0 0 80px rgba(245,197,24,0.6); }
   </style>
 </head>
 <body>
   <div id="orb"></div>
   <script>
-    var pc = null, stream = null, audio = null, dc = null, lock = false
-    var greetingSent = false, generationDone = false, listening = false, listenTimer = null
+    var pc, stream, audio, dc, lock
+    var live = false
 
-    var GREETING = "Hello! I'm the A.I. team member for A1 Professional Asphalt and Sealing L.L.C. How can I help you today?"
-
-    var orb = document.getElementById('orb')
-    orb.onclick = function () {
+    document.getElementById('orb').onclick = function () {
       if (lock) return
-      if (pc) { stop(); return }
-      start()
+      if (live) { hangup(); return }
+      connect()
     }
 
-    function mic(on) {
-      if (!stream) return
-      stream.getAudioTracks().forEach(function (t) { t.enabled = on })
-    }
-
-    function stop() {
+    function hangup() {
+      live = false
       lock = false
-      greetingSent = false
-      generationDone = false
-      listening = false
-      if (listenTimer) { clearTimeout(listenTimer); listenTimer = null }
-      orb.classList.remove('on')
+      document.getElementById('orb').classList.remove('on')
       if (dc && dc.readyState === 'open') {
         try { dc.send(JSON.stringify({ type: 'response.cancel' })) } catch (e) {}
       }
       dc = null
-      if (audio) { try { audio.pause(); audio.srcObject = null; audio.remove() } catch (e) {} audio = null }
+      if (audio) { try { audio.pause(); audio.remove() } catch (e) {} audio = null }
       if (pc) { try { pc.close() } catch (e) {} pc = null }
       if (stream) { try { stream.getTracks().forEach(function (t) { t.stop() }) } catch (e) {} stream = null }
     }
 
-    function beginListening() {
-      if (listening || !pc || !dc) return
-      listening = true
-      mic(true)
-      dc.send(JSON.stringify({
-        type: 'session.update',
-        session: {
-          type: 'realtime',
-          audio: {
-            input: {
-              turn_detection: {
-                type: 'server_vad',
-                threshold: 0.65,
-                silence_duration_ms: 2500,
-                prefix_padding_ms: 400,
-                create_response: true,
-                interrupt_response: true
-              }
-            }
-          }
-        }
-      }))
-    }
-
-    async function start() {
+    async function connect() {
       lock = true
-      greetingSent = false
-      generationDone = false
-      listening = false
       try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1
+          }
+        })
+
         pc = new RTCPeerConnection()
         dc = pc.createDataChannel('oai-events')
-
         dc.onmessage = function (ev) {
           var m
           try { m = JSON.parse(ev.data) } catch (e) { return }
-
-          if (m.type === 'session.created' && !greetingSent) {
-            greetingSent = true
-            mic(false)
+          if (m.type === 'session.created') {
             dc.send(JSON.stringify({
-              type: 'response.create',
-              response: {
-                output_modalities: ['audio'],
-                instructions: 'Say exactly this once, word for word, then stop speaking: "' + GREETING + '"'
+              type: 'session.update',
+              session: {
+                type: 'realtime',
+                audio: {
+                  input: {
+                    turn_detection: {
+                      type: 'server_vad',
+                      threshold: 0.7,
+                      silence_duration_ms: 2800,
+                      prefix_padding_ms: 400,
+                      create_response: true,
+                      interrupt_response: true
+                    }
+                  }
+                }
               }
             }))
-            return
-          }
-
-          if (m.type === 'response.done' && greetingSent && !generationDone) {
-            generationDone = true
-            return
-          }
-
-          if (m.type === 'output_audio_buffer.stopped' && generationDone && !listening) {
-            if (listenTimer) clearTimeout(listenTimer)
-            listenTimer = setTimeout(function () {
-              listenTimer = null
-              if (pc && !listening) beginListening()
-            }, 700)
           }
         }
 
@@ -132,11 +91,6 @@
         audio.playsInline = true
         document.body.appendChild(audio)
         pc.ontrack = function (e) { audio.srcObject = e.streams[0] }
-
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-        })
-        mic(false)
         pc.addTrack(stream.getTracks()[0])
 
         var offer = await pc.createOffer()
@@ -150,10 +104,11 @@
         if (!res.ok) throw new Error(await res.text())
 
         await pc.setRemoteDescription({ type: 'answer', sdp: await res.text() })
-        orb.classList.add('on')
+        live = true
+        document.getElementById('orb').classList.add('on')
       } catch (e) {
         console.error(e)
-        stop()
+        hangup()
       }
       lock = false
     }
