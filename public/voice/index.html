@@ -2,125 +2,504 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>VoxTalk</title>
-  <!-- build:orb-only -->
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>A1 Asphalt & Sealing</title>
+  <!-- voxtalk-build: 20260603-691-restore -->
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
-    #orb {
+    :root{
+      --bg1:#252525;
+      --bg2:#000000;
+      --yellow:#F5C518;
+      --muted: rgba(245,197,24,0.70);
+      --muted2: rgba(245,197,24,0.45);
+      --stroke: rgba(245,197,24,0.22);
+      --panel: rgba(0,0,0,0.25);
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: radial-gradient(circle, var(--bg1) 0%, var(--bg2) 100%);
+      color: var(--yellow);
+      font-family: "Arial Narrow", Arial, sans-serif;
+      font-weight: 300;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #overlay{
       position: fixed;
-      top: 50%;
-      left: 50%;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+    }
+
+    #panel{
+      width: min(460px, calc(100vw - 44px));
+      border-radius: 18px;
+      padding: 18px 18px 14px;
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #headline {
+      font-size: 0.98rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.2;
+      color: var(--muted);
+      padding: 0 6px;
+      min-height: 2.4em;
+      display: grid;
+      place-items: center;
+    }
+    .hide-soft { visibility: hidden; }
+
+    #orb-container {
       width: 220px;
       height: 220px;
-      margin: -110px 0 0 -110px;
-      border-radius: 50%;
-      background: url('/A1__asphalt_logo.jpeg') center / 70% no-repeat #111;
-      border: 3px solid #F5C518;
-      box-shadow: 0 0 60px rgba(245,197,24,0.35);
       cursor: pointer;
+      display: grid;
+      place-items: center;
     }
-    #orb.on { border-color: #fff; box-shadow: 0 0 80px rgba(245,197,24,0.6); }
+
+    .orb {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: url('/A1__asphalt_logo.jpeg') center / 70% no-repeat;
+      background-color: #111;
+      border: 3px solid var(--yellow);
+      box-shadow:
+        0 0 60px rgba(245, 197, 24, 0.4),
+        0 0 120px rgba(245, 197, 24, 0.15),
+        0 0 200px rgba(245, 197, 24, 0.08);
+      transform: scale(1);
+      animation: orbPulse 3s ease-in-out infinite;
+      transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+    }
+
+    #orb-container:hover .orb {
+      transform: scale(1.03);
+    }
+
+    body.active .orb {
+      animation: orbActive 1.35s infinite alternate ease-in-out;
+    }
+
+    @keyframes orbPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow:
+          0 0 60px rgba(245, 197, 24, 0.4),
+          0 0 120px rgba(245, 197, 24, 0.15),
+          0 0 200px rgba(245, 197, 24, 0.08);
+        border-color: var(--yellow);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow:
+          0 0 80px rgba(245, 197, 24, 0.6),
+          0 0 160px rgba(245, 197, 24, 0.25),
+          0 0 260px rgba(245, 197, 24, 0.12);
+        border-color: #fff;
+      }
+    }
+
+    @keyframes orbActive {
+      0% {
+        transform: scale(1.05);
+        box-shadow:
+          0 0 80px rgba(245, 197, 24, 0.6),
+          0 0 160px rgba(245, 197, 24, 0.25),
+          0 0 260px rgba(245, 197, 24, 0.12);
+        border-color: #fff;
+      }
+      100% {
+        transform: scale(1.1);
+        box-shadow:
+          0 0 100px rgba(245, 197, 24, 0.8),
+          0 0 200px rgba(245, 197, 24, 0.35),
+          0 0 300px rgba(245, 197, 24, 0.15);
+        border-color: var(--yellow);
+      }
+    }
+
+    #status-text{
+      font-size: 0.86rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.2;
+      color: var(--yellow);
+      opacity: 0.90;
+      min-height: 1.2em;
+    }
+
+    #hint{
+      font-size: 0.82rem;
+      color: var(--muted2);
+      text-align: center;
+      line-height: 1.2;
+      min-height: 1.1em;
+      margin-top: -2px;
+    }
+
+    #footer {
+      text-align: center;
+      opacity: 0.60;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+
+    #footer .brand { font-size: 0.82rem; }
+    #footer .phone { font-size: 0.78rem; opacity: 0.9; margin-top: 4px; }
+
+    body.starting #orb-container { pointer-events: none; opacity: 0.95; }
+
+    body.embedded {
+      background: transparent;
+    }
+
+    body.embedded #overlay {
+      padding: 0;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    body.embedded #panel {
+      width: auto;
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      backdrop-filter: none;
+      pointer-events: auto;
+    }
+
+    body.embedded #headline,
+    body.embedded #footer {
+      display: none;
+    }
+
+    body.embedded #orb-container {
+      width: 260px;
+      height: 260px;
+    }
+
+    body.embedded #hint {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-top: 16px;
+    }
+
+    #stop-btn {
+      display: none;
+      margin-top: 18px;
+      padding: 12px 28px;
+      border: 2px solid var(--yellow);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.55);
+      color: var(--yellow);
+      font-family: "Arial Narrow", Arial, sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    #stop-btn:hover {
+      background: var(--yellow);
+      color: #111;
+    }
+
+    body.active #stop-btn,
+    body.starting #stop-btn {
+      display: inline-block;
+    }
+
+    body.embedded #stop-btn {
+      position: fixed;
+      bottom: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10003;
+      margin-top: 0;
+    }
+
+    body.embedded.idle #hint,
+    body.embedded.starting #status-text {
+      display: none;
+    }
+
+    /* FIX: alignment only — orb stays centered when start/stop UI appears */
+    #headline, #hint, #footer, #status-text, #stop-btn { display: none !important; }
+    #overlay { display: block; padding: 0; }
+    #panel {
+      position: fixed; inset: 0; width: auto; max-width: none;
+      padding: 0; gap: 0; background: transparent; border: none;
+      box-shadow: none; backdrop-filter: none;
+    }
+    #orb-container {
+      position: fixed; top: 50%; left: 50%;
+      width: 220px; height: 220px;
+      transform: translate(-50%, -50%); z-index: 2;
+    }
+    body.active #stop-btn, body.starting #stop-btn { display: none !important; }
   </style>
 </head>
-<body>
-  <div id="orb"></div>
+
+<body class="idle">
+  <div id="overlay">
+    <div id="panel">
+      <div id="headline">Click to Start a Conversation</div>
+
+      <div id="orb-container" onclick="toggleAssistant()">
+        <div class="orb"></div>
+      </div>
+
+      <div id="status-text"></div>
+      <div id="hint">Click outside this box to return to the website</div>
+
+      <button id="stop-btn" type="button" onclick="stopAndClose(event)">Stop Conversation</button>
+
+      <div id="footer">
+        <div class="brand">A1 Asphalt &amp; Sealing</div>
+        <div class="phone">(618) 929-3301</div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    var pc, stream, audio, dc, lock, live = false
-    var embedded = window.self !== window.top
-    var orb = document.getElementById('orb')
+    let pc = null
+    let localStream = null
+    let starting = false
+    let sessionStarted = false
+    let embedStarted = false
 
-    orb.onclick = function () {
-      if (embedded) return
-      if (lock) return
-      if (live) { hangup(); return }
-      connect()
+    const isEmbedded = window.self !== window.top
+    const statusEl = document.getElementById('status-text')
+    const headlineEl = document.getElementById('headline')
+    const hintEl = document.getElementById('hint')
+
+    function setBodyState(state) {
+      document.body.className = isEmbedded ? `${state} embedded` : state
     }
 
-    function hangup() {
-      live = false
-      lock = false
-      orb.classList.remove('on')
-      if (dc && dc.readyState === 'open') {
-        try { dc.send(JSON.stringify({ type: 'response.cancel' })) } catch (e) {}
+    function setIdle(){
+      setBodyState('idle')
+      statusEl.textContent = ''
+      headlineEl.classList.remove('hide-soft')
+      hintEl.textContent = isEmbedded ? '' : 'Click outside this box to return to the website'
+      starting = false
+    }
+
+    function setStarting(){
+      setBodyState('starting')
+      statusEl.textContent = isEmbedded ? '' : 'STARTING…'
+      headlineEl.classList.remove('hide-soft')
+      hintEl.textContent = isEmbedded ? '' : 'Click outside this box to return to the website'
+    }
+
+    function setActive(){
+      setBodyState('active')
+      statusEl.textContent = ''
+      headlineEl.classList.add('hide-soft')
+      hintEl.textContent = isEmbedded ? 'Tap Stop to end' : 'Click Stop to end'
+    }
+
+    async function stopAndClose(e){
+      if (e) e.stopPropagation()
+      await hardStop()
+      embedStarted = false
+      sessionStarted = false
+      try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch {}
+    }
+
+    async function hardStop(){
+      try{
+        if (pc) { try { pc.close() } catch {} pc = null }
+        if (localStream) {
+          try { localStream.getTracks().forEach(t => t.stop()) } catch {}
+          localStream = null
+        }
+      } finally {
+        sessionStarted = false
+        setIdle()
+        if (isEmbedded) try { window.parent.postMessage({ type: 'voxtalk-stopped' }, '*') } catch {}
       }
-      dc = null
-      if (audio) { try { audio.pause(); audio.remove() } catch (e) {} audio = null }
-      if (pc) { try { pc.close() } catch (e) {} pc = null }
-      if (stream) { try { stream.getTracks().forEach(function (t) { t.stop() }) } catch (e) {} stream = null }
-      if (embedded) try { window.parent.postMessage({ type: 'voxtalk-stopped' }, '*') } catch (e) {}
     }
 
-    async function connect() {
-      if (lock || live) return
-      lock = true
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 }
-        })
+    document.getElementById('overlay').addEventListener('click', async (e) => {
+      if (isEmbedded) return
+      if (e.target.id !== 'overlay') return
+      await hardStop()
+      try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch {}
+      try { window.close() } catch {}
+      try { history.back() } catch {}
+    })
 
-        pc = new RTCPeerConnection()
-        dc = pc.createDataChannel('oai-events')
-        dc.onmessage = function (ev) {
-          var m
-          try { m = JSON.parse(ev.data) } catch (e) { return }
-          if (m.type === 'session.created') {
-            dc.send(JSON.stringify({
-              type: 'session.update',
-              session: {
-                type: 'realtime',
-                audio: {
-                  input: {
-                    turn_detection: {
-                      type: 'server_vad',
-                      threshold: 0.7,
-                      silence_duration_ms: 2800,
-                      prefix_padding_ms: 400,
-                      create_response: true,
-                      interrupt_response: true
+    async function toggleAssistant(){
+      if (starting) return
+      if (pc) {
+        await stopAndClose()
+        return
+      }
+      if (sessionStarted) return
+
+      sessionStarted = true
+      starting = true
+      setStarting()
+
+      try {
+
+        const GREETING_LINE =
+          "Hello! I'm the artificial human team member for A1 Professional Asphalt and Sealing. How can I help you today?"
+
+        function setupRealtimeChannel(peerConnection) {
+          const dc = peerConnection.createDataChannel('oai-events')
+          let greetingPlayed = false
+          let listeningOn = false
+
+          dc.addEventListener('message', (event) => {
+            let msg
+            try { msg = JSON.parse(event.data) } catch { return }
+
+            if (msg.type === 'session.created' && !greetingPlayed) {
+              greetingPlayed = true
+              dc.send(JSON.stringify({
+                type: 'response.create',
+                response: {
+                  output_modalities: ['audio'],
+                  instructions:
+                    `Speak in a warm, cheerful, upbeat female tone. Say exactly this, word for word, then stop: "${GREETING_LINE}"`
+                }
+              }))
+              return
+            }
+
+            if (msg.type === 'response.done' && greetingPlayed && !listeningOn) {
+              listeningOn = true
+              dc.send(JSON.stringify({
+                type: 'session.update',
+                session: {
+                  type: 'realtime',
+                  audio: {
+                    input: {
+                      turn_detection: {
+                        type: 'server_vad',
+                        silence_duration_ms: 2000,
+                        prefix_padding_ms: 300,
+                        create_response: true,
+                        interrupt_response: true
+                      }
                     }
                   }
                 }
-              }
-            }))
+              }))
+            }
+          })
+        }
+
+        pc = new RTCPeerConnection()
+        setupRealtimeChannel(pc)
+
+        const audio = document.createElement('audio')
+        audio.autoplay = true
+
+        pc.ontrack = (e) => {
+          if (audio.srcObject !== e.streams[0]) {
+            audio.srcObject = e.streams[0]
           }
         }
 
-        audio = document.createElement('audio')
-        audio.autoplay = true
-        audio.playsInline = true
-        document.body.appendChild(audio)
-        pc.ontrack = function (e) { audio.srcObject = e.streams[0] }
-        pc.addTrack(stream.getTracks()[0])
+        localStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        })
+        pc.addTrack(localStream.getTracks()[0])
 
-        var offer = await pc.createOffer()
+        const offer = await pc.createOffer()
         await pc.setLocalDescription(offer)
 
-        var res = await fetch('/voxtalk3/session', {
+        const sdpResponse = await fetch('/session', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/sdp' },
-          body: offer.sdp
+          body: offer.sdp,
+          headers: {
+            'Content-Type': 'application/sdp'
+          }
         })
-        if (!res.ok) throw new Error(await res.text())
 
-        await pc.setRemoteDescription({ type: 'answer', sdp: await res.text() })
-        live = true
-        orb.classList.add('on')
-      } catch (e) {
-        console.error(e)
-        hangup()
+        if (!sdpResponse.ok) {
+          throw new Error(await sdpResponse.text())
+        }
+
+        const answer = { type: 'answer', sdp: await sdpResponse.text() }
+        await pc.setRemoteDescription(answer)
+
+        setActive()
+      } catch (err) {
+        console.error(err)
+        pc = null
+        if (localStream) {
+          try { localStream.getTracks().forEach(t => t.stop()) } catch {}
+          localStream = null
+        }
+        setBodyState('idle')
+        statusEl.textContent = isEmbedded ? '' : 'ERROR'
+        starting = false
+        sessionStarted = false
+        embedStarted = false
+        headlineEl.classList.remove('hide-soft')
+        hintEl.textContent = isEmbedded ? '' : 'Click outside this box to return to the website'
       }
-      lock = false
     }
 
-    if (embedded) {
-      window.addEventListener('message', function (e) {
-        if (!e.data) return
-        if (e.data.type === 'voxtalk-start') connect()
-        if (e.data.type === 'voxtalk-stop') hangup()
+    function startWhenVisible() {
+      if (embedStarted || pc || starting) return
+      embedStarted = true
+      toggleAssistant()
+    }
+
+    function waitUntilVisible(callback) {
+      function check() {
+        if (document.body.offsetWidth > 0 && document.body.offsetHeight > 0) {
+          callback()
+        } else {
+          requestAnimationFrame(check)
+        }
+      }
+      check()
+    }
+
+    if (isEmbedded) {
+      setBodyState('idle')
+      waitUntilVisible(startWhenVisible)
+      window.addEventListener('message', (e) => {
+        if (e.data?.type === 'voxtalk-start') startWhenVisible()
+        if (e.data?.type === 'voxtalk-stop') { embedStarted = false; hardStop() }
       })
-      try { window.parent.postMessage({ type: 'voxtalk-ready' }, '*') } catch (e) {}
+      try { window.parent.postMessage({ type: 'voxtalk-ready' }, '*') } catch {}
+    } else {
+      setIdle()
     }
   </script>
 </body>
