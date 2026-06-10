@@ -108,25 +108,31 @@ app.post('/voxtalk3/session', express.text({ type: ['application/sdp', 'text/pla
   }
 });
 
-app.use(express.static(publicDir));
-
 const voxtalk3Page = path.join(publicDir, 'voxtalk3', 'index.html');
 const voicePage = path.join(publicDir, 'voice', 'index.html');
 
+function sendOrbPage(res, file) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.sendFile(file);
+}
+
 app.get(['/voxtalk3', '/voxtalk3/'], (req, res) => {
-  res.sendFile(voxtalk3Page);
+  sendOrbPage(res, voxtalk3Page);
 });
 
 app.get(['/voice', '/voice/'], (req, res) => {
-  res.sendFile(voicePage);
+  sendOrbPage(res, voicePage);
 });
 
 app.get('/', (req, res) => {
   if (process.env.VOXTALK3_ROOT === '1') {
-    return res.sendFile(voxtalk3Page);
+    return sendOrbPage(res, voxtalk3Page);
   }
   res.sendFile(path.join(publicDir, 'index.html'));
 });
+
+app.use(express.static(publicDir));
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
