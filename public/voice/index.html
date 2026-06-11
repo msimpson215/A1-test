@@ -368,7 +368,10 @@
 
       try {
 
-        // Single opening trigger — only place "Hello" is fired.
+        // Single opening trigger — the only place the greeting is defined.
+        const OPENING_LINE =
+          "Hello, welcome to A1 Professional Asphalt and Sealing. I'm an artificial team member here to answer any questions you might have. How can I help you today?"
+
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
           let helloSent = false
@@ -384,7 +387,7 @@
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
-                  instructions: 'Say exactly: Hello. Then stop.'
+                  instructions: `Say exactly this, word for word, then stop: "${OPENING_LINE}"`
                 }
               }))
               return
