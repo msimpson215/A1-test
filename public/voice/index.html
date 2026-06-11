@@ -368,9 +368,6 @@
 
       try {
 
-        const GREETING_LINE =
-          "Hello! I'm the artificial human team member for A1 Professional Asphalt and Sealing. How can I help you today?"
-
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
           let greetingPlayed = false
@@ -386,8 +383,7 @@
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
-                  instructions:
-                    `Speak in a warm, cheerful, upbeat female tone. Say exactly this, word for word, then stop: "${GREETING_LINE}"`
+                  instructions: 'Say exactly one word: "Hello". Then stop. Do not add anything else.'
                 }
               }))
               return
