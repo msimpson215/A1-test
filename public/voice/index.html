@@ -368,36 +368,29 @@
 
       try {
 
+        // Single opening trigger — only place "Hello" is fired.
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
-          let greetingPlayed = false
+          let helloSent = false
           let listeningOn = false
 
           dc.addEventListener('message', (event) => {
             let msg
             try { msg = JSON.parse(event.data) } catch { return }
 
-            if (msg.type === 'session.created' && !greetingPlayed) {
-              greetingPlayed = true
-              dc.send(JSON.stringify({
-                type: 'session.update',
-                session: {
-                  type: 'realtime',
-                  instructions:
-                    'Wait silently after hello. Do NOT introduce yourself. Do NOT list topics. Do NOT ask how you can help. Answer only after the user speaks.'
-                }
-              }))
+            if (msg.type === 'session.created' && !helloSent) {
+              helloSent = true
               dc.send(JSON.stringify({
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
-                  instructions: 'Say exactly one word: "Hello". Then stop. Do not add anything else.'
+                  instructions: 'Say exactly: Hello. Then stop.'
                 }
               }))
               return
             }
 
-            if (msg.type === 'response.done' && greetingPlayed && !listeningOn) {
+            if (msg.type === 'response.done' && helloSent && !listeningOn) {
               listeningOn = true
               dc.send(JSON.stringify({
                 type: 'session.update',

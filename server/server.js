@@ -10,17 +10,17 @@ app.use((req, res, next) => {
   next();
 });
 
-const INSTRUCTIONS = `You assist with A1 Professional Asphalt and Sealing (St. Louis area).
-Wait until the user speaks. Do NOT greet. Do NOT introduce yourself. Do NOT list topics. Do NOT ask how you can help.
-After the user speaks, answer in 1-3 sentences. Say Sealing, never Ceiling.
-No prices or estimates — say: "For pricing, call (618) 929-3301."
+// Session behavior only. The opening "Hello" is triggered once in public/voice/index.html.
+const SESSION_INSTRUCTIONS = `You help with A1 Professional Asphalt and Sealing in the St. Louis area.
+Answer in 1-3 sentences after the user speaks. Say Sealing, never Ceiling.
+No prices — say: "For pricing, call (618) 929-3301."
 Off-topic: "I can only help with A1 asphalt and sealing services."`;
 
 const sessionConfig = JSON.stringify({
   type: 'realtime',
   model: 'gpt-realtime-1.5',
   output_modalities: ['audio'],
-  instructions: INSTRUCTIONS,
+  instructions: SESSION_INSTRUCTIONS,
   audio: {
     input: {
       turn_detection: {
@@ -37,50 +37,20 @@ const sessionConfig = JSON.stringify({
   }
 });
 
-/* VoxTalk 3 — bare orb, one voice, no auto-greet from server */
-const voxtalk3SessionConfig = JSON.stringify({
-  type: 'realtime',
-  model: 'gpt-realtime-1.5',
-  output_modalities: ['audio'],
-  instructions: 'You are the A1 Asphalt AI assistant. Wait for the user to speak first. Do NOT greet or say hello until they talk. Then answer in 1-3 sentences. Say Sealing not Ceiling. No prices — say call (618) 929-3301.',
-  audio: {
-    input: {
-      noise_reduction: { type: 'far_field' },
-      turn_detection: null
-    },
-    output: {
-      voice: 'coral'
-    }
-  }
-});
-
-const VOXTALK3_BACKEND = (process.env.VOXTALK3_BACKEND || 'https://a1-asphalt-voxtalk-3.onrender.com').replace(/\/$/, '');
-
-async function proxyVoxtalk3Session(sdp, res) {
-  const response = await fetch(`${VOXTALK3_BACKEND}/session`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/sdp' },
-    body: sdp
-  });
-
-  const body = await response.text();
-  if (!response.ok) {
-    console.error('VoxTalk3 proxy error:', response.status, body);
-    return res.status(response.status).type('application/json').send(body);
-  }
-
-  res.type('application/sdp').send(body);
-}
-
-async function createRealtimeSession(sdp, configJson, res) {
+async function createRealtimeSession(sdp, res) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return proxyVoxtalk3Session(sdp, res);
+    return res.status(503).json({
+      error: {
+        message: 'Voice is not configured. OPENAI_API_KEY is missing on this service.',
+        code: 'missing_api_key'
+      }
+    });
   }
 
   const fd = new FormData();
   fd.set('sdp', sdp);
-  fd.set('session', configJson);
+  fd.set('session', sessionConfig);
 
   const response = await fetch('https://api.openai.com/v1/realtime/calls', {
     method: 'POST',
@@ -101,7 +71,7 @@ async function createRealtimeSession(sdp, configJson, res) {
 
 app.post('/session', express.text({ type: ['application/sdp', 'text/plain'] }), async (req, res) => {
   try {
-    await createRealtimeSession(req.body, sessionConfig, res);
+    await createRealtimeSession(req.body, res);
   } catch (error) {
     console.error('Session error:', error);
     res.status(500).json({ error: 'API Failure' });
@@ -110,7 +80,7 @@ app.post('/session', express.text({ type: ['application/sdp', 'text/plain'] }), 
 
 app.post('/voxtalk3/session', express.text({ type: ['application/sdp', 'text/plain'] }), async (req, res) => {
   try {
-    await createRealtimeSession(req.body, voxtalk3SessionConfig, res);
+    await createRealtimeSession(req.body, res);
   } catch (error) {
     console.error('VoxTalk3 session error:', error);
     res.status(500).json({ error: 'API Failure' });
@@ -145,6 +115,5 @@ app.use(express.static(publicDir));
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  const voiceMode = process.env.OPENAI_API_KEY ? 'direct-openai' : `proxy:${VOXTALK3_BACKEND}`;
-  console.log(`A1 site + voice running on port ${PORT} (${voiceMode})`);
+  console.log(`A1 site + voice running on port ${PORT}`);
 });

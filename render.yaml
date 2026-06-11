@@ -7,5 +7,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "20"
-      - key: VOXTALK3_BACKEND
-        value: https://a1-asphalt-voxtalk-3.onrender.com
+      - key: OPENAI_API_KEY
+        fromService:
+          type: web
+          name: a1-asphalt-voxtalk-3
+          envVarKey: OPENAI_API_KEY
