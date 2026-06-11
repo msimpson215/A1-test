@@ -124,6 +124,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
+app.use((req, res, next) => {
+  if (/vox-bridge\.js|vox-overlay\.css|\/voice\/?$/.test(req.path)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+  }
+  next();
+});
+
 app.use(express.static(publicDir));
 
 const PORT = process.env.PORT || 10000;

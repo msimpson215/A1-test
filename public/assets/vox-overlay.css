@@ -1,4 +1,4 @@
-/* A1 VoxTalk — fullscreen energy orb (shared on every page) */
+/* A1 VoxTalk — fullscreen orb with rectangular energy frames (no circle rings) */
 
 #vox-overlay {
   display: none;
@@ -8,17 +8,12 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: radial-gradient(
-    circle at center,
-    rgba(0, 0, 0, 0.45) 0%,
-    rgba(0, 0, 0, 0.82) 55%,
-    rgba(0, 0, 0, 0.92) 100%
-  );
+  background: rgba(0, 0, 0, 0.78);
 }
 
 #vox-overlay.open {
   display: flex;
-  animation: voxIn 0.3s ease forwards;
+  animation: voxIn 0.25s ease forwards;
 }
 
 @keyframes voxIn {
@@ -26,53 +21,83 @@
   to { opacity: 1; }
 }
 
-/* Pulsing energy rings behind the orb */
-#vox-overlay.open::before,
-#vox-overlay.open::after {
-  content: '';
+.vox-energy {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  border-radius: 50%;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
-  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 
-#vox-overlay.open::before {
-  width: 320px;
-  height: 320px;
-  border: 1px solid rgba(245, 197, 24, 0.35);
+.vox-energy__frame {
+  position: absolute;
+  border: 1px solid rgba(245, 197, 24, 0.32);
+  border-radius: 2px;
   box-shadow:
-    0 0 60px rgba(245, 197, 24, 0.25),
-    0 0 120px rgba(245, 197, 24, 0.12),
-    inset 0 0 40px rgba(245, 197, 24, 0.06);
-  animation: energyRing 3s ease-in-out infinite;
+    0 0 36px rgba(245, 197, 24, 0.16),
+    inset 0 0 20px rgba(245, 197, 24, 0.05);
 }
 
-#vox-overlay.open::after {
-  width: 440px;
-  height: 440px;
-  border: 1px solid rgba(245, 197, 24, 0.15);
-  box-shadow: 0 0 100px rgba(245, 197, 24, 0.1);
-  animation: energyRing 3s ease-in-out infinite reverse;
+.vox-energy__frame--a {
+  width: 320px;
+  height: 280px;
+  animation: energyFrameA 3.2s ease-in-out infinite;
 }
 
-@keyframes energyRing {
+.vox-energy__frame--b {
+  width: 400px;
+  height: 340px;
+  border-color: rgba(245, 197, 24, 0.2);
+  animation: energyFrameB 4.1s ease-in-out infinite reverse;
+}
+
+.vox-energy__frame--c {
+  width: 260px;
+  height: 360px;
+  border-color: rgba(245, 197, 24, 0.26);
+  animation: energyFrameC 2.8s ease-in-out infinite;
+}
+
+@keyframes energyFrameA {
   0%, 100% {
-    opacity: 0.55;
-    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.42;
+    transform: scale(1) rotate(0deg);
   }
   50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.06);
+    opacity: 0.92;
+    transform: scale(1.05) rotate(2deg);
+  }
+}
+
+@keyframes energyFrameB {
+  0%, 100% {
+    opacity: 0.32;
+    transform: scale(1.02) rotate(-1deg);
+  }
+  50% {
+    opacity: 0.78;
+    transform: scale(0.96) rotate(-4deg);
+  }
+}
+
+@keyframes energyFrameC {
+  0%, 100% {
+    opacity: 0.38;
+    transform: scale(0.98) rotate(1deg);
+  }
+  50% {
+    opacity: 0.82;
+    transform: scale(1.06) rotate(3deg);
   }
 }
 
 #vox-overlay iframe {
   position: relative;
   z-index: 2;
-  width: 300px;
-  height: 300px;
+  width: min(420px, 90vw);
+  height: min(420px, 60vh);
   border: none;
   background: transparent;
   overflow: visible;

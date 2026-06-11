@@ -426,6 +426,9 @@
                   instructions: `Say exactly this, word for word, then stop: "${line}"`
                 }
               }))
+              if (isEmbedded) {
+                try { window.parent.postMessage({ type: 'voxtalk-greeted' }, '*') } catch {}
+              }
               return
             }
 
