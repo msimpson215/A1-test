@@ -9,6 +9,11 @@
     return document.getElementById('vox-iframe') || o.querySelector('iframe')
   }
 
+  function overlayOpen() {
+    var o = document.getElementById('vox-overlay')
+    return !!(o && o.classList.contains('open'))
+  }
+
   function post(frame, type) {
     if (!frame || !frame.contentWindow) return
     try {
@@ -33,6 +38,11 @@
   window.openVox = function () {
     var o = document.getElementById('vox-overlay')
     if (!o || closing) return
+
+    if (o.classList.contains('open')) {
+      closeVox(true)
+      return
+    }
 
     o.classList.add('open')
     o.style.display = window.getComputedStyle(o).display === 'flex' ? 'flex' : 'block'
@@ -66,7 +76,7 @@
     }
   }
 
-  window.closeVox = function () {
+  window.closeVox = function (immediate) {
     if (closing) return
     closing = true
 
@@ -90,7 +100,11 @@
 
     if (f && f.getAttribute('data-vox-ready') === '1' && sessionActive) {
       post(f, 'voxtalk-stop')
-      setTimeout(finishClose, 450)
+      if (immediate) {
+        finishClose()
+      } else {
+        setTimeout(finishClose, 450)
+      }
     } else {
       finishClose()
     }
@@ -114,7 +128,29 @@
 
     if (e.data.type === 'voxtalk-close') {
       sessionActive = false
-      if (!closing) window.closeVox()
+      if (!closing) closeVox(true)
     }
   })
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && overlayOpen()) {
+      closeVox(true)
+    }
+  })
+
+  window.addEventListener('pagehide', function () {
+    if (overlayOpen()) closeVox(true)
+  })
+
+  window.addEventListener('popstate', function () {
+    if (overlayOpen()) closeVox(true)
+  })
+
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a[href]')
+    if (!link || !overlayOpen()) return
+    var href = (link.getAttribute('href') || '').trim()
+    if (!href || href.charAt(0) === '#' || href.indexOf('javascript:') === 0) return
+    closeVox(true)
+  }, true)
 })()

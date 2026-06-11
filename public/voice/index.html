@@ -288,6 +288,8 @@
   <script>
     let pc = null
     let localStream = null
+    let remoteAudio = null
+    let eventsDc = null
     let starting = false
     let sessionStarted = false
     let embedStarted = false
@@ -325,14 +327,23 @@
 
     async function stopAndClose(e){
       if (e) e.stopPropagation()
-      await hardStop()
-      embedStarted = false
-      sessionStarted = false
-      try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch {}
+      stopSession()
     }
 
     async function hardStop(){
       try{
+        if (eventsDc && eventsDc.readyState === 'open') {
+          try { eventsDc.send(JSON.stringify({ type: 'response.cancel' })) } catch {}
+        }
+        eventsDc = null
+        if (remoteAudio) {
+          try {
+            remoteAudio.pause()
+            remoteAudio.srcObject = null
+            remoteAudio.remove()
+          } catch {}
+          remoteAudio = null
+        }
         if (pc) { try { pc.close() } catch {} pc = null }
         if (localStream) {
           try { localStream.getTracks().forEach(t => t.stop()) } catch {}
@@ -340,9 +351,17 @@
         }
       } finally {
         sessionStarted = false
+        starting = false
         setIdle()
         if (isEmbedded) try { window.parent.postMessage({ type: 'voxtalk-stopped' }, '*') } catch {}
       }
+    }
+
+    function stopSession(){
+      embedStarted = false
+      sessionStarted = false
+      hardStop()
+      if (isEmbedded) try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch {}
     }
 
     document.getElementById('overlay').addEventListener('click', async (e) => {
@@ -374,6 +393,7 @@
 
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
+          eventsDc = dc
           let helloSent = false
           let listeningOn = false
 
@@ -421,16 +441,16 @@
 
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-        const audio = document.createElement('audio')
-        audio.autoplay = true
-        audio.playsInline = true
-        document.body.appendChild(audio)
+        remoteAudio = document.createElement('audio')
+        remoteAudio.autoplay = true
+        remoteAudio.playsInline = true
+        document.body.appendChild(remoteAudio)
 
         pc.ontrack = (e) => {
-          if (audio.srcObject !== e.streams[0]) {
-            audio.srcObject = e.streams[0]
+          if (remoteAudio.srcObject !== e.streams[0]) {
+            remoteAudio.srcObject = e.streams[0]
           }
-          audio.play().catch(function (e) { console.error('audio play', e) })
+          remoteAudio.play().catch(function (e) { console.error('audio play', e) })
         }
 
         pc.addTrack(localStream.getTracks()[0])
@@ -482,11 +502,23 @@
       setBodyState('idle')
       window.addEventListener('message', (e) => {
         if (e.data?.type === 'voxtalk-start') startWhenVisible()
-        if (e.data?.type === 'voxtalk-stop') { embedStarted = false; hardStop() }
+        if (e.data?.type === 'voxtalk-stop') stopSession()
+      })
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && (pc || starting)) stopSession()
+      })
+      window.addEventListener('pagehide', () => {
+        if (pc || starting) stopSession()
       })
       try { window.parent.postMessage({ type: 'voxtalk-ready' }, '*') } catch {}
     } else {
       setIdle()
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && (pc || starting)) stopSession()
+      })
+      window.addEventListener('pagehide', () => {
+        if (pc || starting) stopSession()
+      })
     }
   </script>
 </body>
