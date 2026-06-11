@@ -5,6 +5,10 @@
   var sessionActive = false
   var greetingFinished = false
   var closing = false
+  var openedAt = 0
+  var suppressClickUntil = 0
+  var isTouchDevice = matchMedia('(pointer: coarse)').matches ||
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 
   try {
     if (sessionStorage.getItem('a1-vox-ver') !== STORAGE_VER) {
@@ -55,50 +59,74 @@
     if (menu) menu.classList.remove('open')
   }
 
-  var lastTriggerAt = 0
+  /* Android/iOS: mic must be requested during the user's tap — prime before iframe loads */
+  function primeMicFromGesture() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      try {
+        stream.getTracks().forEach(function (t) { t.stop() })
+      } catch (e) {}
+    }).catch(function () {})
+  }
 
   function isVoxTrigger(el) {
     if (!el) return false
     return el.matches('[data-vox-open], .ai-nav, .ai-orb, #aiOrb')
   }
 
-  function handleVoxTrigger(e) {
-    var trigger = e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb')
-    if (!isVoxTrigger(trigger)) return
-    var now = Date.now()
-    if (now - lastTriggerAt < 400) {
+  function handleVoxOpen(e) {
+    if (e && e.type === 'click' && Date.now() < suppressClickUntil) {
       e.preventDefault()
+      e.stopPropagation()
       return
     }
-    lastTriggerAt = now
-    e.preventDefault()
-    e.stopPropagation()
+
+    var trigger = e ? e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb') : null
+    if (e && !isVoxTrigger(trigger)) return
+
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
     closeMobileMenu()
     openVox()
   }
 
-  document.addEventListener('click', handleVoxTrigger, true)
-  document.addEventListener('touchend', function (e) {
-    if (isVoxTrigger(e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb'))) {
-      handleVoxTrigger(e)
+  document.addEventListener('pointerup', function (e) {
+    if (!isVoxTrigger(e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb'))) return
+    if (e.pointerType === 'touch') suppressClickUntil = Date.now() + 700
+    primeMicFromGesture()
+    handleVoxOpen(e)
+  }, true)
+
+  document.addEventListener('click', function (e) {
+    if (!isVoxTrigger(e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb'))) return
+    if (Date.now() < suppressClickUntil) {
+      e.preventDefault()
+      e.stopPropagation()
+      return
     }
-  }, { passive: false, capture: true })
+    if (isTouchDevice) return
+    handleVoxOpen(e)
+  }, true)
 
   window.openVox = function () {
     var o = document.getElementById('vox-overlay')
     if (!o || closing) return
 
     if (o.classList.contains('open')) {
-      closeVox(true)
+      if (Date.now() - openedAt < 700) return
+      closeVox()
       return
     }
 
     ensureEnergyField()
-    closeMobileMenu()
     greetingFinished = false
     o.classList.add('open')
     o.style.display = 'flex'
     lockScroll(true)
+    openedAt = Date.now()
 
     var f = iframe()
     if (!f) return
@@ -114,7 +142,11 @@
     function start() {
       if (closing) return
       sessionActive = true
-      post(f, { type: 'voxtalk-start', returning: returning })
+      post(f, {
+        type: 'voxtalk-start',
+        returning: returning,
+        mobile: isTouchDevice
+      })
     }
 
     f.onload = function () {
@@ -193,6 +225,7 @@
   document.addEventListener('click', function (e) {
     var o = document.getElementById('vox-overlay')
     if (!o || !o.classList.contains('open')) return
+    if (Date.now() - openedAt < 700) return
     if (o.contains(e.target)) return
     if (e.target.closest('[data-vox-open], .ai-nav, .ai-orb, #aiOrb')) return
     closeVox()
