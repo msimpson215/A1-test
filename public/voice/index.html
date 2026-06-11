@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260611-pinwheel-v6 -->
+  <!-- voxtalk-build: 20260608-v4-handshake-greeting-restored -->
 
   <style>
     :root{
@@ -166,13 +166,9 @@
     #footer .brand { font-size: 0.82rem; }
     #footer .phone { font-size: 0.78rem; opacity: 0.9; margin-top: 4px; }
 
-    body.starting #orb-container { opacity: 0.95; }
+    body.starting #orb-container { pointer-events: none; opacity: 0.95; }
 
-    html.embedded,
-    body.embedded {
-      background: transparent !important;
-    }
-
+    /* Embedded: logo orb only — pinwheel squares live in parent vox-overlay.css */
     body.embedded {
       background: transparent;
     }
@@ -184,31 +180,78 @@
     }
 
     body.embedded #panel {
-      width: auto;
+      width: 260px;
+      height: 260px;
       padding: 0;
       background: transparent;
       border: none;
       box-shadow: none;
       backdrop-filter: none;
       pointer-events: auto;
+      position: relative;
+      display: block;
     }
 
     body.embedded #headline,
-    body.embedded #footer {
-      display: none;
+    body.embedded #footer,
+    body.embedded #status-text,
+    body.embedded #hint,
+    body.embedded #stop-btn {
+      display: none !important;
     }
 
     body.embedded #orb-container {
       width: 260px;
       height: 260px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    body.embedded #hint {
-      color: rgba(255, 255, 255, 0.55);
+    body.embedded .orb {
+      animation: orbGlow 3s ease-in-out infinite;
+      transform: scale(1) !important;
+    }
+
+    body.embedded #orb-container:hover .orb,
+    body.embedded.active .orb,
+    body.embedded.starting .orb {
+      animation: orbGlow 3s ease-in-out infinite;
+      transform: scale(1) !important;
+    }
+
+    @keyframes orbGlow {
+      0%, 100% {
+        box-shadow:
+          0 0 60px rgba(245, 197, 24, 0.4),
+          0 0 120px rgba(245, 197, 24, 0.15),
+          0 0 200px rgba(245, 197, 24, 0.08);
+        border-color: var(--yellow);
+      }
+      50% {
+        box-shadow:
+          0 0 80px rgba(245, 197, 24, 0.6),
+          0 0 160px rgba(245, 197, 24, 0.25),
+          0 0 260px rgba(245, 197, 24, 0.12);
+        border-color: #fff;
+      }
+    }
+
+    body.embedded #status-text.vox-error {
+      display: block !important;
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10004;
+      max-width: 92%;
+      text-transform: none;
+      letter-spacing: 0.04em;
       font-size: 0.72rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      margin-top: 16px;
+      color: #ff8888;
+      pointer-events: none;
     }
 
     #stop-btn {
@@ -237,98 +280,6 @@
     body.starting #stop-btn {
       display: inline-block;
     }
-
-    body.embedded #stop-btn {
-      position: fixed;
-      bottom: 72px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10003;
-      margin-top: 0;
-    }
-
-    body.embedded.idle #hint,
-    body.embedded.starting #status-text {
-      display: none;
-    }
-
-    body.embedded #headline,
-    body.embedded #hint,
-    body.embedded #footer,
-    body.embedded #status-text,
-    body.embedded #stop-btn { display: none !important; }
-
-    body.embedded #overlay { display: block; padding: 0; }
-
-    body.embedded #panel {
-      position: fixed; inset: 0; width: auto; max-width: none;
-      padding: 0; gap: 0; background: transparent; border: none;
-      box-shadow: none; backdrop-filter: none;
-    }
-
-    body.embedded #orb-container {
-      position: fixed; top: 50%; left: 50%;
-      width: 260px; height: 260px;
-      transform: translate(-50%, -50%); z-index: 2;
-      pointer-events: auto;
-    }
-
-    body.embedded.active #stop-btn,
-    body.embedded.starting #stop-btn { display: none !important; }
-
-    /* Embedded orb — logo only, NO circular glow rings */
-    body.embedded .orb {
-      box-shadow: none;
-      filter: drop-shadow(0 0 14px rgba(245, 197, 24, 0.32));
-      animation: embeddedOrbPulse 3s ease-in-out infinite;
-    }
-
-    body.embedded.active .orb {
-      animation: embeddedOrbActive 1.35s infinite alternate ease-in-out;
-      box-shadow: none;
-    }
-
-    @keyframes embeddedOrbPulse {
-      0%, 100% {
-        transform: scale(1);
-        border-color: var(--yellow);
-        filter: drop-shadow(0 0 10px rgba(245, 197, 24, 0.28));
-      }
-      50% {
-        transform: scale(1.04);
-        border-color: #fff;
-        filter: drop-shadow(0 0 20px rgba(245, 197, 24, 0.48));
-      }
-    }
-
-    @keyframes embeddedOrbActive {
-      0% {
-        transform: scale(1.04);
-        border-color: #fff;
-        filter: drop-shadow(0 0 18px rgba(245, 197, 24, 0.45));
-      }
-      100% {
-        transform: scale(1.08);
-        border-color: var(--yellow);
-        filter: drop-shadow(0 0 24px rgba(245, 197, 24, 0.55));
-      }
-    }
-
-    body.embedded #status-text {
-      display: block !important;
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10004;
-      max-width: 92%;
-      text-align: center;
-      font-size: 0.72rem;
-      letter-spacing: 0.06em;
-      text-transform: none;
-      color: #ff8888;
-      pointer-events: none;
-    }
   </style>
 </head>
 
@@ -337,7 +288,7 @@
     <div id="panel">
       <div id="headline">Click to Start a Conversation</div>
 
-      <div id="orb-container" onclick="toggleAssistant()">
+      <div id="orb-container" onclick="handleOrbClick()">
         <div class="orb"></div>
       </div>
 
@@ -361,95 +312,62 @@
     let starting = false
     let sessionStarted = false
     let embedStarted = false
-
-    const OPENING_LINE =
-      "Hello, welcome to A1 Professional Asphalt and Sealing. I'm an artificial team member here to answer any questions you might have. How can I help you today?"
+    let startLock = false
 
     const isEmbedded = window.self !== window.top
     const statusEl = document.getElementById('status-text')
     const headlineEl = document.getElementById('headline')
     const hintEl = document.getElementById('hint')
 
+    const GREETING_LINE =
+      "Hello, welcome to A1 Professional Asphalt and Sealing. I'm an artificial team member here to answer any questions you might have. How can I help you today?"
+
     function setBodyState(state) {
-      document.body.className = isEmbedded ? `${state} embedded` : state
+      if (isEmbedded) {
+        document.body.className = state === 'idle' ? 'embedded' : 'embedded active'
+        return
+      }
+      document.body.className = state
     }
 
-    function setIdle(){
+    function setMicEnabled(enabled) {
+      if (!localStream) return
+      try {
+        localStream.getAudioTracks().forEach(function (track) {
+          track.enabled = enabled
+        })
+      } catch (e) {}
+    }
+
+    function setIdle() {
       setBodyState('idle')
       statusEl.textContent = ''
+      statusEl.classList.remove('vox-error')
       headlineEl.classList.remove('hide-soft')
       hintEl.textContent = isEmbedded ? '' : 'Click outside this box to return to the website'
       starting = false
     }
 
-    function setStarting(){
+    function setStarting() {
       setBodyState('starting')
       statusEl.textContent = isEmbedded ? '' : 'STARTING…'
       headlineEl.classList.remove('hide-soft')
       hintEl.textContent = isEmbedded ? '' : 'Click outside this box to return to the website'
     }
 
-    function setActive(){
+    function setActive() {
       setBodyState('active')
+      starting = false
       statusEl.textContent = ''
       headlineEl.classList.add('hide-soft')
-      hintEl.textContent = isEmbedded ? 'Tap Stop to end' : 'Click Stop to end'
+      hintEl.textContent = isEmbedded ? '' : 'Click Stop to end'
     }
-
-    async function stopAndClose(e){
-      if (e) e.stopPropagation()
-      stopSession()
-    }
-
-    async function hardStop(){
-      try{
-        if (eventsDc && eventsDc.readyState === 'open') {
-          try { eventsDc.send(JSON.stringify({ type: 'response.cancel' })) } catch {}
-        }
-        eventsDc = null
-        if (remoteAudio) {
-          try {
-            remoteAudio.pause()
-            remoteAudio.srcObject = null
-            remoteAudio.remove()
-          } catch {}
-          remoteAudio = null
-        }
-        if (pc) { try { pc.close() } catch {} pc = null }
-        if (localStream) {
-          try { localStream.getTracks().forEach(t => t.stop()) } catch {}
-          localStream = null
-        }
-      } finally {
-        sessionStarted = false
-        starting = false
-        setIdle()
-        if (isEmbedded) try { window.parent.postMessage({ type: 'voxtalk-stopped' }, '*') } catch {}
-      }
-    }
-
-    function stopSession(){
-      embedStarted = false
-      sessionStarted = false
-      hardStop()
-      if (isEmbedded) try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch {}
-    }
-
-    document.getElementById('overlay').addEventListener('click', async (e) => {
-      if (isEmbedded) return
-      if (e.target.id !== 'overlay') return
-      await hardStop()
-      try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch {}
-      try { window.close() } catch {}
-      try { history.back() } catch {}
-    })
 
     function showVoiceError(msg) {
       statusEl.textContent = msg
-      statusEl.style.cssText =
-        'display:block!important;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:10004;color:#ff8888;font-size:12px;max-width:92%;text-align:center;line-height:1.4;'
+      statusEl.classList.add('vox-error')
       if (isEmbedded) {
-        try { window.parent.postMessage({ type: 'voxtalk-error', message: msg }, '*') } catch {}
+        try { window.parent.postMessage({ type: 'voxtalk-error', message: msg }, '*') } catch (e) {}
       }
     }
 
@@ -467,9 +385,63 @@
       return err && err.message ? err.message : 'Voice failed — check microphone permission and try again.'
     }
 
-    async function toggleAssistant(){
-      if (pc || starting) {
-        stopSession()
+    async function hardStop() {
+      try {
+        if (eventsDc && eventsDc.readyState === 'open') {
+          try { eventsDc.send(JSON.stringify({ type: 'response.cancel' })) } catch (e) {}
+        }
+        eventsDc = null
+        if (remoteAudio) {
+          try {
+            remoteAudio.pause()
+            remoteAudio.srcObject = null
+            remoteAudio.remove()
+          } catch (e) {}
+          remoteAudio = null
+        }
+        if (pc) { try { pc.close() } catch (e) {} pc = null }
+        if (localStream) {
+          try { localStream.getTracks().forEach(function (t) { t.stop() }) } catch (e) {}
+          localStream = null
+        }
+      } finally {
+        sessionStarted = false
+        starting = false
+        setIdle()
+        if (isEmbedded) {
+          try { window.parent.postMessage({ type: 'voxtalk-stopped' }, '*') } catch (e) {}
+        }
+      }
+    }
+
+    async function stopAndClose(e) {
+      if (e) e.stopPropagation()
+      await hardStop()
+      embedStarted = false
+      sessionStarted = false
+      if (isEmbedded) {
+        try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch (e) {}
+      }
+    }
+
+    document.getElementById('overlay').addEventListener('click', async function (e) {
+      if (isEmbedded) return
+      if (e.target.id !== 'overlay') return
+      await hardStop()
+      try { window.parent.postMessage({ type: 'voxtalk-close' }, '*') } catch (e) {}
+      try { window.close() } catch (e) {}
+      try { history.back() } catch (e) {}
+    })
+
+    function handleOrbClick() {
+      if (isEmbedded) return
+      toggleAssistant()
+    }
+
+    async function toggleAssistant() {
+      if (starting) return
+      if (pc) {
+        await stopAndClose()
         return
       }
       if (sessionStarted) return
@@ -479,55 +451,99 @@
       setStarting()
 
       try {
-
-        // Single opening trigger — the only place any greeting is defined.
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
           eventsDc = dc
-          let helloSent = false
+          let greetingSent = false
+          let greetingGenerationDone = false
           let listeningOn = false
+          let listenTimer = null
 
-          dc.addEventListener('message', (event) => {
+          function enableListening() {
+            if (listeningOn || !pc) return
+            listeningOn = true
+            setMicEnabled(true)
+            dc.send(JSON.stringify({
+              type: 'session.update',
+              session: {
+                type: 'realtime',
+                audio: {
+                  input: {
+                    turn_detection: {
+                      type: 'server_vad',
+                      silence_duration_ms: 2000,
+                      prefix_padding_ms: 300,
+                      create_response: true,
+                      interrupt_response: false
+                    }
+                  }
+                }
+              }
+            }))
+          }
+
+          function scheduleListening(ms) {
+            if (listeningOn) return
+            if (listenTimer) clearTimeout(listenTimer)
+            listenTimer = setTimeout(function () {
+              listenTimer = null
+              enableListening()
+            }, ms)
+          }
+
+          dc.addEventListener('message', function (event) {
             let msg
-            try { msg = JSON.parse(event.data) } catch { return }
+            try { msg = JSON.parse(event.data) } catch (e) { return }
 
-            if (msg.type === 'session.created' && !helloSent) {
-              helloSent = true
+            if (msg.type === 'session.created' && !greetingSent) {
+              greetingSent = true
+              setMicEnabled(false)
+              dc.send(JSON.stringify({
+                type: 'session.update',
+                session: {
+                  type: 'realtime',
+                  audio: { input: { turn_detection: null } }
+                }
+              }))
               dc.send(JSON.stringify({
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
-                  instructions: `Say exactly this, word for word, then stop: "${OPENING_LINE}"`
+                  instructions: 'Say exactly this, word for word, then stop: "' + GREETING_LINE + '"'
                 }
               }))
               return
             }
 
-            if (msg.type === 'response.done' && helloSent && !listeningOn) {
-              listeningOn = true
-              dc.send(JSON.stringify({
-                type: 'session.update',
-                session: {
-                  type: 'realtime',
-                  audio: {
-                    input: {
-                      turn_detection: {
-                        type: 'server_vad',
-                        silence_duration_ms: 2000,
-                        prefix_padding_ms: 300,
-                        create_response: true,
-                        interrupt_response: true
-                      }
-                    }
-                  }
-                }
-              }))
+            if (msg.type === 'response.done' && greetingSent && !listeningOn) {
+              greetingGenerationDone = true
+              return
+            }
+
+            if (
+              msg.type === 'output_audio_buffer.stopped' &&
+              greetingGenerationDone &&
+              !listeningOn
+            ) {
+              scheduleListening(1000)
             }
           })
         }
 
         pc = new RTCPeerConnection()
         setupRealtimeChannel(pc)
+
+        remoteAudio = document.createElement('audio')
+        remoteAudio.autoplay = true
+        remoteAudio.playsInline = true
+        document.body.appendChild(remoteAudio)
+
+        pc.ontrack = function (e) {
+          if (remoteAudio.srcObject !== e.streams[0]) {
+            remoteAudio.srcObject = e.streams[0]
+          }
+          remoteAudio.play().catch(function (err) { console.error('audio play', err) })
+        }
 
         localStream = await navigator.mediaDevices.getUserMedia({
           audio: {
@@ -536,19 +552,7 @@
             autoGainControl: true
           }
         })
-
-        remoteAudio = document.createElement('audio')
-        remoteAudio.autoplay = true
-        remoteAudio.playsInline = true
-        document.body.appendChild(remoteAudio)
-
-        pc.ontrack = (e) => {
-          if (remoteAudio.srcObject !== e.streams[0]) {
-            remoteAudio.srcObject = e.streams[0]
-          }
-          remoteAudio.play().catch(function (e) { console.error('audio play', e) })
-        }
-
+        setMicEnabled(false)
         pc.addTrack(localStream.getTracks()[0])
 
         const offer = await pc.createOffer()
@@ -557,9 +561,7 @@
         const sdpResponse = await fetch('/session', {
           method: 'POST',
           body: offer.sdp,
-          headers: {
-            'Content-Type': 'application/sdp'
-          }
+          headers: { 'Content-Type': 'application/sdp' }
         })
 
         if (!sdpResponse.ok) {
@@ -568,55 +570,56 @@
 
         const answer = { type: 'answer', sdp: await sdpResponse.text() }
         await pc.setRemoteDescription(answer)
-
         setActive()
       } catch (err) {
         console.error(err)
+        if (remoteAudio) {
+          try {
+            remoteAudio.pause()
+            remoteAudio.srcObject = null
+            remoteAudio.remove()
+          } catch (e) {}
+          remoteAudio = null
+        }
+        eventsDc = null
         pc = null
         if (localStream) {
-          try { localStream.getTracks().forEach(t => t.stop()) } catch {}
+          try { localStream.getTracks().forEach(function (t) { t.stop() }) } catch (e) {}
           localStream = null
         }
-        setBodyState('idle')
-        showVoiceError(friendlyMicError(err))
-        starting = false
         sessionStarted = false
         embedStarted = false
-        headlineEl.classList.remove('hide-soft')
-        hintEl.textContent = isEmbedded ? '' : 'Click outside this box to return to the website'
+        setIdle()
+        showVoiceError(friendlyMicError(err))
       }
     }
 
-    function startWhenVisible() {
-      if (embedStarted || pc || starting) return
+    async function startWhenVisible() {
+      if (startLock || embedStarted || pc || starting || sessionStarted) return
+      startLock = true
       embedStarted = true
-      toggleAssistant()
+      try {
+        await toggleAssistant()
+      } finally {
+        startLock = false
+      }
     }
 
     if (isEmbedded) {
-      document.documentElement.classList.add('embedded')
       setBodyState('idle')
-      window.addEventListener('message', (e) => {
-        if (e.data?.type === 'voxtalk-start') {
-          startWhenVisible()
-        }
-        if (e.data?.type === 'voxtalk-stop') stopSession()
+      window.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'voxtalk-start') startWhenVisible()
+        if (e.data && e.data.type === 'voxtalk-stop') stopAndClose()
       })
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden' && (pc || starting)) stopSession()
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden' && (pc || starting)) stopAndClose()
       })
-      window.addEventListener('pagehide', () => {
-        if (pc || starting) stopSession()
+      window.addEventListener('pagehide', function () {
+        if (pc || starting) stopAndClose()
       })
-      try { window.parent.postMessage({ type: 'voxtalk-ready' }, '*') } catch {}
+      try { window.parent.postMessage({ type: 'voxtalk-ready' }, '*') } catch (e) {}
     } else {
       setIdle()
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden' && (pc || starting)) stopSession()
-      })
-      window.addEventListener('pagehide', () => {
-        if (pc || starting) stopSession()
-      })
     }
   </script>
 </body>
