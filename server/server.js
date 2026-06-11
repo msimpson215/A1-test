@@ -37,15 +37,28 @@ const sessionConfig = JSON.stringify({
   }
 });
 
+const VOXTALK3_BACKEND = (process.env.VOXTALK3_BACKEND || 'https://a1-asphalt-voxtalk-3.onrender.com').replace(/\/$/, '');
+
+async function proxyVoxtalk3Session(sdp, res) {
+  const response = await fetch(`${VOXTALK3_BACKEND}/session`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/sdp' },
+    body: sdp
+  });
+
+  const body = await response.text();
+  if (!response.ok) {
+    console.error('VoxTalk3 proxy error:', response.status, body);
+    return res.status(response.status).type('application/json').send(body);
+  }
+
+  res.type('application/sdp').send(body);
+}
+
 async function createRealtimeSession(sdp, res) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return res.status(503).json({
-      error: {
-        message: 'Voice is not configured. OPENAI_API_KEY is missing on this service.',
-        code: 'missing_api_key'
-      }
-    });
+    return proxyVoxtalk3Session(sdp, res);
   }
 
   const fd = new FormData();
@@ -115,5 +128,6 @@ app.use(express.static(publicDir));
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`A1 site + voice running on port ${PORT}`);
+  const voiceMode = process.env.OPENAI_API_KEY ? 'direct-openai' : `proxy:${VOXTALK3_BACKEND}`;
+  console.log(`A1 site + voice running on port ${PORT} (${voiceMode})`);
 });

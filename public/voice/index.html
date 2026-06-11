@@ -168,20 +168,9 @@
 
     body.starting #orb-container { opacity: 0.95; }
 
-    body.embedded .orb {
-      box-shadow:
-        0 0 60px rgba(245, 197, 24, 0.55),
-        0 0 120px rgba(245, 197, 24, 0.28),
-        0 0 220px rgba(245, 197, 24, 0.14),
-        0 0 320px rgba(245, 197, 24, 0.08);
-    }
-
-    body.embedded.active .orb {
-      box-shadow:
-        0 0 80px rgba(245, 197, 24, 0.75),
-        0 0 160px rgba(245, 197, 24, 0.38),
-        0 0 260px rgba(245, 197, 24, 0.18),
-        0 0 360px rgba(245, 197, 24, 0.1);
+    html.embedded,
+    body.embedded {
+      background: transparent !important;
     }
 
     body.embedded {
@@ -263,20 +252,29 @@
       display: none;
     }
 
-    #headline, #hint, #footer, #status-text, #stop-btn { display: none !important; }
-    #overlay { display: block; padding: 0; }
-    #panel {
+    body.embedded #headline,
+    body.embedded #hint,
+    body.embedded #footer,
+    body.embedded #status-text,
+    body.embedded #stop-btn { display: none !important; }
+
+    body.embedded #overlay { display: block; padding: 0; }
+
+    body.embedded #panel {
       position: fixed; inset: 0; width: auto; max-width: none;
       padding: 0; gap: 0; background: transparent; border: none;
       box-shadow: none; backdrop-filter: none;
     }
-    #orb-container {
+
+    body.embedded #orb-container {
       position: fixed; top: 50%; left: 50%;
-      width: 220px; height: 220px;
+      width: 260px; height: 260px;
       transform: translate(-50%, -50%); z-index: 2;
       pointer-events: auto;
     }
-    body.active #stop-btn, body.starting #stop-btn { display: none !important; }
+
+    body.embedded.active #stop-btn,
+    body.embedded.starting #stop-btn { display: none !important; }
   </style>
 </head>
 
@@ -517,6 +515,7 @@
     }
 
     if (isEmbedded) {
+      document.documentElement.classList.add('embedded')
       setBodyState('idle')
       window.addEventListener('message', (e) => {
         if (e.data?.type === 'voxtalk-start') {

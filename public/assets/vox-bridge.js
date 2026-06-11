@@ -25,11 +25,13 @@
   function normalizeIframe(frame) {
     if (!frame) return
     frame.style.display = 'block'
-    frame.style.width = '280px'
-    frame.style.height = '280px'
+    frame.style.position = ''
+    frame.style.inset = ''
+    frame.style.width = ''
+    frame.style.height = ''
+    frame.style.zIndex = ''
     frame.style.border = 'none'
     frame.style.background = 'transparent'
-    frame.style.overflow = 'visible'
   }
 
   function lockScroll(on) {
@@ -61,7 +63,7 @@
       post(f, { type: 'voxtalk-start', returning: returning })
     }
 
-    if (f.getAttribute('data-vox-ready') === '1') {
+    if (f.getAttribute('data-vox-ready') === '1' && f.src && f.src.indexOf('/voice') !== -1) {
       start()
       return
     }
