@@ -14,10 +14,11 @@
     return !!(o && o.classList.contains('open'))
   }
 
-  function post(frame, type) {
+  function post(frame, msg) {
     if (!frame || !frame.contentWindow) return
+    var payload = typeof msg === 'string' ? { type: msg } : msg
     try {
-      frame.contentWindow.postMessage({ type: type }, '*')
+      frame.contentWindow.postMessage(payload, '*')
     } catch (e) {}
   }
 
@@ -45,17 +46,18 @@
     }
 
     o.classList.add('open')
-    o.style.display = window.getComputedStyle(o).display === 'flex' ? 'flex' : 'block'
-    lockScroll(true)
+    o.style.display = 'block'
 
     var f = iframe()
     if (!f) return
     normalizeIframe(f)
 
+    var returning = sessionStorage.getItem('a1-vox-returning') === '1'
+
     function start() {
       if (closing) return
       sessionActive = true
-      post(f, 'voxtalk-start')
+      post(f, { type: 'voxtalk-start', returning: returning })
     }
 
     if (f.getAttribute('data-vox-ready') === '1') {
@@ -79,10 +81,14 @@
   window.closeVox = function (immediate) {
     if (closing) return
     closing = true
+    var wasActive = sessionActive
 
     var f = iframe()
 
     function finishClose() {
+      if (wasActive) {
+        try { sessionStorage.setItem('a1-vox-returning', '1') } catch (e) {}
+      }
       if (f) {
         f.removeAttribute('data-vox-ready')
         f.src = 'about:blank'

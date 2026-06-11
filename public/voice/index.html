@@ -293,6 +293,11 @@
     let starting = false
     let sessionStarted = false
     let embedStarted = false
+    let returningVisitor = false
+
+    const OPENING_LINE =
+      "Hello, welcome to A1 Professional Asphalt and Sealing. I'm an artificial team member here to answer any questions you might have. How can I help you today?"
+    const RETURN_LINE = 'Did you have another question?'
 
     const isEmbedded = window.self !== window.top
     const statusEl = document.getElementById('status-text')
@@ -387,10 +392,7 @@
 
       try {
 
-        // Single opening trigger — the only place the greeting is defined.
-        const OPENING_LINE =
-          "Hello, welcome to A1 Professional Asphalt and Sealing. I'm an artificial team member here to answer any questions you might have. How can I help you today?"
-
+        // Single opening trigger — the only place any greeting is defined.
         function setupRealtimeChannel(peerConnection) {
           const dc = peerConnection.createDataChannel('oai-events')
           eventsDc = dc
@@ -403,11 +405,12 @@
 
             if (msg.type === 'session.created' && !helloSent) {
               helloSent = true
+              const line = returningVisitor ? RETURN_LINE : OPENING_LINE
               dc.send(JSON.stringify({
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
-                  instructions: `Say exactly this, word for word, then stop: "${OPENING_LINE}"`
+                  instructions: `Say exactly this, word for word, then stop: "${line}"`
                 }
               }))
               return
@@ -501,7 +504,10 @@
     if (isEmbedded) {
       setBodyState('idle')
       window.addEventListener('message', (e) => {
-        if (e.data?.type === 'voxtalk-start') startWhenVisible()
+        if (e.data?.type === 'voxtalk-start') {
+          returningVisitor = !!e.data.returning
+          startWhenVisible()
+        }
         if (e.data?.type === 'voxtalk-stop') stopSession()
       })
       document.addEventListener('visibilitychange', () => {

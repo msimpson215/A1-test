@@ -8,8 +8,8 @@ PUBLIC = Path(__file__).resolve().parents[1] / "public"
 
 BRIDGE_TAG = '<script src="assets/vox-bridge.js"></script>'
 
-OVERLAY = """<div id="vox-overlay" onclick="if(event.target===this)closeVox()">
-  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close">&#10005;</button>
+OVERLAY = """<div id="vox-overlay">
+  <button id="vox-close-btn" type="button" onclick="event.stopPropagation();closeVox()" aria-label="Close">&#10005;</button>
   <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *" style="display:none;border:none;"></iframe>
 </div>"""
 
