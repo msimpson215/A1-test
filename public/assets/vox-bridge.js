@@ -46,9 +46,7 @@
     var wrap = document.createElement('div')
     wrap.className = 'vox-energy'
     wrap.setAttribute('aria-hidden', 'true')
-    wrap.innerHTML =
-      '<span class="vox-pinwheel vox-pinwheel--bright"></span>' +
-      '<span class="vox-pinwheel vox-pinwheel--soft"></span>'
+    wrap.innerHTML = '<span class="vox-rays"></span>'
     o.insertBefore(wrap, o.firstChild)
   }
 
