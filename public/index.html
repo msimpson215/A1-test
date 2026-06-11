@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>A1 Professional Asphalt &amp; Sealing LLC</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=10" />
+  <link rel="stylesheet" href="styles.css?v=11" />
 </head>
 <body>
 
@@ -304,13 +304,12 @@ document.addEventListener('click', function(e){
   const button = document.querySelector('.hamburger');
   if(menu && button && !menu.contains(e.target) && !button.contains(e.target)) menu.classList.remove('open');
 });
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVox(true);});
-document.addEventListener('click',function(e){var o=document.getElementById('vox-overlay');if(o&&o.classList.contains('open')&&!o.contains(e.target)&&!e.target.closest('#aiOrb')&&!e.target.closest('.ai-nav')&&!e.target.closest('[data-vox-open]')){closeVox(true);}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&typeof closeVox==='function')closeVox();});
 </script>
 <div id="vox-overlay" onclick="if(event.target===this)closeVox(true)">
   <button id="vox-close-btn" type="button" onclick="event.stopPropagation();closeVox(true)" aria-label="Close">&#10005;</button>
   <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *; autoplay *" style="display:none;border:none;background:transparent;"></iframe>
 </div>
-<script src="assets/vox-bridge.js?v=10"></script>
+<script src="assets/vox-bridge.js?v=11"></script>
 </body>
 </html>

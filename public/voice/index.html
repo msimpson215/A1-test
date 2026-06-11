@@ -303,12 +303,7 @@
     let embedStarted = false
     let startLock = false
     let returningVisitor = false
-    let mobileEmbedded = false
-    let awaitingMobileTap = false
-
     const isEmbedded = window.self !== window.top
-    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-      window.matchMedia('(pointer: coarse)').matches
     const statusEl = document.getElementById('status-text')
     const headlineEl = document.getElementById('headline')
     const hintEl = document.getElementById('hint')
@@ -429,7 +424,6 @@
     })
 
     function handleOrbClick() {
-      if (isEmbedded && !isMobileDevice && !awaitingMobileTap) return
       toggleAssistant()
     }
 
@@ -441,7 +435,6 @@
       }
       if (sessionStarted) return
 
-      awaitingMobileTap = false
       sessionStarted = true
       starting = true
       setStarting()
@@ -610,14 +603,6 @@
       window.addEventListener('message', function (e) {
         if (e.data && e.data.type === 'voxtalk-start') {
           returningVisitor = !!e.data.returning
-          mobileEmbedded = !!(e.data.mobile || isMobileDevice)
-          if (mobileEmbedded) {
-            awaitingMobileTap = true
-            embedStarted = false
-            sessionStarted = false
-            setIdle()
-            return
-          }
           startWhenVisible()
         }
         if (e.data && e.data.type === 'voxtalk-stop') stopAndClose()
