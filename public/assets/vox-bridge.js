@@ -55,6 +55,42 @@
 
   ensureEnergyField()
 
+  function closeMobileMenu() {
+    var menu = document.getElementById('mobileMenu')
+    if (menu) menu.classList.remove('open')
+  }
+
+  var lastTriggerAt = 0
+
+  function isVoxTrigger(el) {
+    if (!el) return false
+    if (el.matches('[data-vox-open], .ai-nav, .ai-orb, #aiOrb')) return true
+    var onclick = el.getAttribute('onclick') || ''
+    return onclick.indexOf('openVox') !== -1
+  }
+
+  function handleVoxTrigger(e) {
+    var trigger = e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb')
+    if (!isVoxTrigger(trigger)) return
+    var now = Date.now()
+    if (now - lastTriggerAt < 400) {
+      e.preventDefault()
+      return
+    }
+    lastTriggerAt = now
+    e.preventDefault()
+    e.stopPropagation()
+    closeMobileMenu()
+    openVox()
+  }
+
+  document.addEventListener('click', handleVoxTrigger, true)
+  document.addEventListener('touchend', function (e) {
+    if (isVoxTrigger(e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb'))) {
+      handleVoxTrigger(e)
+    }
+  }, { passive: false, capture: true })
+
   window.openVox = function () {
     var o = document.getElementById('vox-overlay')
     if (!o || closing) return
@@ -65,6 +101,7 @@
     }
 
     ensureEnergyField()
+    closeMobileMenu()
     o.classList.add('open')
     o.style.display = 'flex'
     lockScroll(true)
