@@ -25,11 +25,11 @@
   function normalizeIframe(frame) {
     if (!frame) return
     frame.style.display = 'block'
-    frame.style.position = ''
-    frame.style.inset = ''
-    frame.style.width = ''
-    frame.style.height = ''
-    frame.style.zIndex = ''
+    frame.style.width = '280px'
+    frame.style.height = '280px'
+    frame.style.border = 'none'
+    frame.style.background = 'transparent'
+    frame.style.overflow = 'visible'
   }
 
   function lockScroll(on) {
@@ -46,7 +46,8 @@
     }
 
     o.classList.add('open')
-    o.style.display = 'block'
+    o.style.display = 'flex'
+    lockScroll(true)
 
     var f = iframe()
     if (!f) return
@@ -106,11 +107,7 @@
 
     if (f && f.getAttribute('data-vox-ready') === '1' && sessionActive) {
       post(f, 'voxtalk-stop')
-      if (immediate) {
-        finishClose()
-      } else {
-        setTimeout(finishClose, 450)
-      }
+      finishClose()
     } else {
       finishClose()
     }

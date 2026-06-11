@@ -166,7 +166,23 @@
     #footer .brand { font-size: 0.82rem; }
     #footer .phone { font-size: 0.78rem; opacity: 0.9; margin-top: 4px; }
 
-    body.starting #orb-container { pointer-events: none; opacity: 0.95; }
+    body.starting #orb-container { opacity: 0.95; }
+
+    body.embedded .orb {
+      box-shadow:
+        0 0 60px rgba(245, 197, 24, 0.55),
+        0 0 120px rgba(245, 197, 24, 0.28),
+        0 0 220px rgba(245, 197, 24, 0.14),
+        0 0 320px rgba(245, 197, 24, 0.08);
+    }
+
+    body.embedded.active .orb {
+      box-shadow:
+        0 0 80px rgba(245, 197, 24, 0.75),
+        0 0 160px rgba(245, 197, 24, 0.38),
+        0 0 260px rgba(245, 197, 24, 0.18),
+        0 0 360px rgba(245, 197, 24, 0.1);
+    }
 
     body.embedded {
       background: transparent;
@@ -379,9 +395,8 @@
     })
 
     async function toggleAssistant(){
-      if (starting) return
-      if (pc) {
-        await stopAndClose()
+      if (pc || starting) {
+        stopSession()
         return
       }
       if (sessionStarted) return

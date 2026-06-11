@@ -155,9 +155,9 @@ document.addEventListener('click', function(e){
   if(menu && button && !menu.contains(e.target) && !button.contains(e.target)) menu.classList.remove('open');
 });
 </script>
-<div id="vox-overlay" onclick="if(event.target===this)closeVox()">
-  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close">&#10005;</button>
-  <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *" style="display:none;border:none;"></iframe>
+<div id="vox-overlay" onclick="if(event.target===this)closeVox(true)">
+  <button id="vox-close-btn" type="button" onclick="event.stopPropagation();closeVox(true)" aria-label="Close">&#10005;</button>
+  <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *" style="display:none;border:none;background:transparent;"></iframe>
 </div>
 <script>
 </script>

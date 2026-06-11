@@ -180,9 +180,9 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
   <button id="lightbox-close" onclick="closeLightbox()">&#10005;</button>
   <img id="lightbox-img" src="" alt=""/>
 </div>
-<div id="vox-overlay" onclick="if(event.target===this)closeVox()">
-  <button id="vox-close-btn" type="button" onclick="closeVox()" aria-label="Close">&#10005;</button>
-  <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *" style="display:none;border:none;"></iframe>
+<div id="vox-overlay" onclick="if(event.target===this)closeVox(true)">
+  <button id="vox-close-btn" type="button" onclick="event.stopPropagation();closeVox(true)" aria-label="Close">&#10005;</button>
+  <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *" style="display:none;border:none;background:transparent;"></iframe>
 </div>
 <script>
 const photos = ['paving-striping-12-400x284.jpg', 'paving-striping-13-400x284.jpg', 'paving-striping-21-400x284.jpg', 'paving-striping-25-400x284.jpg', 'paving-striping-37-400x284.jpg', 'paving-striping-4-400x284.jpg', 'paving-striping-8-400x284.jpg', 'paving-striping-9-400x284.jpg', 'pavingpatchingmilling-10-400x284.jpg', 'pavingpatchingmilling-11-400x284.jpg', 'pavingpatchingmilling-12-1-400x284.jpg', 'pavingpatchingmilling-12-400x284.jpg', 'pavingpatchingmilling-13-400x284.jpg', 'pavingpatchingmilling-14-400x284.jpg', 'pavingpatchingmilling-16-400x284.jpg', 'pavingpatchingmilling-8-400x284.jpg', 'pavingpatchingmilling-9-400x284.jpg', 'pavingpatchingmilling35-400x284.jpg', 'milling-24-400x284.jpg', 'milling-25-400x284.jpg', 'milling-26-400x284.jpg', 'milling-27-400x284.jpg', 'milling-28-400x284.jpg', 'milling-32-400x284.jpg', 'milling-34-400x284.jpg', 'milling-37-400x284.jpg', 'milling-38-400x284.jpg', 'milling-42-400x284.jpg', 'milling-45-400x284.jpg'];
