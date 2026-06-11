@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260608-v4-handshake-greeting-restored -->
+  <!-- voxtalk-build: 20260611-v8-final -->
 
   <style>
     :root{
@@ -211,32 +211,21 @@
     }
 
     body.embedded .orb {
-      animation: orbGlow 3s ease-in-out infinite;
+      box-shadow: none;
+      animation: orbBorderPulse 3s ease-in-out infinite;
       transform: scale(1) !important;
     }
 
     body.embedded #orb-container:hover .orb,
     body.embedded.active .orb,
     body.embedded.starting .orb {
-      animation: orbGlow 3s ease-in-out infinite;
+      animation: orbBorderPulse 3s ease-in-out infinite;
       transform: scale(1) !important;
     }
 
-    @keyframes orbGlow {
-      0%, 100% {
-        box-shadow:
-          0 0 60px rgba(245, 197, 24, 0.4),
-          0 0 120px rgba(245, 197, 24, 0.15),
-          0 0 200px rgba(245, 197, 24, 0.08);
-        border-color: var(--yellow);
-      }
-      50% {
-        box-shadow:
-          0 0 80px rgba(245, 197, 24, 0.6),
-          0 0 160px rgba(245, 197, 24, 0.25),
-          0 0 260px rgba(245, 197, 24, 0.12);
-        border-color: #fff;
-      }
+    @keyframes orbBorderPulse {
+      0%, 100% { border-color: var(--yellow); }
+      50% { border-color: #fff; }
     }
 
     body.embedded #status-text.vox-error {
@@ -313,14 +302,16 @@
     let sessionStarted = false
     let embedStarted = false
     let startLock = false
+    let returningVisitor = false
 
     const isEmbedded = window.self !== window.top
     const statusEl = document.getElementById('status-text')
     const headlineEl = document.getElementById('headline')
     const hintEl = document.getElementById('hint')
 
-    const GREETING_LINE =
+    const WELCOME_LINE =
       "Hello, welcome to A1 Professional Asphalt and Sealing. I'm an artificial team member here to answer any questions you might have. How can I help you today?"
+    const RETURN_LINE = 'Did you have another question?'
 
     function setBodyState(state) {
       if (isEmbedded) {
@@ -498,6 +489,7 @@
             if (msg.type === 'session.created' && !greetingSent) {
               greetingSent = true
               setMicEnabled(false)
+              var line = returningVisitor ? RETURN_LINE : WELCOME_LINE
               dc.send(JSON.stringify({
                 type: 'session.update',
                 session: {
@@ -509,7 +501,7 @@
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
-                  instructions: 'Say exactly this, word for word, then stop: "' + GREETING_LINE + '"'
+                  instructions: 'Say exactly this, word for word, then stop: "' + line + '"'
                 }
               }))
               return
@@ -525,6 +517,9 @@
               greetingGenerationDone &&
               !listeningOn
             ) {
+              if (isEmbedded) {
+                try { window.parent.postMessage({ type: 'voxtalk-greeting-done' }, '*') } catch (e) {}
+              }
               scheduleListening(1000)
             }
           })
@@ -608,7 +603,10 @@
     if (isEmbedded) {
       setBodyState('idle')
       window.addEventListener('message', function (e) {
-        if (e.data && e.data.type === 'voxtalk-start') startWhenVisible()
+        if (e.data && e.data.type === 'voxtalk-start') {
+          returningVisitor = !!e.data.returning
+          startWhenVisible()
+        }
         if (e.data && e.data.type === 'voxtalk-stop') stopAndClose()
       })
       document.addEventListener('visibilitychange', function () {

@@ -1,4 +1,4 @@
-/* A1 VoxTalk — rotating yellow square pinwheel (NO circles) */
+/* Fullscreen orb — pinwheel squares only, NO circle rings */
 
 #vox-overlay {
   display: none;
@@ -8,7 +8,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.82);
+  background: rgba(0, 0, 0, 0.78);
 }
 
 #vox-overlay.open {
@@ -31,7 +31,6 @@
   z-index: 1;
 }
 
-/* Sharp squares — rotated pinwheel look, yellow + lighter yellow, spinning */
 .vox-pinwheel {
   position: absolute;
   border-radius: 0;
@@ -57,31 +56,15 @@
 }
 
 @keyframes pinwheelBright {
-  0% {
-    transform: rotate(0deg) scale(1);
-    opacity: 0.88;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: rotate(360deg) scale(1);
-    opacity: 0.88;
-  }
+  from { transform: rotate(0deg); opacity: 0.88; }
+  50% { opacity: 1; }
+  to { transform: rotate(360deg); opacity: 0.88; }
 }
 
 @keyframes pinwheelSoft {
-  0% {
-    transform: rotate(45deg) scale(1);
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 0.62;
-  }
-  100% {
-    transform: rotate(405deg) scale(1.03);
-    opacity: 0.35;
-  }
+  from { transform: rotate(45deg); opacity: 0.35; }
+  50% { opacity: 0.62; }
+  to { transform: rotate(405deg); opacity: 0.35; }
 }
 
 #vox-overlay iframe {

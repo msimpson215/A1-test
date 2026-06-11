@@ -1,7 +1,17 @@
 (function () {
   var VOICE_URL = '/voice/'
+  var RETURN_KEY = 'a1-vox-returning'
+  var STORAGE_VER = '4'
   var sessionActive = false
+  var greetingFinished = false
   var closing = false
+
+  try {
+    if (sessionStorage.getItem('a1-vox-ver') !== STORAGE_VER) {
+      sessionStorage.removeItem(RETURN_KEY)
+      sessionStorage.setItem('a1-vox-ver', STORAGE_VER)
+    }
+  } catch (e) {}
 
   function iframe() {
     var o = document.getElementById('vox-overlay')
@@ -20,18 +30,6 @@
     try {
       frame.contentWindow.postMessage(payload, '*')
     } catch (e) {}
-  }
-
-  function normalizeIframe(frame) {
-    if (!frame) return
-    frame.style.display = 'block'
-    frame.style.position = ''
-    frame.style.inset = ''
-    frame.style.width = ''
-    frame.style.height = ''
-    frame.style.zIndex = ''
-    frame.style.border = 'none'
-    frame.style.background = 'transparent'
   }
 
   function lockScroll(on) {
@@ -61,9 +59,7 @@
 
   function isVoxTrigger(el) {
     if (!el) return false
-    if (el.matches('[data-vox-open], .ai-nav, .ai-orb, #aiOrb')) return true
-    var onclick = el.getAttribute('onclick') || ''
-    return onclick.indexOf('openVox') !== -1
+    return el.matches('[data-vox-open], .ai-nav, .ai-orb, #aiOrb')
   }
 
   function handleVoxTrigger(e) {
@@ -99,23 +95,26 @@
 
     ensureEnergyField()
     closeMobileMenu()
+    greetingFinished = false
     o.classList.add('open')
     o.style.display = 'flex'
     lockScroll(true)
 
     var f = iframe()
     if (!f) return
-    normalizeIframe(f)
+    f.style.display = 'block'
+    f.style.border = 'none'
+    f.style.background = 'transparent'
+
+    var returning = false
+    try {
+      returning = sessionStorage.getItem(RETURN_KEY) === '1'
+    } catch (e) {}
 
     function start() {
       if (closing) return
       sessionActive = true
-      post(f, { type: 'voxtalk-start' })
-    }
-
-    if (f.getAttribute('data-vox-ready') === '1' && f.src && f.src.indexOf('/voice') !== -1) {
-      start()
-      return
+      post(f, { type: 'voxtalk-start', returning: returning })
     }
 
     f.onload = function () {
@@ -123,22 +122,22 @@
       start()
     }
 
-    if (!f.src || f.src.indexOf('/voice') === -1) {
-      f.src = VOICE_URL
-    } else if (f.contentDocument && f.contentDocument.readyState === 'complete') {
-      f.setAttribute('data-vox-ready', '1')
-      start()
-    }
+    f.removeAttribute('data-vox-ready')
+    f.src = VOICE_URL
   }
 
-  window.closeVox = function (immediate) {
+  window.closeVox = function () {
     if (closing) return
     closing = true
-
+    var markReturn = greetingFinished
     var f = iframe()
 
     function finishClose() {
+      if (markReturn) {
+        try { sessionStorage.setItem(RETURN_KEY, '1') } catch (e) {}
+      }
       if (f) {
+        post(f, 'voxtalk-stop')
         f.removeAttribute('data-vox-ready')
         f.src = 'about:blank'
         f.style.display = 'none'
@@ -150,15 +149,11 @@
       }
       lockScroll(false)
       sessionActive = false
+      greetingFinished = false
       closing = false
     }
 
-    if (f && f.getAttribute('data-vox-ready') === '1' && sessionActive) {
-      post(f, 'voxtalk-stop')
-      finishClose()
-    } else {
-      finishClose()
-    }
+    finishClose()
   }
 
   window.addEventListener('message', function (e) {
@@ -172,36 +167,42 @@
       return
     }
 
-    if (e.data.type === 'voxtalk-stopped') {
-      sessionActive = false
+    if (e.data.type === 'voxtalk-greeting-done') {
+      greetingFinished = true
       return
     }
 
     if (e.data.type === 'voxtalk-close') {
       sessionActive = false
-      if (!closing) closeVox(true)
+      if (!closing) closeVox()
     }
   })
 
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'hidden' && overlayOpen()) {
-      closeVox(true)
-    }
+    if (document.visibilityState === 'hidden' && overlayOpen()) closeVox()
   })
 
   window.addEventListener('pagehide', function () {
-    if (overlayOpen()) closeVox(true)
+    if (overlayOpen()) closeVox()
   })
 
   window.addEventListener('popstate', function () {
-    if (overlayOpen()) closeVox(true)
+    if (overlayOpen()) closeVox()
   })
+
+  document.addEventListener('click', function (e) {
+    var o = document.getElementById('vox-overlay')
+    if (!o || !o.classList.contains('open')) return
+    if (o.contains(e.target)) return
+    if (e.target.closest('[data-vox-open], .ai-nav, .ai-orb, #aiOrb')) return
+    closeVox()
+  }, true)
 
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a[href]')
     if (!link || !overlayOpen()) return
     var href = (link.getAttribute('href') || '').trim()
     if (!href || href.charAt(0) === '#' || href.indexOf('javascript:') === 0) return
-    closeVox(true)
+    closeVox()
   }, true)
 })()
