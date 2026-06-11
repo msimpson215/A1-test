@@ -380,6 +380,14 @@
             if (msg.type === 'session.created' && !greetingPlayed) {
               greetingPlayed = true
               dc.send(JSON.stringify({
+                type: 'session.update',
+                session: {
+                  type: 'realtime',
+                  instructions:
+                    'Wait silently after hello. Do NOT introduce yourself. Do NOT list topics. Do NOT ask how you can help. Answer only after the user speaks.'
+                }
+              }))
+              dc.send(JSON.stringify({
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
