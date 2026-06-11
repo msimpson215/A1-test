@@ -1,8 +1,6 @@
 (function () {
   var VOICE_URL = '/voice/'
-  var RETURN_KEY = 'a1-vox-returning'
   var sessionActive = false
-  var voiceGreeted = false
   var closing = false
 
   function iframe() {
@@ -47,9 +45,8 @@
     wrap.className = 'vox-energy'
     wrap.setAttribute('aria-hidden', 'true')
     wrap.innerHTML =
-      '<span class="vox-energy__frame vox-energy__frame--a"></span>' +
-      '<span class="vox-energy__frame vox-energy__frame--b"></span>' +
-      '<span class="vox-energy__frame vox-energy__frame--c"></span>'
+      '<span class="vox-pinwheel vox-pinwheel--bright"></span>' +
+      '<span class="vox-pinwheel vox-pinwheel--soft"></span>'
     o.insertBefore(wrap, o.firstChild)
   }
 
@@ -105,21 +102,15 @@
     o.classList.add('open')
     o.style.display = 'flex'
     lockScroll(true)
-    voiceGreeted = false
 
     var f = iframe()
     if (!f) return
     normalizeIframe(f)
 
-    var returning = false
-    try {
-      returning = sessionStorage.getItem(RETURN_KEY) === '1'
-    } catch (e) {}
-
     function start() {
       if (closing) return
       sessionActive = true
-      post(f, { type: 'voxtalk-start', returning: returning })
+      post(f, { type: 'voxtalk-start' })
     }
 
     if (f.getAttribute('data-vox-ready') === '1' && f.src && f.src.indexOf('/voice') !== -1) {
@@ -143,14 +134,10 @@
   window.closeVox = function (immediate) {
     if (closing) return
     closing = true
-    var wasGreeted = voiceGreeted
 
     var f = iframe()
 
     function finishClose() {
-      if (wasGreeted) {
-        try { sessionStorage.setItem(RETURN_KEY, '1') } catch (e) {}
-      }
       if (f) {
         f.removeAttribute('data-vox-ready')
         f.src = 'about:blank'
@@ -163,7 +150,6 @@
       }
       lockScroll(false)
       sessionActive = false
-      voiceGreeted = false
       closing = false
     }
 
@@ -183,11 +169,6 @@
       if (f && f.contentWindow === e.source) {
         f.setAttribute('data-vox-ready', '1')
       }
-      return
-    }
-
-    if (e.data.type === 'voxtalk-greeted') {
-      voiceGreeted = true
       return
     }
 

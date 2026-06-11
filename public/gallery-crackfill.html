@@ -64,7 +64,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 }
 @media(max-width:480px){.photo-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}}
 </style>
-<link rel="stylesheet" href="assets/site-nav.css?v=5" />
+<link rel="stylesheet" href="assets/site-nav.css?v=6" />
 </head>
 <body>
 <header class="site-header">
@@ -181,7 +181,7 @@ footer{background:#050505;padding:64px 40px 32px;border-top:3px solid var(--yell
 </div>
 <div id="vox-overlay" onclick="if(event.target===this)closeVox(true)">
   <button id="vox-close-btn" type="button" onclick="event.stopPropagation();closeVox(true)" aria-label="Close">&#10005;</button>
-  <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *" style="display:none;border:none;background:transparent;"></iframe>
+  <iframe id="vox-iframe" src="about:blank" title="A1 AI Team Member" allow="microphone *; autoplay *" style="display:none;border:none;background:transparent;"></iframe>
 </div>
 <script>
 const photos = ['crack-filling-1-1-400x284.jpg', 'crack-filling-1-400x284.jpg', 'crack-filling-10-400x284.jpg', 'crack-filling-11-400x284.jpg', 'crack-filling-12-400x284.jpg', 'crack-filling-13-400x284.jpg', 'crack-filling-14-400x284.jpg', 'crack-filling-15-400x284.jpg', 'crack-filling-2-400x284.jpg'];
@@ -219,6 +219,6 @@ buildGrid(1);
   footer{padding:40px 20px 24px !important;}
 }
 </style>
-<script src="assets/vox-bridge.js?v=5"></script>
+<script src="assets/vox-bridge.js?v=6"></script>
 </body>
 </html>

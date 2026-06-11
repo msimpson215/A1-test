@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260603-691-restore -->
+  <!-- voxtalk-build: 20260611-pinwheel-v6 -->
 
   <style>
     :root{
@@ -275,6 +275,60 @@
 
     body.embedded.active #stop-btn,
     body.embedded.starting #stop-btn { display: none !important; }
+
+    /* Embedded orb — logo only, NO circular glow rings */
+    body.embedded .orb {
+      box-shadow: none;
+      filter: drop-shadow(0 0 14px rgba(245, 197, 24, 0.32));
+      animation: embeddedOrbPulse 3s ease-in-out infinite;
+    }
+
+    body.embedded.active .orb {
+      animation: embeddedOrbActive 1.35s infinite alternate ease-in-out;
+      box-shadow: none;
+    }
+
+    @keyframes embeddedOrbPulse {
+      0%, 100% {
+        transform: scale(1);
+        border-color: var(--yellow);
+        filter: drop-shadow(0 0 10px rgba(245, 197, 24, 0.28));
+      }
+      50% {
+        transform: scale(1.04);
+        border-color: #fff;
+        filter: drop-shadow(0 0 20px rgba(245, 197, 24, 0.48));
+      }
+    }
+
+    @keyframes embeddedOrbActive {
+      0% {
+        transform: scale(1.04);
+        border-color: #fff;
+        filter: drop-shadow(0 0 18px rgba(245, 197, 24, 0.45));
+      }
+      100% {
+        transform: scale(1.08);
+        border-color: var(--yellow);
+        filter: drop-shadow(0 0 24px rgba(245, 197, 24, 0.55));
+      }
+    }
+
+    body.embedded #status-text {
+      display: block !important;
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10004;
+      max-width: 92%;
+      text-align: center;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: none;
+      color: #ff8888;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -307,11 +361,9 @@
     let starting = false
     let sessionStarted = false
     let embedStarted = false
-    let returningVisitor = false
 
     const OPENING_LINE =
       "Hello, welcome to A1 Professional Asphalt and Sealing. I'm an artificial team member here to answer any questions you might have. How can I help you today?"
-    const RETURN_LINE = 'Did you have another question?'
 
     const isEmbedded = window.self !== window.top
     const statusEl = document.getElementById('status-text')
@@ -392,6 +444,29 @@
       try { history.back() } catch {}
     })
 
+    function showVoiceError(msg) {
+      statusEl.textContent = msg
+      statusEl.style.cssText =
+        'display:block!important;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:10004;color:#ff8888;font-size:12px;max-width:92%;text-align:center;line-height:1.4;'
+      if (isEmbedded) {
+        try { window.parent.postMessage({ type: 'voxtalk-error', message: msg }, '*') } catch {}
+      }
+    }
+
+    function friendlyMicError(err) {
+      var name = err && err.name
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        return 'Microphone blocked. Tap the lock icon in your browser address bar, allow microphone for this site, then try again.'
+      }
+      if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        return 'No microphone found on this device.'
+      }
+      if (name === 'NotReadableError') {
+        return 'Microphone is in use by another app. Close other apps using the mic and try again.'
+      }
+      return err && err.message ? err.message : 'Voice failed — check microphone permission and try again.'
+    }
+
     async function toggleAssistant(){
       if (pc || starting) {
         stopSession()
@@ -418,17 +493,13 @@
 
             if (msg.type === 'session.created' && !helloSent) {
               helloSent = true
-              const line = returningVisitor ? RETURN_LINE : OPENING_LINE
               dc.send(JSON.stringify({
                 type: 'response.create',
                 response: {
                   output_modalities: ['audio'],
-                  instructions: `Say exactly this, word for word, then stop: "${line}"`
+                  instructions: `Say exactly this, word for word, then stop: "${OPENING_LINE}"`
                 }
               }))
-              if (isEmbedded) {
-                try { window.parent.postMessage({ type: 'voxtalk-greeted' }, '*') } catch {}
-              }
               return
             }
 
@@ -458,7 +529,13 @@
         pc = new RTCPeerConnection()
         setupRealtimeChannel(pc)
 
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        localStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        })
 
         remoteAudio = document.createElement('audio')
         remoteAudio.autoplay = true
@@ -501,8 +578,7 @@
           localStream = null
         }
         setBodyState('idle')
-        statusEl.textContent = err.message || 'Voice failed'
-        statusEl.style.cssText = 'display:block!important;position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:99;color:#f55;font-size:12px;max-width:90%;text-align:center;'
+        showVoiceError(friendlyMicError(err))
         starting = false
         sessionStarted = false
         embedStarted = false
@@ -522,7 +598,6 @@
       setBodyState('idle')
       window.addEventListener('message', (e) => {
         if (e.data?.type === 'voxtalk-start') {
-          returningVisitor = !!e.data.returning
           startWhenVisible()
         }
         if (e.data?.type === 'voxtalk-stop') stopSession()
