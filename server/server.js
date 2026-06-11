@@ -68,7 +68,25 @@ const voxtalk3SessionConfig = JSON.stringify({
   }
 });
 
+function getOpenAiApiKey(res) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) {
+    res.status(503).json({
+      error: {
+        message:
+          'Voice is not configured on this site. In Render, open the a1-test service and add OPENAI_API_KEY (same value as a1-asphalt-voxtalk-3).',
+        code: 'missing_api_key'
+      }
+    });
+    return null;
+  }
+  return key;
+}
+
 async function createRealtimeSession(sdp, configJson, res) {
+  const apiKey = getOpenAiApiKey(res);
+  if (!apiKey) return;
+
   const fd = new FormData();
   fd.set('sdp', sdp);
   fd.set('session', configJson);
@@ -76,7 +94,7 @@ async function createRealtimeSession(sdp, configJson, res) {
   const response = await fetch('https://api.openai.com/v1/realtime/calls', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      Authorization: `Bearer ${apiKey}`
     },
     body: fd
   });
