@@ -1,3 +1,5 @@
+@import url('vox-overlay.css');
+
 /* Shared site header — match index.html */
 :root {
   --yellow: #f5c518;
@@ -300,55 +302,4 @@ body.has-site-nav .nav-brand img {
   width: 100% !important;
   height: auto !important;
   max-height: none !important;
-}
-
-/* VoxTalk — fullscreen orb over dark fade (no box) */
-#vox-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 9999;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-#vox-overlay.open {
-  display: flex;
-  animation: voxIn 0.25s ease forwards;
-}
-
-@keyframes voxIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-#vox-overlay iframe {
-  width: 90%;
-  max-width: 420px;
-  height: 60vh;
-  max-height: 520px;
-  border: none;
-  background: transparent;
-  overflow: visible;
-}
-
-#vox-close-btn {
-  position: absolute;
-  top: 20px;
-  right: 28px;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 2rem;
-  font-weight: 900;
-  cursor: pointer;
-  z-index: 10001;
-  line-height: 1;
-  padding: 8px 12px;
-}
-
-#vox-close-btn:hover {
-  color: #fff;
 }
