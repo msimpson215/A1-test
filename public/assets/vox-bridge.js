@@ -6,9 +6,6 @@
   var greetingFinished = false
   var closing = false
   var openedAt = 0
-  var suppressClickUntil = 0
-  var isTouchDevice = matchMedia('(pointer: coarse)').matches ||
-    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 
   try {
     if (sessionStorage.getItem('a1-vox-ver') !== STORAGE_VER) {
@@ -67,47 +64,25 @@
     }).catch(function () {})
   }
 
-  function isVoxTrigger(el) {
-    if (!el) return false
-    return el.matches('[data-vox-open], .ai-nav, .ai-orb, #aiOrb')
+  function triggerFor(target) {
+    if (!target || !target.closest) return null
+    return target.closest('[data-vox-open], .ai-nav, .ai-orb, #aiOrb')
   }
 
-  function handleVoxOpen(e) {
-    if (e && e.type === 'click' && Date.now() < suppressClickUntil) {
-      e.preventDefault()
-      e.stopPropagation()
-      return
-    }
-
-    var trigger = e ? e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb') : null
-    if (e && !isVoxTrigger(trigger)) return
-
-    if (e) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-
+  /* One simple handler. A tap on any device dispatches a click, so this
+     fires once on phone and desktop. preventDefault stops the href="#"
+     from scrolling the page back to the top. */
+  function onTrigger(e) {
+    var trigger = triggerFor(e.target)
+    if (!trigger) return
+    e.preventDefault()
+    e.stopImmediatePropagation()
     closeMobileMenu()
+    primeMicFromGesture()
     openVox()
   }
 
-  document.addEventListener('pointerup', function (e) {
-    if (!isVoxTrigger(e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb'))) return
-    if (e.pointerType === 'touch') suppressClickUntil = Date.now() + 700
-    primeMicFromGesture()
-    handleVoxOpen(e)
-  }, true)
-
-  document.addEventListener('click', function (e) {
-    if (!isVoxTrigger(e.target.closest('a, button, [data-vox-open], .ai-orb, #aiOrb'))) return
-    if (Date.now() < suppressClickUntil) {
-      e.preventDefault()
-      e.stopPropagation()
-      return
-    }
-    if (isTouchDevice) return
-    handleVoxOpen(e)
-  }, true)
+  document.addEventListener('click', onTrigger, true)
 
   window.openVox = function () {
     var o = document.getElementById('vox-overlay')
@@ -140,11 +115,7 @@
     function start() {
       if (closing) return
       sessionActive = true
-      post(f, {
-        type: 'voxtalk-start',
-        returning: returning,
-        mobile: isTouchDevice
-      })
+      post(f, { type: 'voxtalk-start', returning: returning })
     }
 
     f.onload = function () {
