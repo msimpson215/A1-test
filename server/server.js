@@ -121,18 +121,33 @@ app.get('/', (req, res) => {
   if (process.env.VOXTALK3_ROOT === '1') {
     return sendOrbPage(res, voxtalk3Page);
   }
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
+// Never let phones/proxies reuse a stale HTML page or voice assets.
+// HTML always fresh -> it references ?v= asset URLs -> old JS/CSS can't linger.
 app.use((req, res, next) => {
-  if (/vox-bridge\.js|vox-overlay\.css|\/voice\/?$/.test(req.path)) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  if (/\.html?$/i.test(req.path) ||
+      /vox-bridge\.js|vox-overlay\.css/.test(req.path) ||
+      /\/voice\/?$/.test(req.path)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
   }
   next();
 });
 
-app.use(express.static(publicDir));
+app.use(express.static(publicDir, {
+  setHeaders: function (res, filePath) {
+    if (/\.html?$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {

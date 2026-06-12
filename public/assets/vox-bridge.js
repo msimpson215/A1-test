@@ -1,5 +1,5 @@
 (function () {
-  var VOICE_URL = '/voice/'
+  var VOICE_BASE = '/voice/'
   var RETURN_KEY = 'a1-vox-returning'
   var STORAGE_VER = '4'
   var sessionActive = false
@@ -153,7 +153,7 @@
     }
 
     f.removeAttribute('data-vox-ready')
-    f.src = VOICE_URL
+    f.src = VOICE_BASE + '?t=' + Date.now()
   }
 
   window.closeVox = function () {
