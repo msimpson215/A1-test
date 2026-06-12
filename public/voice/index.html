@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>A1 Asphalt & Sealing</title>
-  <!-- voxtalk-build: 20260611-v9-android -->
+  <!-- voxtalk-build: 20260612-v12-noise-filter -->
 
   <style>
     :root{
@@ -375,6 +375,39 @@
       return err && err.message ? err.message : 'Voice failed — check microphone permission and try again.'
     }
 
+    // Capture mic with browser-side noise filtering focused on the near voice.
+    // Mono + echo cancel + noise suppression + auto gain strips steady-state
+    // room noise (HVAC, music, crowd). Falls back to plain audio if a phone
+    // browser rejects the detailed constraints, so it never fails to start.
+    async function getFilteredMic() {
+      var filtered = {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+          // Chrome/Android hints — ignored where unsupported, never required.
+          googEchoCancellation: true,
+          googNoiseSuppression: true,
+          googNoiseSuppression2: true,
+          googAutoGainControl: true,
+          googHighpassFilter: true,
+          googTypingNoiseDetection: true
+        }
+      }
+      try {
+        return await navigator.mediaDevices.getUserMedia(filtered)
+      } catch (e) {
+        if (e && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError' ||
+                  e.name === 'NotFoundError' || e.name === 'NotReadableError')) {
+          throw e
+        }
+        return await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        })
+      }
+    }
+
     async function hardStop() {
       try {
         if (eventsDc && eventsDc.readyState === 'open') {
@@ -458,9 +491,13 @@
                 type: 'realtime',
                 audio: {
                   input: {
+                    // Higher threshold = ignore background chatter/ambient
+                    // noise so the speaker in front of the device is heard
+                    // and end-of-speech is detected even in a noisy room.
                     turn_detection: {
                       type: 'server_vad',
-                      silence_duration_ms: 2000,
+                      threshold: 0.65,
+                      silence_duration_ms: 1500,
                       prefix_padding_ms: 300,
                       create_response: true,
                       interrupt_response: false
@@ -538,13 +575,7 @@
           remoteAudio.play().catch(function (err) { console.error('audio play', err) })
         }
 
-        localStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          }
-        })
+        localStream = await getFilteredMic()
         setMicEnabled(false)
         pc.addTrack(localStream.getTracks()[0])
 
