@@ -25,7 +25,8 @@ const sessionConfig = JSON.stringify({
     input: {
       turn_detection: {
         type: 'server_vad',
-        silence_duration_ms: 2000,
+        threshold: 0.65,
+        silence_duration_ms: 1500,
         prefix_padding_ms: 300,
         create_response: false,
         interrupt_response: false
