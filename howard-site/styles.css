@@ -1,0 +1,503 @@
+:root {
+  --navy: #0f1f3d;
+  --navy-deep: #0a1628;
+  --lime: #8bc53f;
+  --lime-dark: #6fa82e;
+  --white: #ffffff;
+  --gray-bg: #eef1f4;
+  --text: #1a1a1a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+a { color: inherit; }
+
+/* Header */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(to bottom, rgba(10, 22, 40, 0.96), rgba(10, 22, 40, 0.85));
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--white);
+}
+
+.logo-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--navy-deep);
+  font-weight: 900;
+  font-size: 0.7rem;
+  border: 2px solid var(--white);
+}
+
+.logo-text {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.main-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1rem;
+}
+
+.main-nav a {
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.main-nav a:hover,
+.main-nav a.active { color: var(--lime); }
+
+.has-drop { position: relative; }
+
+.has-drop > a::after { content: " ▾"; font-size: 0.65rem; }
+
+.drop {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: var(--navy-deep);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 3px solid var(--lime);
+  list-style: none;
+  padding: 0.5rem 0;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.has-drop:hover .drop { display: block; }
+
+.drop a {
+  display: block;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.78rem;
+  color: var(--white) !important;
+}
+
+.drop a:hover {
+  background: rgba(139, 197, 63, 0.12);
+  color: var(--lime) !important;
+}
+
+.btn-call-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  background: var(--lime);
+  color: var(--navy-deep);
+  padding: 0.45rem 1rem;
+  border-radius: 4px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.btn-call-header .btn-label { font-size: 0.7rem; text-transform: uppercase; }
+.btn-call-header .btn-phone { font-size: 0.95rem; }
+.btn-call-header:hover { background: #9ed44f; }
+
+/* Hero (home) */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 6rem 1.5rem 3rem;
+  background:
+    linear-gradient(105deg, rgba(10, 22, 40, 0.88) 0%, rgba(10, 22, 40, 0.45) 55%, rgba(10, 22, 40, 0.25) 100%),
+    url("ChatGPT%20Image%20May%2015,%202026,%2002_35_34%20PM.png") center / cover no-repeat;
+  position: relative;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 560px;
+  color: var(--white);
+}
+
+.hero-tag {
+  color: var(--lime);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.hero-lead {
+  color: var(--lime);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-desc {
+  font-size: 1rem;
+  opacity: 0.95;
+  margin-bottom: 1.5rem;
+  max-width: 42ch;
+}
+
+.btn-primary {
+  display: inline-block;
+  background: var(--lime);
+  color: var(--navy-deep);
+  font-weight: 800;
+  text-decoration: none;
+  padding: 0.85rem 1.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.9rem;
+}
+
+.btn-primary:hover { background: #9ed44f; }
+
+.btn-secondary {
+  display: inline-block;
+  border: 2px solid var(--lime);
+  color: var(--navy);
+  font-weight: 800;
+  text-decoration: none;
+  padding: 0.75rem 1.35rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background: var(--lime);
+  color: var(--navy-deep);
+}
+
+/* Inner page banner */
+.page-hero {
+  padding: 7rem 1.5rem 3rem;
+  background:
+    linear-gradient(105deg, rgba(10, 22, 40, 0.9), rgba(10, 22, 40, 0.6)),
+    url("ChatGPT%20Image%20May%2015,%202026,%2002_35_34%20PM.png") center / cover no-repeat;
+  color: var(--white);
+  text-align: center;
+}
+
+.page-hero h1 {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.page-hero p {
+  max-width: 560px;
+  margin: 0 auto;
+  opacity: 0.95;
+}
+
+.page-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.page-content h2 {
+  color: var(--navy);
+  font-size: 1.35rem;
+  text-transform: uppercase;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.page-content p,
+.page-content li {
+  margin-bottom: 1rem;
+  color: #333;
+  line-height: 1.7;
+}
+
+.page-content ul {
+  margin: 0 0 1.25rem 1.25rem;
+}
+
+.highlight-box {
+  background: var(--gray-bg);
+  border-left: 4px solid var(--lime);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.highlight-box strong {
+  color: var(--navy);
+  font-size: 1.1rem;
+}
+
+/* Services */
+.services {
+  padding: 4rem 1.5rem;
+  background: var(--gray-bg);
+  text-align: center;
+}
+
+.section-label {
+  color: var(--lime-dark);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.section-label.light { color: var(--lime); }
+
+.services h2 {
+  color: var(--navy);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 2.5rem;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.service-card {
+  background: var(--white);
+  padding: 2rem 1.25rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.hex {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1rem;
+  background: var(--lime);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: grid;
+  place-items: center;
+  font-size: 1.75rem;
+}
+
+.service-card h3 {
+  color: var(--navy);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.service-card p {
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 0.75rem;
+}
+
+.service-card .learn {
+  color: var(--lime-dark);
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+/* Why */
+.why {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 380px;
+}
+
+.why-photo {
+  background:
+    linear-gradient(135deg, rgba(139, 197, 63, 0.2), rgba(15, 31, 61, 0.3)),
+    url("ChatGPT%20Image%20May%2015,%202026,%2002_35_34%20PM.png") center / cover no-repeat;
+  min-height: 280px;
+}
+
+.why-content {
+  background: var(--navy);
+  color: var(--white);
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.why-content h2 {
+  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.why-content > p { margin-bottom: 1.25rem; opacity: 0.9; max-width: 40ch; }
+
+.why-content ul { list-style: none; }
+
+.why-content li {
+  padding: 0.35rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  font-weight: 600;
+}
+
+.why-content li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--lime);
+  font-weight: 900;
+}
+
+/* CTA */
+.cta-bar {
+  background: var(--lime);
+  padding: 2rem 1.5rem;
+}
+
+.cta-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+}
+
+.cta-icon { font-size: 2.5rem; }
+
+.cta-inner h2 {
+  color: var(--navy);
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.cta-phone {
+  display: block;
+  color: var(--navy-deep);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.cta-phone:hover { text-decoration: underline; }
+
+.cta-note {
+  margin-left: auto;
+  color: var(--navy);
+  font-size: 0.85rem;
+  font-weight: 600;
+  max-width: 280px;
+}
+
+/* Footer */
+.site-footer {
+  background: var(--navy-deep);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 3rem 1.5rem 1.5rem;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+}
+
+.footer-brand .logo-mark { margin-bottom: 0.5rem; }
+
+.footer-grid h4 {
+  color: var(--lime);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+}
+
+.footer-grid a {
+  display: block;
+  color: var(--white);
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.footer-grid a:hover { color: var(--lime); }
+
+.footer-grid p { font-size: 0.9rem; }
+
+.copyright {
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.6;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .site-header { justify-content: center; }
+  .main-nav { order: 3; width: 100%; justify-content: center; }
+  .why { grid-template-columns: 1fr; }
+  .cta-note { margin-left: 0; }
+  .has-drop:hover .drop { position: static; display: block; margin-top: 0.5rem; }
+}
