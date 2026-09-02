@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Axon Partner"/>
+<meta name="theme-color" content="#061a4e"/>
+<meta name="cache-control" content="no-store"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<link rel="apple-touch-icon" href="/icons/axon-blue-180.png"/>
+<link rel="icon" href="/icons/axon-blue-192.png"/>
+<title>Joe’s Professional Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  width:100%;
+  height:100%;
+  background:
+    radial-gradient(115% 78% at 50% 66%, #2f8bf2 0%, #1a6bd2 24%, #0d4098 48%, #061c56 76%, #030f34 100%);
+  color:#fff;
+  font-family:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+body{
+  min-height:100%;
+  overflow:hidden;
+}
+.brand{
+  position:fixed;
+  top:clamp(.7rem,2.4vh,1.2rem);
+  left:0;right:0;
+  text-align:center;
+  font-weight:750;
+  font-size:clamp(1.25rem,5vw,1.85rem);
+  letter-spacing:-0.03em;
+  color:#fff;
+  z-index:6;
+  text-shadow:0 2px 18px rgba(3,18,54,.45);
+}
+.subgreet{
+  position:fixed;
+  top:clamp(2.55rem,6vh,3.35rem);
+  left:0;right:0;
+  text-align:center;
+  font-size:.9rem;
+  font-weight:500;
+  color:rgba(214,235,255,.9);
+  z-index:6;
+}
+.qb-bar{
+  position:fixed;
+  top:clamp(4.15rem,9.2vh,5.05rem);
+  left:0;right:0;
+  z-index:6;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:.4rem;
+  padding:0 1rem;
+  flex-wrap:wrap;
+}
+.qb-pill{
+  display:inline-flex;align-items:center;gap:.4rem;
+  border:1px solid rgba(160,210,255,.28);background:rgba(255,255,255,.1);border-radius:999px;
+  padding:.28rem .7rem;font-size:.68rem;font-weight:600;color:rgba(220,238,255,.88);
+}
+.qb-pill .dot{width:7px;height:7px;border-radius:50%;background:#7aa0c8}
+.qb-pill.on .dot{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.25)}
+.qb-pill.on{color:#fff;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12)}
+.qb-pill .stamp{
+  font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85;
+}
+.qb-link{
+  border:0;background:none;color:rgba(190,222,255,.9);font:600 .7rem/1 "Plus Jakarta Sans",sans-serif;
+  cursor:pointer;text-decoration:underline;text-underline-offset:2px;
+}
+.qb-link:hover{color:#fff}
+.speak-toggle{
+  border:1px solid rgba(160,210,255,.28);background:rgba(255,255,255,.08);
+  color:rgba(220,238,255,.9);border-radius:999px;
+  padding:.28rem .7rem;font:600 .68rem/1 "Plus Jakarta Sans",sans-serif;cursor:pointer;
+}
+.speak-toggle.on{background:rgba(239,68,68,.18);border-color:rgba(248,113,113,.55);color:#fecaca}
+
+.stage{
+  position:fixed;
+  inset:0;
+  display:grid;
+  grid-template-columns:1fr;
+  transition:grid-template-columns .45s cubic-bezier(.2,.8,.2,1);
+}
+body.split .stage{
+  grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+}
+
+body.split .brand,
+body.split .subgreet,
+body.split .qb-bar{
+  left:50%;
+  width:50%;
+}
+
+/* Left board — QuickBooks-style report */
+.board{
+  position:relative;
+  display:none;
+  flex-direction:column;
+  min-width:0;
+  height:100%;
+  padding:0;
+  background:#fff;
+  border-right:1px solid #d4d7dc;
+  overflow:hidden;
+  animation:boardIn .45s cubic-bezier(.2,.8,.2,1) both;
+  font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;
+  color:#1a1a1a;
+}
+body.split .board{display:flex}
+@keyframes boardIn{
+  from{opacity:0;transform:translateX(-18px)}
+  to{opacity:1;transform:none}
+}
+.qb-top{
+  flex-shrink:0;
+  background:#2CA01C;
+  color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.55rem .85rem .55rem 1rem;
+}
+.qb-word{
+  font-weight:800;font-size:.95rem;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:.45rem;
+}
+.qb-word i{
+  font-style:normal;background:#fff;color:#2CA01C;
+  width:22px;height:22px;border-radius:4px;
+  display:grid;place-items:center;font-size:.72rem;font-weight:900;
+}
+.qb-sample{
+  font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  background:rgba(0,0,0,.18);padding:.22rem .5rem;border-radius:999px;
+}
+.board-x{
+  border:0;background:rgba(255,255,255,.18);border-radius:999px;
+  width:28px;height:28px;cursor:pointer;color:#fff;font-size:1.05rem;line-height:1;
+  flex-shrink:0;
+}
+.board-x:hover{background:rgba(255,255,255,.3)}
+.qb-scroll{
+  flex:1;min-height:0;overflow:auto;
+  background:#fff;
+}
+.qb-report{
+  flex-shrink:0;
+  background:#fff;
+  padding:1.15rem 1.35rem .35rem;
+}
+.qb-co{
+  text-align:center;font-size:.78rem;color:#5a5a5a;font-weight:600;
+}
+.qb-rtitle{
+  text-align:center;font-size:1.35rem;font-weight:700;color:#1a1a1a;
+  margin:.15rem 0 .1rem;
+}
+.qb-rdates{
+  text-align:center;font-size:.8rem;color:#5a5a5a;margin-bottom:.15rem;
+}
+.qb-basis{
+  text-align:center;font-size:.72rem;color:#8a8a8a;margin-bottom:.85rem;
+}
+.qb-banner{
+  background:#fff6d6;border:1px solid #f0d56a;color:#6a5300;
+  font-size:.72rem;font-weight:700;text-align:center;
+  padding:.4rem .6rem;margin-bottom:.85rem;border-radius:4px;
+}
+.board-body{
+  background:#fff;border:0;border-radius:0;
+  padding:0 1.35rem 1.6rem;
+  -webkit-user-select:text;user-select:text;
+}
+.board-body.chart-mode{
+  display:block;padding:0 1.35rem 1.6rem;
+}
+.board-hd{display:none}
+#pnlView{display:none}
+#pnlView.show{display:block}
+#chartView{display:none;height:240px;flex-direction:column;padding:0 0 1.2rem}
+#chartView.show{display:block}
+#boardChart{width:100%;height:240px;display:block}
+
+.pnl-table{width:100%;border-collapse:collapse;font-size:.84rem}
+.pnl-table th{
+  text-align:left;font-size:.68rem;font-weight:700;color:#6b6b6b;
+  padding:.35rem 0 .4rem;border-bottom:1px solid #cfcfcf;
+}
+.pnl-table th.amt{text-align:right}
+.pnl-table td.muted{color:#5a5a5a}
+.pnl-table td.amt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;color:#1a1a1a}
+.pnl-table tr.section td{padding-top:.75rem;font-weight:700;color:#1a1a1a;border-bottom:0}
+.pnl-table tr.indent td:first-child{padding-left:1.1rem}
+.pnl-table tr.total td{
+  font-weight:700;color:#1a1a1a;border-bottom:0;border-top:1px solid #cfcfcf;padding-top:.5rem;
+}
+.pnl-table tr.net td{
+  font-weight:800;color:#1a1a1a;font-size:.92rem;padding-top:.65rem;
+  border-top:2px solid #1a1a1a;border-bottom:3px double #1a1a1a;
+}
+.pnl-table tr.net.pos td.amt{color:#1a1a1a}
+.pnl-table tr.net.neg td.amt{color:#c0392b}
+.pay-kpis{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  border:1px solid #d4d7dc;margin-bottom:.9rem;
+}
+.pay-kpis div{padding:.55rem .7rem;border-right:1px solid #d4d7dc}
+.pay-kpis div:last-child{border-right:0}
+.pay-kpis .k{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6b6b6b}
+.pay-kpis .v{font-size:1.02rem;font-weight:700;color:#1a1a1a;margin-top:.15rem;font-variant-numeric:tabular-nums}
+.pay-note{font-size:.72rem;color:#6b6b6b;margin:.15rem 0 .85rem}
+
+/* Right / center — orb side */
+.orb-side{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:0;height:100%;
+  padding:6.4rem 1rem 7.4rem;
+}
+.orb-wrap{
+  position:relative;
+  width:min(58vw,222px);height:min(58vw,222px);
+  display:grid;place-items:center;flex-shrink:0;
+  transition:transform .45s cubic-bezier(.2,.8,.2,1);
+}
+body.split .orb-wrap{width:min(48vw,180px);height:min(48vw,180px)}
+.orb-wrap::before{
+  content:"";position:absolute;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+  width:230%;height:230%;border-radius:50%;
+  background:radial-gradient(circle,rgba(88,178,255,.30) 0%,rgba(60,140,240,.14) 38%,rgba(10,50,130,0) 68%);
+  pointer-events:none;
+}
+.pulse{
+  position:absolute;inset:-3%;border-radius:50%;
+  border:1.5px solid rgba(150,214,255,.5);
+  box-shadow:0 0 22px rgba(120,200,255,.35);
+  animation:pulseOut 3.8s cubic-bezier(.22,.62,.3,1) infinite;
+  pointer-events:none;
+}
+.pulse:nth-of-type(2){animation-delay:1.27s}
+.pulse:nth-of-type(3){animation-delay:2.54s}
+@keyframes pulseOut{
+  0%{transform:scale(.92);opacity:.62}
+  65%{opacity:0}
+  100%{transform:scale(1.34);opacity:0}
+}
+.halo{display:none}
+.orb{
+  position:relative;z-index:1;width:100%;height:100%;border-radius:50%;border:0;
+  cursor:pointer;appearance:none;padding:0;
+  background:
+    radial-gradient(circle at 50% 54%,
+      #ffffff 0%, #f4fbff 6%, #c3e6ff 13%, #74b8f8 22%,
+      #3585e8 34%, #1c66d0 48%, #114ead 64%, #0b3689 82%, #0a2a72 100%);
+  box-shadow:
+    0 0 0 1.5px rgba(190,232,255,.72),
+    0 0 20px 2px rgba(140,210,255,.75),
+    0 0 46px 10px rgba(90,180,255,.5),
+    inset 0 -30px 56px rgba(4,18,58,.52),
+    inset 0 14px 30px rgba(255,255,255,.1);
+  animation:orbBreathe 4s ease-in-out infinite;
+}
+.orb::before{
+  content:"";position:absolute;
+  top:6%;left:14%;width:72%;height:38%;
+  border-radius:50% 50% 46% 46%/64% 64% 36% 36%;
+  background:linear-gradient(180deg,rgba(255,255,255,.17) 0%,rgba(255,255,255,0) 100%);
+  pointer-events:none;
+}
+.orb:focus-visible{outline:3px solid #fff;outline-offset:6px}
+@keyframes orbBreathe{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.028)}
+}
+body.connecting .pulse,body.listening .pulse{animation-duration:1.9s}
+body.error .orb{
+  background:radial-gradient(circle at 32% 28%,#ffd0c8 0%,#e85d04 50%,#7a1a00 100%);
+  animation:none;
+}
+.hint{
+  margin-top:1rem;font-weight:600;font-size:.9rem;color:rgba(178,216,255,.85);text-align:center;min-height:1.25rem;
+}
+body.idle .hint::after{content:"Tap the orb — you talk, it types"}
+body.connecting .hint::after{content:"Connecting…"}
+body.listening .hint::after{content:"Listening — go ahead"}
+body.error .hint::after{content:"Couldn’t hear you — tap to try again"}
+body.texting .hint::after{content:"Type below — it prints the answer"}
+
+.tape{
+  width:min(100%,420px);max-height:22vh;overflow:auto;
+  margin-top:.85rem;padding:.2rem .2rem 0;
+  display:flex;flex-direction:column;gap:.45rem;
+}
+.tape .msg{
+  max-width:92%;padding:.55rem .75rem;border-radius:14px;
+  font-size:.82rem;line-height:1.4;font-weight:500;
+}
+.tape .msg.user{
+  align-self:flex-end;background:rgba(255,255,255,.14);color:#eaf4ff;
+}
+.tape .msg.bot{
+  align-self:flex-start;background:rgba(3,16,48,.35);color:#fff;
+  border:1px solid rgba(160,210,255,.2);
+}
+.tape .msg .demo-flag{
+  display:block;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+  color:#fbbf24;margin-bottom:.25rem;font-weight:700;
+}
+
+.dock{
+  position:fixed;left:50%;bottom:3.35rem;transform:translateX(-50%);
+  width:min(100% - 2rem,440px);z-index:7;
+  display:flex;flex-direction:column;gap:.5rem;
+}
+body.split .dock{
+  left:auto;right:clamp(.75rem,3vw,1.5rem);transform:none;
+  width:min(calc(50% - 2rem),400px);
+}
+.row{display:flex;gap:.45rem;align-items:center}
+.row input[type="text"]{
+  flex:1;min-width:0;border:1px solid rgba(160,210,255,.28);background:rgba(255,255,255,.12);border-radius:999px;
+  padding:.72rem 1rem;font:500 .9rem/1.3 "Plus Jakarta Sans",sans-serif;color:#fff;
+}
+.row input[type="text"]:focus{
+  outline:none;border-color:#93c5fd;background:rgba(255,255,255,.18);box-shadow:0 0 0 3px rgba(59,130,246,.25);
+}
+.row input[type="text"]::placeholder{color:rgba(190,222,255,.55)}
+.btn{
+  border:0;border-radius:999px;background:#fff;color:#0b2a72;
+  font:700 .82rem/1 "Plus Jakarta Sans",sans-serif;padding:.72rem 1rem;cursor:pointer;white-space:nowrap;
+}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn.ghost{
+  background:transparent;color:rgba(214,235,255,.9);border:1px solid rgba(160,210,255,.28);
+  padding:.55rem .85rem;font-weight:600;font-size:.75rem;
+}
+.btn.ghost:hover{border-color:#fff;color:#fff}
+.btn.yellow{background:#F5C518;color:#111}
+.teach{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.teach-meta{font-size:.72rem;color:rgba(178,216,255,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.powered{
+  position:fixed;right:clamp(.85rem,3vw,1.35rem);bottom:clamp(.7rem,2.5vw,1.1rem);
+  z-index:8;font-size:.68rem;font-weight:600;letter-spacing:.02em;color:rgba(160,205,255,.82);
+}
+.powered b{color:#eaf4ff;font-weight:700}
+
+.scrim{
+  position:fixed;inset:0;z-index:30;background:rgba(3,16,48,.55);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:1.25rem;
+}
+.scrim.open{display:flex}
+.sheet{
+  width:min(100%,400px);background:linear-gradient(180deg,#0d3d92,#082a68);border:1px solid rgba(150,205,255,.28);border-radius:18px;
+  padding:1.25rem 1.2rem 1.15rem;box-shadow:0 18px 50px rgba(0,0,0,.28);color:#fff;
+}
+.sheet h2{font-size:1.05rem;font-weight:750;letter-spacing:-0.02em;margin-bottom:.35rem}
+.sheet p{font-size:.86rem;line-height:1.45;color:rgba(214,235,255,.9);margin-bottom:1rem}
+.sheet label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(190,222,255,.8);margin-bottom:.35rem}
+.sheet input.key{
+  width:100%;border:1px solid rgba(160,210,255,.28);background:rgba(0,0,0,.2);border-radius:10px;
+  padding:.7rem .8rem;color:#fff;font:600 .88rem/1.3 ui-monospace,monospace;margin-bottom:.85rem;
+}
+.sheet .actions{display:flex;gap:.45rem;justify-content:flex-end;flex-wrap:wrap}
+.sheet .note{margin-top:.85rem;font-size:.72rem;color:rgba(178,216,255,.7);line-height:1.4}
+#file{display:none}
+
+@media(max-width:820px){
+  .pay-kpis{grid-template-columns:1fr}
+  .pay-kpis div{border-right:0;border-bottom:1px solid #d4d7dc}
+  .pay-kpis div:last-child{border-bottom:0}
+  body.split .brand,
+  body.split .subgreet,
+  body.split .qb-bar{display:none}
+  body.split .stage{grid-template-columns:1fr}
+  .board{
+    position:absolute;inset:0;z-index:5;
+    padding:0 0 7.2rem;border-right:0;
+  }
+  body.split .dock{
+    left:50%;right:auto;transform:translateX(-50%);
+    width:min(100% - 2rem,440px);
+  }
+  body.split .orb-side{opacity:.18;pointer-events:none}
+  body.split .board{pointer-events:auto}
+}
+</style>
+</head>
+<body class="idle">
+  <h1 class="brand" id="greeting">Good morning, Joe.</h1>
+  <p class="subgreet">You talk. It types. Demo books until you say otherwise.</p>
+
+  <div class="qb-bar">
+    <span class="qb-pill" id="qbPill"><span class="dot"></span><span id="qbLabel">QuickBooks · off</span><span class="stamp">demo</span></span>
+    <button type="button" class="qb-link" id="qbBtn">Connect demo</button>
+    <span class="qb-pill" id="payPill"><span class="dot"></span><span id="payLabel">Payroll · off</span><span class="stamp">demo</span></span>
+    <button type="button" class="qb-link" id="payBtn">Connect demo</button>
+    <button type="button" class="speak-toggle" id="speakBtn" title="Voice-out is the expensive lane. This desk types.">This desk types (cheaper)</button>
+  </div>
+
+  <div class="stage">
+    <aside class="board" id="board" aria-live="polite">
+      <div class="qb-top">
+        <div class="qb-word"><i>QB</i> QuickBooks <span style="opacity:.85;font-weight:600;font-size:.78rem">Online</span></div>
+        <span class="qb-sample">Sample company</span>
+        <button type="button" class="board-x" id="boardClose" aria-label="Close">×</button>
+      </div>
+      <div class="qb-scroll">
+      <div class="qb-report" id="qbChrome">
+        <div class="qb-co" id="qbCompany">A1 Professional Asphalt &amp; Sealing (sample)</div>
+        <div class="qb-rtitle" id="boardTitle">Profit and Loss</div>
+        <div class="qb-rdates" id="boardSub">January – December</div>
+        <div class="qb-basis" id="qbBasis">Accrual Basis · DEMO — not Joe’s live company</div>
+        <div class="qb-banner" id="qbBanner">Intuit does not give out a public API key. This is a sample company so you can see the report first. Live QuickBooks later is a one-time Connect click.</div>
+      </div>
+      <div class="board-body" id="boardBody">
+        <div id="pnlView"></div>
+        <div id="chartView"><canvas id="boardChart"></canvas></div>
+      </div>
+      </div>
+    </aside>
+
+    <div class="orb-side">
+      <div class="orb-wrap">
+        <span class="pulse" aria-hidden="true"></span>
+        <span class="pulse" aria-hidden="true"></span>
+        <span class="pulse" aria-hidden="true"></span>
+        <button type="button" class="orb" id="orb" aria-label="Tap to talk — it types the answer"></button>
+      </div>
+      <div class="hint" aria-live="polite"></div>
+      <div class="tape" id="tape" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="dock">
+    <form class="row" id="textForm">
+      <input id="q" type="text" autocomplete="off" placeholder="Or type here — it prints" enterkeyhint="send" aria-label="Type your question"/>
+      <button class="btn" type="submit" id="sendBtn">Send</button>
+    </form>
+    <div class="teach">
+      <span class="teach-meta" id="teachMeta">No teaching docs yet</span>
+      <div class="row" style="gap:.4rem;flex:0 0 auto">
+        <button type="button" class="btn ghost" id="uploadBtn">Upload docs</button>
+        <input id="file" type="file" accept=".txt,.md,.pdf,.docx,text/plain,application/pdf"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="powered">Powered by <b>Axon Partner</b></div>
+
+  <div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet">
+      <h2 id="sheetTitle">Connect demo QuickBooks</h2>
+      <p id="sheetCopy">Show key only — not Joe’s Intuit login. Sample numbers so you can see it work. If a figure looks wrong, it is demo data on purpose. Nobody’s live books are in this box.</p>
+      <label for="demoKey">Show key</label>
+      <input class="key" id="demoKey" type="text" autocomplete="off" spellcheck="false" placeholder="axon-demo-qb"/>
+      <div class="actions">
+        <button type="button" class="btn ghost" id="sheetCancel">Cancel</button>
+        <button type="button" class="btn yellow" id="sheetConnect">Light up demo</button>
+      </div>
+      <p class="note" id="sheetNote">QuickBooks show key: <b>axon-demo-qb</b>. Payroll: <b>axon-demo-payroll</b>. Real connect later is OAuth (he clicks Connect once). Never paste his password here.</p>
+    </div>
+  </div>
+
+<script>
+const orb=document.getElementById('orb');
+const qInput=document.getElementById('q');
+const textForm=document.getElementById('textForm');
+const sendBtn=document.getElementById('sendBtn');
+const teachMeta=document.getElementById('teachMeta');
+const uploadBtn=document.getElementById('uploadBtn');
+const fileInput=document.getElementById('file');
+const qbPill=document.getElementById('qbPill');
+const qbLabel=document.getElementById('qbLabel');
+const qbBtn=document.getElementById('qbBtn');
+const payPill=document.getElementById('payPill');
+const payLabel=document.getElementById('payLabel');
+const payBtn=document.getElementById('payBtn');
+const speakBtn=document.getElementById('speakBtn');
+const greetingEl=document.getElementById('greeting');
+const tape=document.getElementById('tape');
+const demoKey=document.getElementById('demoKey');
+const sheetTitle=document.getElementById('sheetTitle');
+const sheetCopy=document.getElementById('sheetCopy');
+const scrim=document.getElementById('scrim');
+const sheetCancel=document.getElementById('sheetCancel');
+const sheetConnect=document.getElementById('sheetConnect');
+const board=document.getElementById('board');
+const boardBody=document.getElementById('boardBody');
+const boardTitle=document.getElementById('boardTitle');
+const boardSub=document.getElementById('boardSub');
+const boardClose=document.getElementById('boardClose');
+const qbCompany=document.getElementById('qbCompany');
+const qbBasis=document.getElementById('qbBasis');
+const qbBanner=document.getElementById('qbBanner');
+const pnlView=document.getElementById('pnlView');
+const chartView=document.getElementById('chartView');
+const canvas=document.getElementById('boardChart');
+const ctx=canvas.getContext('2d');
+
+const QB_KEY='joeAssistant.qbMock';
+const PAY_KEY='joeAssistant.payMock';
+const SPEAK_KEY='joeAssistant.speakOut';
+const QB_SHOW='axon-demo-qb';
+const PAY_SHOW='axon-demo-payroll';
+let rec=null;
+let mode='idle',lastChart=null,qbOn=false,payOn=false,splitOn=false,speakOut=false,sheetKind='qb';
+
+function timeOfDay(){
+  const h=new Date().getHours();
+  if(h<12)return 'Good morning';
+  if(h<18)return 'Good afternoon';
+  return 'Good evening';
+}
+greetingEl.textContent=timeOfDay()+', Joe.';
+
+function syncBodyClass(){
+  document.body.className=[mode,qbOn?'qb-on':'',payOn?'pay-on':'',splitOn?'split':''].filter(Boolean).join(' ');
+}
+function setMode(s){mode=s;syncBodyClass()}
+
+function printMsg(role,text,demo){
+  const el=document.createElement('div');
+  el.className='msg '+(role==='user'?'user':'bot');
+  if(demo){
+    const flag=document.createElement('span');
+    flag.className='demo-flag';
+    flag.textContent='DEMO — not live books';
+    el.appendChild(flag);
+  }
+  el.appendChild(document.createTextNode(text));
+  tape.appendChild(el);
+  tape.scrollTop=tape.scrollHeight;
+}
+
+function setQbConnected(on){
+  qbOn=!!on;
+  try{localStorage.setItem(QB_KEY,on?'1':'0')}catch(e){}
+  qbPill.classList.toggle('on',qbOn);
+  qbLabel.textContent=qbOn?'QuickBooks · DEMO books':'QuickBooks · off';
+  qbBtn.textContent=qbOn?'Disconnect':'Connect demo';
+  syncBodyClass();
+}
+function setPayConnected(on){
+  payOn=!!on;
+  try{localStorage.setItem(PAY_KEY,on?'1':'0')}catch(e){}
+  payPill.classList.toggle('on',payOn);
+  payLabel.textContent=payOn?'Payroll · DEMO co.':'Payroll · off';
+  payBtn.textContent=payOn?'Disconnect':'Connect demo';
+  syncBodyClass();
+}
+function setSpeakOut(on){
+  speakOut=false;
+  speakBtn.classList.remove('on');
+  speakBtn.textContent='This desk types (cheaper)';
+}
+try{setQbConnected(localStorage.getItem(QB_KEY)==='1')}catch(e){setQbConnected(false)}
+try{setPayConnected(localStorage.getItem(PAY_KEY)==='1')}catch(e){setPayConnected(false)}
+try{setSpeakOut(localStorage.getItem(SPEAK_KEY)==='1')}catch(e){setSpeakOut(false)}
+
+function money(n){
+  return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0);
+}
+
+function closeBoard(){
+  splitOn=false;
+  lastChart=null;
+  pnlView.classList.remove('show');
+  chartView.classList.remove('show');
+  boardBody.classList.remove('chart-mode');
+  syncBodyClass();
+}
+
+function openBoard(){
+  splitOn=true;
+  syncBodyClass();
+}
+
+function setQbChrome(opts){
+  qbCompany.innerHTML=opts.company||'A1 Professional Asphalt &amp; Sealing LLC';
+  boardTitle.textContent=opts.title||'Report';
+  boardSub.textContent=opts.dates||'';
+  qbBasis.textContent=opts.basis||'Accrual Basis · DEMO — not Joe’s live company';
+  qbBanner.textContent=opts.banner||'Intuit does not give out a public API key. This is a sample company so you can see the report first. Live QuickBooks later is a one-time Connect click.';
+}
+
+function showBooksResult(d){
+  if(!d)return;
+  if(d.answer)printMsg('bot',d.answer,d.demo||d.mode==='demo'||d.warning);
+  if(d.intent==='pnl'&&d.report){
+    lastChart=null;
+    renderPnL(d.report);
+  }else if(d.intent==='payroll_company'&&d.report){
+    lastChart=d.chart||null;
+    renderPayroll(d.report,d.chart);
+  }else if(d.intent==='payroll_chart'&&(d.chart||d.report)){
+    lastChart=d.chart||null;
+    renderPayrollTrend(d.report,d.chart);
+  }
+}
+
+function renderPnL(report){
+  if(!report)return;
+  const period=report.period||{};
+  const totals=report.totals||{};
+  const income=report.income||[];
+  const expenses=report.expenses||[];
+  const net=totals.netIncome||0;
+  setQbChrome({
+    company:'A1 Professional Asphalt &amp; Sealing LLC',
+    title:'Profit and Loss',
+    dates:period.label||'May 2025',
+    basis:'Accrual Basis'
+  });
+  let html='<table class="pnl-table"><thead><tr><th></th><th class="amt">Total</th></tr></thead><tbody>';
+  html+='<tr class="section"><td colspan="2">Income</td></tr>';
+  income.forEach(r=>{html+='<tr class="indent"><td>'+esc(r.name)+'</td><td class="amt">'+money(r.amount)+'</td></tr>'});
+  html+='<tr class="total"><td>Total Income</td><td class="amt">'+money(totals.income)+'</td></tr>';
+  html+='<tr class="section"><td colspan="2">Expenses</td></tr>';
+  expenses.forEach(r=>{html+='<tr class="indent"><td>'+esc(r.name)+'</td><td class="amt">'+money(r.amount)+'</td></tr>'});
+  html+='<tr class="total"><td>Total Expenses</td><td class="amt">'+money(totals.expenses)+'</td></tr>';
+  html+='<tr class="net '+(net>=0?'pos':'neg')+'"><td>Net Income</td><td class="amt">'+money(net)+'</td></tr>';
+  html+='</tbody></table>';
+  pnlView.innerHTML=html;
+  pnlView.classList.add('show');
+  chartView.classList.remove('show');
+  boardBody.classList.remove('chart-mode');
+  openBoard();
+}
+
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fitCanvas(){
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=chartView.clientWidth||320;
+  const h=Math.max(chartView.clientHeight||240,220);
+  canvas.width=Math.floor(w*dpr);
+  canvas.height=Math.floor(h*dpr);
+  canvas.style.width=w+'px';
+  canvas.style.height=h+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {w,h};
+}
+
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function renderPayroll(report,chart){
+  if(!report)return;
+  const last=report.lastRun||{};
+  const roster=report.sampleRoster||[];
+  setQbChrome({
+    company:esc(report.company||'Midwest Payroll Partners'),
+    title:'Payroll Summary',
+    dates:(last.label||'Last pay run')+' · '+esc(report.paySchedule||'Weekly'),
+    basis:'Sample company · not Gusto, not ADP, not live payroll',
+    banner:'This is a sample payroll company so you can see the report first. Live Gusto/ADP later is a Connect click — same idea as QuickBooks. No public API key to paste.'
+  });
+  let html='<div class="pay-kpis">';
+  html+='<div><div class="k">Gross pay</div><div class="v">'+money(last.gross)+'</div></div>';
+  html+='<div><div class="k">Net pay</div><div class="v">'+money(last.net)+'</div></div>';
+  html+='<div><div class="k">Taxes &amp; other</div><div class="v">'+money(last.taxes)+'</div></div>';
+  html+='</div>';
+  html+='<p class="pay-note">'+esc(last.headcount||'')+' employees paid · Next run '+(report.nextRun&&report.nextRun.label?esc(report.nextRun.label):'')+' · YTD gross '+money(report.ytdGross)+'</p>';
+  html+='<table class="pnl-table"><thead><tr><th>Employee</th><th>Role</th><th class="amt">YTD gross</th></tr></thead><tbody>';
+  roster.forEach(r=>{
+    html+='<tr class="indent"><td>'+esc(r.name)+'</td><td class="muted">'+esc(r.role)+'</td><td class="amt">'+money(r.ytd)+'</td></tr>';
+  });
+  const ytd=roster.reduce((t,r)=>t+(Number(r.ytd)||0),0);
+  html+='<tr class="total"><td colspan="2">Total YTD (sample roster)</td><td class="amt">'+money(ytd)+'</td></tr>';
+  html+='</tbody></table>';
+  pnlView.innerHTML=html;
+  pnlView.classList.add('show');
+  if(chart){
+    chartView.classList.add('show');
+    boardBody.classList.add('chart-mode');
+    lastChart=chart;
+    openBoard();
+    requestAnimationFrame(()=>paintChart(chart));
+  }else{
+    chartView.classList.remove('show');
+    boardBody.classList.remove('chart-mode');
+    openBoard();
+  }
+}
+
+function renderPayrollTrend(report,chart){
+  const period=report&&report.period||{};
+  const years=period.years||((report&&report.series)||[]).length||5;
+  const series=(report&&report.series)||(chart&&chart.series&&chart.series[0]&&chart.series[0].points)||[];
+  const first=series[0]&&series[0].x;
+  const last=series.length&&series[series.length-1].x;
+  setQbChrome({
+    company:'A1 Professional Asphalt &amp; Sealing LLC',
+    title:'Payroll Expenses',
+    dates:(first&&last)?(first+' – '+last):('Past '+years+' years'),
+    basis:'Accrual Basis'
+  });
+  let html='';
+  if(report&&report.summary){
+    html+='<div class="pay-kpis">';
+    html+='<div><div class="k">First year</div><div class="v">'+money(report.summary.first)+'</div></div>';
+    html+='<div><div class="k">Latest year</div><div class="v">'+money(report.summary.last)+'</div></div>';
+    html+='<div><div class="k">Change</div><div class="v">'+(report.summary.changePct>=0?'+':'')+report.summary.changePct+'%</div></div>';
+    html+='</div>';
+  }
+  pnlView.innerHTML=html;
+  pnlView.classList.toggle('show',!!html);
+  if(chart){
+    lastChart=chart;
+    chartView.classList.add('show');
+    boardBody.classList.add('chart-mode');
+    openBoard();
+    requestAnimationFrame(()=>paintChart(chart));
+  }else{
+    chartView.classList.remove('show');
+    boardBody.classList.remove('chart-mode');
+    openBoard();
+  }
+}
+
+function paintChart(chart){
+  if(!chart)return;
+  const {w,h}=fitCanvas();
+  ctx.clearRect(0,0,w,h);
+  const pad={t:18,r:14,b:36,l:58};
+  const iw=w-pad.l-pad.r;
+  const ih=h-pad.t-pad.b;
+  const green='#2CA01C';
+  const labelFont='11px Arial,Helvetica,sans-serif';
+
+  if(chart.type==='line'||(chart.series&&chart.series[0]&&chart.type!=='waterfall')){
+    const pts=(chart.series[0].points)||[];
+    if(!pts.length)return;
+    const ys=pts.map(p=>Number(p.y)||0);
+    let minY=Math.min(...ys)*0.9;
+    let maxY=Math.max(...ys)*1.08;
+    if(minY===maxY)maxY=minY+1;
+    ctx.strokeStyle='#e8e8e8';
+    for(let i=0;i<=4;i++){
+      const y=pad.t+ih*(i/4);
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+iw,y);ctx.stroke();
+      const val=maxY-(maxY-minY)*(i/4);
+      ctx.fillStyle='#6b6b6b';ctx.font=labelFont;ctx.textAlign='right';
+      ctx.fillText(money(val),pad.l-8,y+4);
+    }
+    ctx.beginPath();
+    pts.forEach((p,i)=>{
+      const x=pad.l+(pts.length===1?iw/2:(i/(pts.length-1))*iw);
+      const y=pad.t+ih*((maxY-p.y)/(maxY-minY));
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle=green;ctx.lineWidth=2.4;ctx.stroke();
+    const last=pts[pts.length-1];
+    const xLast=pad.l+(pts.length===1?iw/2:iw);
+    ctx.lineTo(xLast,pad.t+ih);ctx.lineTo(pad.l,pad.t+ih);ctx.closePath();
+    const g=ctx.createLinearGradient(0,pad.t,0,pad.t+ih);
+    g.addColorStop(0,'rgba(44,160,28,.22)');g.addColorStop(1,'rgba(44,160,28,0)');
+    ctx.fillStyle=g;ctx.fill();
+    pts.forEach((p,i)=>{
+      const x=pad.l+(pts.length===1?iw/2:(i/(pts.length-1))*iw);
+      const y=pad.t+ih*((maxY-p.y)/(maxY-minY));
+      ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
+      ctx.fillStyle=green;ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle='#6b6b6b';ctx.font=labelFont;ctx.textAlign='center';
+      ctx.fillText(String(p.x),x,h-12);
+    });
+    return;
+  }
+
+  const points=chart.points||[];
+  if(!points.length)return;
+  const ys=points.map(p=>Math.abs(Number(p.y)||0));
+  const maxY=Math.max(...ys,1);
+  const gap=14;
+  const bw=(iw-(points.length-1)*gap)/points.length;
+  points.forEach((p,i)=>{
+    const val=Number(p.y)||0;
+    const bh=(Math.abs(val)/maxY)*ih*0.88;
+    const x=pad.l+i*(bw+gap);
+    const y=pad.t+ih-bh;
+    ctx.fillStyle=green;
+    roundRect(ctx,x,y,bw,bh,4);ctx.fill();
+    ctx.fillStyle='#6b6b6b';ctx.font=labelFont;ctx.textAlign='center';
+    ctx.fillText(String(p.x),x+bw/2,h-12);
+    ctx.fillStyle='#1a1a1a';ctx.font='600 11px Arial,Helvetica,sans-serif';
+    ctx.fillText(money(val),x+bw/2,y-8);
+  });
+}
+
+function refreshDocs(){
+  teachMeta.textContent='Teaching docs live on the Axon host.';
+}
+refreshDocs();
+
+const sessionTurns=[];
+let memoryFlushing=false;
+function noteTurn(role,text){
+  const t=String(text||'').trim();
+  if(!t)return;
+  sessionTurns.push({role:role==='assistant'?'assistant':'user',text:t.slice(0,2000)});
+  if(sessionTurns.length>80)sessionTurns.splice(0,sessionTurns.length-80);
+}
+function flushMemory(source){
+  if(memoryFlushing||sessionTurns.length<1)return;
+  const turns=sessionTurns.splice(0,sessionTurns.length);
+  memoryFlushing=true;
+  fetch('/api/brain/memory/remember',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({turns,source:source||'desk'}),
+    keepalive:true
+  }).catch(()=>{}).finally(()=>{memoryFlushing=false});
+}
+
+async function sendText(question){
+  const q=String(question||'').trim();
+  if(!q)return;
+  sendBtn.disabled=true;
+  setMode('texting');
+  printMsg('user',q);
+  try{
+    const r=await fetch('/api/brain/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
+    const d=await r.json();
+    noteTurn('user',q);
+    if(d.answer)noteTurn('assistant',d.answer);
+    showBooksResult(d);
+    qInput.value='';
+  }catch(e){printMsg('bot','That did not go through. Try again.')}
+  sendBtn.disabled=false;
+  setMode('idle');
+}
+
+textForm.addEventListener('submit',e=>{e.preventDefault();sendText(qInput.value)});
+qInput.addEventListener('focus',()=>{if(mode==='idle'||mode==='error')setMode('texting')});
+uploadBtn.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',async()=>{
+  const file=fileInput.files&&fileInput.files[0];
+  fileInput.value='';
+  if(!file)return;
+  uploadBtn.disabled=true;
+  teachMeta.textContent='Teaching from “'+file.name+'”…';
+  try{
+    const fd=new FormData();fd.append('file',file);
+    const r=await fetch('/api/brain/teach',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!r.ok||!d.ok)throw new Error(d.error||'Upload failed');
+    await refreshDocs();
+  }catch(e){await refreshDocs()}
+  uploadBtn.disabled=false;
+});
+
+function openSheet(kind){
+  sheetKind=kind==='pay'?'pay':'qb';
+  if(sheetKind==='pay'){
+    sheetTitle.textContent='Connect demo payroll';
+    sheetCopy.textContent='Midwest Payroll Partners is a SAMPLE company. Not Gusto, not ADP, not Joe’s live run. Show it first so if a number looks off, nobody’s real payroll is to blame.';
+    demoKey.placeholder=PAY_SHOW;
+    demoKey.value='';
+  }else{
+    sheetTitle.textContent='Connect demo QuickBooks';
+    sheetCopy.textContent='Show key only — not Joe’s Intuit login. Sample numbers so you can see it work. If a figure looks wrong, it is demo data on purpose.';
+    demoKey.placeholder=QB_SHOW;
+    demoKey.value='';
+  }
+  scrim.classList.add('open');
+  setTimeout(()=>demoKey.focus(),50);
+}
+function closeSheet(){scrim.classList.remove('open')}
+qbBtn.addEventListener('click',()=>{
+  if(qbOn){setQbConnected(false);closeBoard();return}
+  openSheet('qb');
+});
+payBtn.addEventListener('click',()=>{
+  if(payOn){setPayConnected(false);closeBoard();return}
+  openSheet('pay');
+});
+speakBtn.addEventListener('click',()=>{
+  printMsg('bot','When Axon talks out loud, that lane costs more. This desk is the cheap one: you talk, it types. Live voice stays on the Axon host.');
+});
+sheetCancel.addEventListener('click',closeSheet);
+scrim.addEventListener('click',e=>{if(e.target===scrim)closeSheet()});
+sheetConnect.addEventListener('click',()=>{
+  const typed=String(demoKey.value||'').trim().toLowerCase();
+  const need=sheetKind==='pay'?PAY_SHOW:QB_SHOW;
+  if(typed&&typed!==need){
+    sheetCopy.textContent='That key does not match the show key. Use '+need+' — it is a demo switch, not a real password.';
+    return;
+  }
+  if(sheetKind==='pay')setPayConnected(true);
+  else setQbConnected(true);
+  closeSheet();
+});
+boardClose.addEventListener('click',closeBoard);
+
+function SpeechRec(){
+  return window.SpeechRecognition||window.webkitSpeechRecognition||null;
+}
+
+function stopListen(){
+  try{if(rec){rec.onend=null;rec.stop()}}catch(e){}
+  rec=null;
+  if(mode==='listening')setMode('idle');
+}
+
+function startListenToType(){
+  const Ctor=SpeechRec();
+  if(!Ctor){
+    printMsg('bot','This browser will not listen. Type below — same memory, same demo books.');
+    qInput.focus();
+    return;
+  }
+  if(rec){stopListen();return}
+  rec=new Ctor();
+  rec.lang='en-US';
+  rec.interimResults=true;
+  rec.continuous=false;
+  let finalText='';
+  rec.onresult=function(ev){
+    let bits='';
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      bits+=ev.results[i][0].transcript;
+      if(ev.results[i].isFinal)finalText+=ev.results[i][0].transcript;
+    }
+    qInput.value=finalText||bits;
+  };
+  rec.onerror=function(){setMode('error');rec=null};
+  rec.onend=function(){
+    rec=null;
+    const q=String(qInput.value||finalText||'').trim();
+    setMode('idle');
+    if(q)sendText(q);
+  };
+  setMode('listening');
+  rec.start();
+}
+
+async function onOrb(){
+  startListenToType();
+}
+
+orb.addEventListener('click',onOrb);
+orb.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOrb()}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(scrim.classList.contains('open'))closeSheet();
+    else if(splitOn)closeBoard();
+    else stopListen();
+  }
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopListen();flushMemory('pagehide')}});
+window.addEventListener('resize',()=>{if(lastChart&&splitOn)paintChart(lastChart)});
+window.addEventListener('pagehide',()=>flushMemory('pagehide'));
+</script>
+</body>
+</html>
