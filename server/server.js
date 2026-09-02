@@ -1,9 +1,12 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config();
+const demoBooks = require('./demo-books');
+const payrollDemo = require('./payroll-demo');
 
 const app = express();
 const publicDir = path.join(__dirname, '..', 'public');
+app.use(express.json());
 
 app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'microphone=(self)');
@@ -124,6 +127,53 @@ app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.sendFile(path.join(publicDir, 'index.html'));
+});
+
+app.get(['/joe-desk', '/joe/books'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(publicDir, 'joe-desk.html'));
+});
+
+app.get('/api/brain/status', (req, res) => {
+  res.json({
+    ok: true,
+    ...demoBooks.status(),
+    ...payrollDemo.status(),
+    openai: Boolean(process.env.OPENAI_API_KEY),
+    memory: { count: 0, latestAt: null },
+    docs: [],
+    demoKeys: {
+      quickbooks: demoBooks.SHOW_KEY,
+      payroll: payrollDemo.SHOW_KEY
+    }
+  });
+});
+
+app.post('/api/brain/chat', async (req, res) => {
+  const question = String(req.body?.question || req.body?.q || '').trim();
+  if (!question) {
+    return res.status(400).json({ ok: false, answer: 'Type a question first.' });
+  }
+  try {
+    const pay = payrollDemo.ask(question);
+    if (pay) return res.json(pay);
+    const books = await demoBooks.ask(question);
+    return res.json(books);
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      answer: 'The demo desk hit a snag. Try again.',
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/brain/teach', (req, res) => {
+  res.json({ ok: false, error: 'Teaching docs live on the Axon host. This desk is the show copy.' });
+});
+
+app.post('/api/brain/memory/remember', (req, res) => {
+  res.json({ ok: true, stored: false, note: 'Memory banks live on the Axon host. This desk is the show copy.' });
 });
 
 // Never let phones/proxies reuse a stale HTML page or voice assets.

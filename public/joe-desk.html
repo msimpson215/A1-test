@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Axon Partner"/>
+<meta name="theme-color" content="#061a4e"/>
+<meta name="cache-control" content="no-store"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<link rel="apple-touch-icon" href="/icons/axon-blue-180.png"/>
+<link rel="icon" href="/icons/axon-blue-192.png"/>
+<title>Joe’s Professional Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  width:100%;
+  height:100%;
+  background:
+    radial-gradient(115% 78% at 50% 66%, #2f8bf2 0%, #1a6bd2 24%, #0d4098 48%, #061c56 76%, #030f34 100%);
+  color:#fff;
+  font-family:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+body{
+  min-height:100%;
+  overflow:hidden;
+}
+.brand{
+  position:fixed;
+  top:clamp(.7rem,2.4vh,1.2rem);
+  left:0;right:0;
+  text-align:center;
+  font-weight:750;
+  font-size:clamp(1.25rem,5vw,1.85rem);
+  letter-spacing:-0.03em;
+  color:#fff;
+  z-index:6;
+  text-shadow:0 2px 18px rgba(3,18,54,.45);
+}
+.subgreet{
+  position:fixed;
+  top:clamp(2.55rem,6vh,3.35rem);
+  left:0;right:0;
+  text-align:center;
+  font-size:.9rem;
+  font-weight:500;
+  color:rgba(214,235,255,.9);
+  z-index:6;
+}
+.qb-bar{
+  position:fixed;
+  top:clamp(4.15rem,9.2vh,5.05rem);
+  left:0;right:0;
+  z-index:6;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:.4rem;
+  padding:0 1rem;
+  flex-wrap:wrap;
+}
+.qb-pill{
+  display:inline-flex;align-items:center;gap:.4rem;
+  border:1px solid rgba(160,210,255,.28);background:rgba(255,255,255,.1);border-radius:999px;
+  padding:.28rem .7rem;font-size:.68rem;font-weight:600;color:rgba(220,238,255,.88);
+}
+.qb-pill .dot{width:7px;height:7px;border-radius:50%;background:#7aa0c8}
+.qb-pill.on .dot{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.25)}
+.qb-pill.on{color:#fff;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12)}
+.qb-pill .stamp{
+  font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85;
+}
+.qb-link{
+  border:0;background:none;color:rgba(190,222,255,.9);font:600 .7rem/1 "Plus Jakarta Sans",sans-serif;
+  cursor:pointer;text-decoration:underline;text-underline-offset:2px;
+}
+.qb-link:hover{color:#fff}
+.speak-toggle{
+  border:1px solid rgba(160,210,255,.28);background:rgba(255,255,255,.08);
+  color:rgba(220,238,255,.9);border-radius:999px;
+  padding:.28rem .7rem;font:600 .68rem/1 "Plus Jakarta Sans",sans-serif;cursor:pointer;
+}
+.speak-toggle.on{background:rgba(239,68,68,.18);border-color:rgba(248,113,113,.55);color:#fecaca}
+
+.stage{
+  position:fixed;
+  inset:0;
+  display:grid;
+  grid-template-columns:1fr;
+  transition:grid-template-columns .45s cubic-bezier(.2,.8,.2,1);
+}
+body.split .stage{
+  grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+}
+
+/* Left board — slides in for P&L / chart */
+.board{
+  position:relative;
+  display:none;
+  flex-direction:column;
+  min-width:0;
+  height:100%;
+  padding:5.5rem 1.1rem 6.8rem 1.25rem;
+  background:linear-gradient(180deg,#fbfbfb 0%,#f4f4f4 100%);
+  border-right:1px solid #ececec;
+  overflow:hidden;
+  animation:boardIn .45s cubic-bezier(.2,.8,.2,1) both;
+}
+body.split .board{display:flex}
+@keyframes boardIn{
+  from{opacity:0;transform:translateX(-18px)}
+  to{opacity:1;transform:none}
+}
+.board-hd{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;
+  margin-bottom:.85rem;flex-shrink:0;
+}
+.board-hd h2{
+  font-size:1rem;font-weight:750;letter-spacing:-0.02em;color:#111;
+}
+.board-hd .sub{
+  font-size:.72rem;color:#888;font-weight:600;margin-top:.2rem;
+}
+.board-x{
+  border:0;background:#fff;border:1px solid #e6e6e6;border-radius:999px;
+  width:28px;height:28px;cursor:pointer;color:#666;font-size:1rem;line-height:1;
+  flex-shrink:0;
+}
+.board-x:hover{color:#111;border-color:#ccc}
+.board-body{
+  flex:1;min-height:0;overflow:auto;
+  background:#fff;border:1px solid #ececec;border-radius:16px;
+  padding:1rem 1.05rem;
+  -webkit-user-select:text;user-select:text;
+}
+.board-body.chart-mode{
+  display:flex;flex-direction:column;padding:.85rem .9rem 1rem;
+}
+#pnlView{display:none}
+#pnlView.show{display:block}
+#chartView{display:none;flex:1;min-height:220px;flex-direction:column}
+#chartView.show{display:flex}
+#boardChart{width:100%;flex:1;min-height:200px;display:block}
+
+.pnl-period{font-size:.78rem;color:#888;margin-bottom:.75rem}
+.pnl-table{width:100%;border-collapse:collapse;font-size:.84rem}
+.pnl-table th{
+  text-align:left;font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;
+  color:#999;font-weight:700;padding:.35rem 0;border-bottom:1px solid #eee;
+}
+.pnl-table td{padding:.38rem 0;border-bottom:1px solid #f3f3f3;vertical-align:top}
+.pnl-table td.amt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pnl-table tr.section td{padding-top:.85rem;font-weight:700;color:#111;border-bottom:0}
+.pnl-table tr.total td{
+  font-weight:750;border-bottom:0;border-top:1px solid #e8e8e8;padding-top:.55rem;
+}
+.pnl-table tr.net td{color:#111;font-size:.95rem;padding-top:.7rem}
+.pnl-table tr.net.pos td.amt{color:#1f7a3a}
+.pnl-table tr.net.neg td.amt{color:#c0392b}
+
+/* Right / center — orb side */
+.orb-side{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:0;height:100%;
+  padding:6.4rem 1rem 7.4rem;
+}
+.orb-wrap{
+  position:relative;
+  width:min(58vw,222px);height:min(58vw,222px);
+  display:grid;place-items:center;flex-shrink:0;
+  transition:transform .45s cubic-bezier(.2,.8,.2,1);
+}
+body.split .orb-wrap{width:min(48vw,180px);height:min(48vw,180px)}
+.orb-wrap::before{
+  content:"";position:absolute;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+  width:230%;height:230%;border-radius:50%;
+  background:radial-gradient(circle,rgba(88,178,255,.30) 0%,rgba(60,140,240,.14) 38%,rgba(10,50,130,0) 68%);
+  pointer-events:none;
+}
+.pulse{
+  position:absolute;inset:-3%;border-radius:50%;
+  border:1.5px solid rgba(150,214,255,.5);
+  box-shadow:0 0 22px rgba(120,200,255,.35);
+  animation:pulseOut 3.8s cubic-bezier(.22,.62,.3,1) infinite;
+  pointer-events:none;
+}
+.pulse:nth-of-type(2){animation-delay:1.27s}
+.pulse:nth-of-type(3){animation-delay:2.54s}
+@keyframes pulseOut{
+  0%{transform:scale(.92);opacity:.62}
+  65%{opacity:0}
+  100%{transform:scale(1.34);opacity:0}
+}
+.halo{display:none}
+.orb{
+  position:relative;z-index:1;width:100%;height:100%;border-radius:50%;border:0;
+  cursor:pointer;appearance:none;padding:0;
+  background:
+    radial-gradient(circle at 50% 54%,
+      #ffffff 0%, #f4fbff 6%, #c3e6ff 13%, #74b8f8 22%,
+      #3585e8 34%, #1c66d0 48%, #114ead 64%, #0b3689 82%, #0a2a72 100%);
+  box-shadow:
+    0 0 0 1.5px rgba(190,232,255,.72),
+    0 0 20px 2px rgba(140,210,255,.75),
+    0 0 46px 10px rgba(90,180,255,.5),
+    inset 0 -30px 56px rgba(4,18,58,.52),
+    inset 0 14px 30px rgba(255,255,255,.1);
+  animation:orbBreathe 4s ease-in-out infinite;
+}
+.orb::before{
+  content:"";position:absolute;
+  top:6%;left:14%;width:72%;height:38%;
+  border-radius:50% 50% 46% 46%/64% 64% 36% 36%;
+  background:linear-gradient(180deg,rgba(255,255,255,.17) 0%,rgba(255,255,255,0) 100%);
+  pointer-events:none;
+}
+.orb:focus-visible{outline:3px solid #fff;outline-offset:6px}
+@keyframes orbBreathe{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.028)}
+}
+body.connecting .pulse,body.listening .pulse{animation-duration:1.9s}
+body.error .orb{
+  background:radial-gradient(circle at 32% 28%,#ffd0c8 0%,#e85d04 50%,#7a1a00 100%);
+  animation:none;
+}
+.hint{
+  margin-top:1rem;font-weight:600;font-size:.9rem;color:rgba(178,216,255,.85);text-align:center;min-height:1.25rem;
+}
+body.idle .hint::after{content:"Tap the orb — you talk, it types"}
+body.connecting .hint::after{content:"Connecting…"}
+body.listening .hint::after{content:"Listening — go ahead"}
+body.error .hint::after{content:"Couldn’t hear you — tap to try again"}
+body.texting .hint::after{content:"Type below — it prints the answer"}
+
+.tape{
+  width:min(100%,420px);max-height:22vh;overflow:auto;
+  margin-top:.85rem;padding:.2rem .2rem 0;
+  display:flex;flex-direction:column;gap:.45rem;
+}
+.tape .msg{
+  max-width:92%;padding:.55rem .75rem;border-radius:14px;
+  font-size:.82rem;line-height:1.4;font-weight:500;
+}
+.tape .msg.user{
+  align-self:flex-end;background:rgba(255,255,255,.14);color:#eaf4ff;
+}
+.tape .msg.bot{
+  align-self:flex-start;background:rgba(3,16,48,.35);color:#fff;
+  border:1px solid rgba(160,210,255,.2);
+}
+.tape .msg .demo-flag{
+  display:block;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+  color:#fbbf24;margin-bottom:.25rem;font-weight:700;
+}
+
+.dock{
+  position:fixed;left:50%;bottom:3.35rem;transform:translateX(-50%);
+  width:min(100% - 2rem,440px);z-index:7;
+  display:flex;flex-direction:column;gap:.5rem;
+}
+body.split .dock{
+  left:auto;right:clamp(.75rem,3vw,1.5rem);transform:none;
+  width:min(calc(50% - 2rem),400px);
+}
+.row{display:flex;gap:.45rem;align-items:center}
+.row input[type="text"]{
+  flex:1;min-width:0;border:1px solid rgba(160,210,255,.28);background:rgba(255,255,255,.12);border-radius:999px;
+  padding:.72rem 1rem;font:500 .9rem/1.3 "Plus Jakarta Sans",sans-serif;color:#fff;
+}
+.row input[type="text"]:focus{
+  outline:none;border-color:#93c5fd;background:rgba(255,255,255,.18);box-shadow:0 0 0 3px rgba(59,130,246,.25);
+}
+.row input[type="text"]::placeholder{color:rgba(190,222,255,.55)}
+.btn{
+  border:0;border-radius:999px;background:#fff;color:#0b2a72;
+  font:700 .82rem/1 "Plus Jakarta Sans",sans-serif;padding:.72rem 1rem;cursor:pointer;white-space:nowrap;
+}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn.ghost{
+  background:transparent;color:rgba(214,235,255,.9);border:1px solid rgba(160,210,255,.28);
+  padding:.55rem .85rem;font-weight:600;font-size:.75rem;
+}
+.btn.ghost:hover{border-color:#fff;color:#fff}
+.btn.yellow{background:#F5C518;color:#111}
+.teach{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.teach-meta{font-size:.72rem;color:rgba(178,216,255,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.powered{
+  position:fixed;right:clamp(.85rem,3vw,1.35rem);bottom:clamp(.7rem,2.5vw,1.1rem);
+  z-index:8;font-size:.68rem;font-weight:600;letter-spacing:.02em;color:rgba(160,205,255,.82);
+}
+.powered b{color:#eaf4ff;font-weight:700}
+
+.scrim{
+  position:fixed;inset:0;z-index:30;background:rgba(3,16,48,.55);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:1.25rem;
+}
+.scrim.open{display:flex}
+.sheet{
+  width:min(100%,400px);background:linear-gradient(180deg,#0d3d92,#082a68);border:1px solid rgba(150,205,255,.28);border-radius:18px;
+  padding:1.25rem 1.2rem 1.15rem;box-shadow:0 18px 50px rgba(0,0,0,.28);color:#fff;
+}
+.sheet h2{font-size:1.05rem;font-weight:750;letter-spacing:-0.02em;margin-bottom:.35rem}
+.sheet p{font-size:.86rem;line-height:1.45;color:rgba(214,235,255,.9);margin-bottom:1rem}
+.sheet label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(190,222,255,.8);margin-bottom:.35rem}
+.sheet input.key{
+  width:100%;border:1px solid rgba(160,210,255,.28);background:rgba(0,0,0,.2);border-radius:10px;
+  padding:.7rem .8rem;color:#fff;font:600 .88rem/1.3 ui-monospace,monospace;margin-bottom:.85rem;
+}
+.sheet .actions{display:flex;gap:.45rem;justify-content:flex-end;flex-wrap:wrap}
+.sheet .note{margin-top:.85rem;font-size:.72rem;color:rgba(178,216,255,.7);line-height:1.4}
+#file{display:none}
+
+@media(max-width:820px){
+  body.split .stage{grid-template-columns:1fr}
+  .board{
+    position:absolute;inset:0;z-index:5;
+    padding:5.2rem 1rem 7.2rem;border-right:0;
+    background:rgba(255,255,255,.97);
+  }
+  body.split .dock{
+    left:50%;right:auto;transform:translateX(-50%);
+    width:min(100% - 2rem,440px);
+  }
+  body.split .orb-side{opacity:.18;pointer-events:none}
+  body.split .board{pointer-events:auto}
+}
+</style>
+</head>
+<body class="idle">
+  <h1 class="brand" id="greeting">Good morning, Joe.</h1>
+  <p class="subgreet">You talk. It types. Demo books until you say otherwise.</p>
+
+  <div class="qb-bar">
+    <span class="qb-pill" id="qbPill"><span class="dot"></span><span id="qbLabel">QuickBooks · off</span><span class="stamp">demo</span></span>
+    <button type="button" class="qb-link" id="qbBtn">Connect demo</button>
+    <span class="qb-pill" id="payPill"><span class="dot"></span><span id="payLabel">Payroll · off</span><span class="stamp">demo</span></span>
+    <button type="button" class="qb-link" id="payBtn">Connect demo</button>
+    <button type="button" class="speak-toggle" id="speakBtn" title="Voice-out is the expensive lane. This desk types.">This desk types (cheaper)</button>
+  </div>
+
+  <div class="stage">
+    <aside class="board" id="board" aria-live="polite">
+      <div class="board-hd">
+        <div>
+          <h2 id="boardTitle">Report</h2>
+          <div class="sub" id="boardSub">DEMO — not live books</div>
+        </div>
+        <button type="button" class="board-x" id="boardClose" aria-label="Close">×</button>
+      </div>
+      <div class="board-body" id="boardBody">
+        <div id="pnlView"></div>
+        <div id="chartView"><canvas id="boardChart"></canvas></div>
+      </div>
+    </aside>
+
+    <div class="orb-side">
+      <div class="orb-wrap">
+        <span class="pulse" aria-hidden="true"></span>
+        <span class="pulse" aria-hidden="true"></span>
+        <span class="pulse" aria-hidden="true"></span>
+        <button type="button" class="orb" id="orb" aria-label="Tap to talk — it types the answer"></button>
+      </div>
+      <div class="hint" aria-live="polite"></div>
+      <div class="tape" id="tape" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="dock">
+    <form class="row" id="textForm">
+      <input id="q" type="text" autocomplete="off" placeholder="Or type here — it prints" enterkeyhint="send" aria-label="Type your question"/>
+      <button class="btn" type="submit" id="sendBtn">Send</button>
+    </form>
+    <div class="teach">
+      <span class="teach-meta" id="teachMeta">No teaching docs yet</span>
+      <div class="row" style="gap:.4rem;flex:0 0 auto">
+        <button type="button" class="btn ghost" id="uploadBtn">Upload docs</button>
+        <input id="file" type="file" accept=".txt,.md,.pdf,.docx,text/plain,application/pdf"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="powered">Powered by <b>Axon Partner</b></div>
+
+  <div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet">
+      <h2 id="sheetTitle">Connect demo QuickBooks</h2>
+      <p id="sheetCopy">Show key only — not Joe’s Intuit login. Sample numbers so you can see it work. If a figure looks wrong, it is demo data on purpose. Nobody’s live books are in this box.</p>
+      <label for="demoKey">Show key</label>
+      <input class="key" id="demoKey" type="text" autocomplete="off" spellcheck="false" placeholder="axon-demo-qb"/>
+      <div class="actions">
+        <button type="button" class="btn ghost" id="sheetCancel">Cancel</button>
+        <button type="button" class="btn yellow" id="sheetConnect">Light up demo</button>
+      </div>
+      <p class="note" id="sheetNote">QuickBooks show key: <b>axon-demo-qb</b>. Payroll: <b>axon-demo-payroll</b>. Real connect later is OAuth (he clicks Connect once). Never paste his password here.</p>
+    </div>
+  </div>
+
+<script>
+const orb=document.getElementById('orb');
+const qInput=document.getElementById('q');
+const textForm=document.getElementById('textForm');
+const sendBtn=document.getElementById('sendBtn');
+const teachMeta=document.getElementById('teachMeta');
+const uploadBtn=document.getElementById('uploadBtn');
+const fileInput=document.getElementById('file');
+const qbPill=document.getElementById('qbPill');
+const qbLabel=document.getElementById('qbLabel');
+const qbBtn=document.getElementById('qbBtn');
+const payPill=document.getElementById('payPill');
+const payLabel=document.getElementById('payLabel');
+const payBtn=document.getElementById('payBtn');
+const speakBtn=document.getElementById('speakBtn');
+const greetingEl=document.getElementById('greeting');
+const tape=document.getElementById('tape');
+const demoKey=document.getElementById('demoKey');
+const sheetTitle=document.getElementById('sheetTitle');
+const sheetCopy=document.getElementById('sheetCopy');
+const scrim=document.getElementById('scrim');
+const sheetCancel=document.getElementById('sheetCancel');
+const sheetConnect=document.getElementById('sheetConnect');
+const board=document.getElementById('board');
+const boardBody=document.getElementById('boardBody');
+const boardTitle=document.getElementById('boardTitle');
+const boardSub=document.getElementById('boardSub');
+const boardClose=document.getElementById('boardClose');
+const pnlView=document.getElementById('pnlView');
+const chartView=document.getElementById('chartView');
+const canvas=document.getElementById('boardChart');
+const ctx=canvas.getContext('2d');
+
+const QB_KEY='joeAssistant.qbMock';
+const PAY_KEY='joeAssistant.payMock';
+const SPEAK_KEY='joeAssistant.speakOut';
+const QB_SHOW='axon-demo-qb';
+const PAY_SHOW='axon-demo-payroll';
+let pc=null,localStream=null,dc=null,starting=false,audioEl=null,voice=null,rec=null;
+let mode='idle',lastChart=null,qbOn=false,payOn=false,splitOn=false,speakOut=false,sheetKind='qb';
+
+function timeOfDay(){
+  const h=new Date().getHours();
+  if(h<12)return 'Good morning';
+  if(h<18)return 'Good afternoon';
+  return 'Good evening';
+}
+greetingEl.textContent=timeOfDay()+', Joe.';
+
+function syncBodyClass(){
+  document.body.className=[mode,qbOn?'qb-on':'',payOn?'pay-on':'',splitOn?'split':''].filter(Boolean).join(' ');
+}
+function setMode(s){mode=s;syncBodyClass()}
+
+function printMsg(role,text,demo){
+  const el=document.createElement('div');
+  el.className='msg '+(role==='user'?'user':'bot');
+  if(demo){
+    const flag=document.createElement('span');
+    flag.className='demo-flag';
+    flag.textContent='DEMO — not live books';
+    el.appendChild(flag);
+  }
+  el.appendChild(document.createTextNode(text));
+  tape.appendChild(el);
+  tape.scrollTop=tape.scrollHeight;
+}
+
+function setQbConnected(on){
+  qbOn=!!on;
+  try{localStorage.setItem(QB_KEY,on?'1':'0')}catch(e){}
+  qbPill.classList.toggle('on',qbOn);
+  qbLabel.textContent=qbOn?'QuickBooks · DEMO books':'QuickBooks · off';
+  qbBtn.textContent=qbOn?'Disconnect':'Connect demo';
+  syncBodyClass();
+}
+function setPayConnected(on){
+  payOn=!!on;
+  try{localStorage.setItem(PAY_KEY,on?'1':'0')}catch(e){}
+  payPill.classList.toggle('on',payOn);
+  payLabel.textContent=payOn?'Payroll · DEMO co.':'Payroll · off';
+  payBtn.textContent=payOn?'Disconnect':'Connect demo';
+  syncBodyClass();
+}
+function setSpeakOut(on){
+  speakOut=false;
+  speakBtn.classList.remove('on');
+  speakBtn.textContent='This desk types (cheaper)';
+}
+try{setQbConnected(localStorage.getItem(QB_KEY)==='1')}catch(e){setQbConnected(false)}
+try{setPayConnected(localStorage.getItem(PAY_KEY)==='1')}catch(e){setPayConnected(false)}
+try{setSpeakOut(localStorage.getItem(SPEAK_KEY)==='1')}catch(e){setSpeakOut(false)}
+
+function money(n){
+  return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0);
+}
+
+function closeBoard(){
+  splitOn=false;
+  lastChart=null;
+  pnlView.classList.remove('show');
+  chartView.classList.remove('show');
+  boardBody.classList.remove('chart-mode');
+  syncBodyClass();
+}
+
+function openBoard(){
+  splitOn=true;
+  syncBodyClass();
+}
+
+function showBooksResult(d){
+  if(!d)return;
+  if(d.answer)printMsg('bot',d.answer,d.demo||d.mode==='demo'||d.warning);
+  if(d.intent==='pnl'&&d.report){
+    lastChart=null;
+    renderPnL(d.report);
+  }else if((d.intent==='payroll_chart'||d.intent==='payroll_company')&&d.chart){
+    lastChart=d.chart;
+    drawChart(d.chart);
+  }
+}
+
+function looksLikeBooksAsk(text){
+  const t=String(text||'').toLowerCase();
+  return /payroll|wages|salar|gusto|adp|roster|headcount|p\s*&\s*l|\bpnl\b|profit\s*and\s*loss|income statement|xy chart|chart.*payroll|payroll.*chart|profit and loss.*may|may.*profit|may of last year|may last year/i.test(t);
+}
+
+let lastSpeechKey='';
+let speechTimer=null;
+async function maybeOpenBoardFromSpeech(transcript){
+  const t=String(transcript||'').trim();
+  if(!t||t.length<10||!looksLikeBooksAsk(t))return;
+  clearTimeout(speechTimer);
+  speechTimer=setTimeout(async()=>{
+    const key=t.toLowerCase().replace(/\s+/g,' ').slice(0,120);
+    if(key===lastSpeechKey)return;
+    lastSpeechKey=key;
+    try{
+      const r=await fetch('/api/brain/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({question:t})
+      });
+      const d=await r.json();
+      showBooksResult(d);
+    }catch(e){}
+  },700);
+}
+
+function renderPnL(report){
+  if(!report)return;
+  const period=report.period||{};
+  const totals=report.totals||{};
+  const income=report.income||[];
+  const expenses=report.expenses||[];
+  const net=totals.netIncome||0;
+  let html='<div class="pnl-period">DEMO BOOKS — not live QuickBooks'+(period.label?' · '+period.label:'')+'</div>';
+  html+='<table class="pnl-table"><thead><tr><th>Account</th><th style="text-align:right">Amount</th></tr></thead><tbody>';
+  html+='<tr class="section"><td colspan="2">Income</td></tr>';
+  income.forEach(r=>{html+='<tr><td>'+esc(r.name)+'</td><td class="amt">'+money(r.amount)+'</td></tr>'});
+  html+='<tr class="total"><td>Total income</td><td class="amt">'+money(totals.income)+'</td></tr>';
+  html+='<tr class="section"><td colspan="2">Expenses</td></tr>';
+  expenses.forEach(r=>{html+='<tr><td>'+esc(r.name)+'</td><td class="amt">'+money(r.amount)+'</td></tr>'});
+  html+='<tr class="total"><td>Total expenses</td><td class="amt">'+money(totals.expenses)+'</td></tr>';
+  html+='<tr class="net '+(net>=0?'pos':'neg')+'"><td>Net income</td><td class="amt">'+money(net)+'</td></tr>';
+  html+='</tbody></table>';
+  pnlView.innerHTML=html;
+  pnlView.classList.add('show');
+  chartView.classList.remove('show');
+  boardBody.classList.remove('chart-mode');
+  boardTitle.textContent='Profit & Loss';
+  boardSub.textContent='DEMO — not live books'+(period.label?' · '+period.label:'');
+  openBoard();
+}
+
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fitCanvas(){
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=chartView.clientWidth||320;
+  const h=Math.max(chartView.clientHeight||240,220);
+  canvas.width=Math.floor(w*dpr);
+  canvas.height=Math.floor(h*dpr);
+  canvas.style.width=w+'px';
+  canvas.style.height=h+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {w,h};
+}
+
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function drawChart(chart){
+  if(!chart)return;
+  pnlView.classList.remove('show');
+  chartView.classList.add('show');
+  boardBody.classList.add('chart-mode');
+  boardTitle.textContent=chart.title||'Chart';
+  boardSub.textContent='DEMO — not live books · sample';
+  openBoard();
+  requestAnimationFrame(()=>{
+    const {w,h}=fitCanvas();
+    ctx.clearRect(0,0,w,h);
+    const pad={t:18,r:14,b:36,l:54};
+    const iw=w-pad.l-pad.r;
+    const ih=h-pad.t-pad.b;
+
+    if(chart.type==='line'||(chart.series&&chart.series[0]&&chart.type!=='waterfall')){
+      const pts=(chart.series[0].points)||[];
+      if(!pts.length)return;
+      const ys=pts.map(p=>Number(p.y)||0);
+      let minY=Math.min(...ys)*0.9;
+      let maxY=Math.max(...ys)*1.08;
+      if(minY===maxY)maxY=minY+1;
+      ctx.strokeStyle='#eee';
+      for(let i=0;i<=4;i++){
+        const y=pad.t+ih*(i/4);
+        ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+iw,y);ctx.stroke();
+        const val=maxY-(maxY-minY)*(i/4);
+        ctx.fillStyle='#999';ctx.font='11px system-ui,sans-serif';ctx.textAlign='right';
+        ctx.fillText(money(val),pad.l-8,y+4);
+      }
+      // area
+      ctx.beginPath();
+      pts.forEach((p,i)=>{
+        const x=pad.l+(pts.length===1?iw/2:(i/(pts.length-1))*iw);
+        const y=pad.t+ih*((maxY-p.y)/(maxY-minY));
+        if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle='#D4A017';ctx.lineWidth=2.6;ctx.stroke();
+      const last=pts[pts.length-1];
+      const xLast=pad.l+iw;
+      const yLast=pad.t+ih*((maxY-last.y)/(maxY-minY));
+      ctx.lineTo(xLast,pad.t+ih);ctx.lineTo(pad.l,pad.t+ih);ctx.closePath();
+      const g=ctx.createLinearGradient(0,pad.t,0,pad.t+ih);
+      g.addColorStop(0,'rgba(245,197,24,.28)');g.addColorStop(1,'rgba(245,197,24,0)');
+      ctx.fillStyle=g;ctx.fill();
+      pts.forEach((p,i)=>{
+        const x=pad.l+(pts.length===1?iw/2:(i/(pts.length-1))*iw);
+        const y=pad.t+ih*((maxY-p.y)/(maxY-minY));
+        ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);
+        ctx.fillStyle='#F5C518';ctx.fill();
+        ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+        ctx.fillStyle='#666';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';
+        ctx.fillText(String(p.x),x,h-12);
+      });
+      return;
+    }
+
+    const points=chart.points||[];
+    if(!points.length)return;
+    const ys=points.map(p=>Math.abs(Number(p.y)||0));
+    const maxY=Math.max(...ys,1);
+    const gap=14;
+    const bw=(iw-(points.length-1)*gap)/points.length;
+    points.forEach((p,i)=>{
+      const val=Number(p.y)||0;
+      const bh=(Math.abs(val)/maxY)*ih*0.88;
+      const x=pad.l+i*(bw+gap);
+      const y=pad.t+ih-bh;
+      ctx.fillStyle=p.color||'#F5C518';
+      roundRect(ctx,x,y,bw,bh,8);ctx.fill();
+      ctx.fillStyle='#666';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';
+      ctx.fillText(String(p.x),x+bw/2,h-12);
+      ctx.fillStyle='#333';ctx.font='600 11px system-ui,sans-serif';
+      ctx.fillText(money(val),x+bw/2,y-8);
+    });
+  });
+}
+
+function ensureAudio(){
+  if(!audioEl){audioEl=document.createElement('audio');audioEl.autoplay=true;audioEl.playsInline=true}
+  return audioEl;
+}
+
+async function refreshDocs(){
+  try{
+    const r=await fetch('/api/brain/docs',{cache:'no-store'});
+    const d=await r.json();
+    const n=(d.docs||[]).length;
+    teachMeta.textContent=n?(n===1?'1 teaching doc loaded':n+' teaching docs loaded'):'No teaching docs yet';
+  }catch(e){teachMeta.textContent=''}
+}
+refreshDocs();
+
+
+
+/* Cost tier chosen on the Axon app screen (light | moderate | advanced) */
+const AXON_TIER=(function(){
+  try{
+    const q=new URLSearchParams(location.search).get('tier');
+    if(q){localStorage.setItem('axon.tier',q);return q}
+    return localStorage.getItem('axon.tier')||'moderate';
+  }catch(e){return 'moderate'}
+})();
+
+/* ---- Automatic long-term memory (silent) ---- */
+const sessionTurns=[];
+let memoryFlushing=false;
+function noteTurn(role,text){
+  const t=String(text||'').trim();
+  if(!t)return;
+  sessionTurns.push({role:role==='assistant'?'assistant':'user',text:t.slice(0,2000)});
+  if(sessionTurns.length>80)sessionTurns.splice(0,sessionTurns.length-80);
+}
+function flushMemory(source){
+  if(memoryFlushing||sessionTurns.length<1)return;
+  const turns=sessionTurns.splice(0,sessionTurns.length);
+  memoryFlushing=true;
+  fetch('/api/brain/memory/remember',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({turns,source:source||'voice'}),
+    keepalive:true
+  }).catch(()=>{}).finally(()=>{memoryFlushing=false});
+}
+
+async function stopVoice(){
+  if(voice){voice.detach();voice=null}
+  flushMemory('voice');
+  if(pc){try{pc.close()}catch(e){}pc=null}
+  if(localStream){try{localStream.getTracks().forEach(t=>t.stop())}catch(e){}localStream=null}
+  dc=null;starting=false;
+  if(mode!=='texting')setMode('idle');
+}
+
+/* Time of day from this device, so the spoken greeting matches the caller's clock */
+function axonTimeOfDay(){
+  const h=new Date().getHours();
+  return h<12?'morning':(h<18?'afternoon':'evening');
+}
+
+
+/* The call dropped. Nothing used to happen here, so the orb sat there looking
+   alive while nothing worked and the only fix was reloading the page. Rebuild
+   the connection quietly and keep going; axon-voice.js hands the previous turns
+   to the new session so it carries on instead of greeting again. */
+let reconnecting=false,reconnectTries=0;
+async function handleLost(){
+  if(reconnecting)return;
+  reconnecting=true;
+  const startFn=(typeof connectVoice==='function')?connectVoice:null;
+  try{if(voice){voice.detach();voice=null}}catch(e){}
+  try{if(pc){pc.close()}}catch(e){}
+  pc=null;
+  if(localStream){try{localStream.getTracks().forEach(function(t){t.stop()})}catch(e){}localStream=null}
+  const wait=Math.min(8000,600*Math.pow(2,reconnectTries++));
+  setTimeout(async function(){
+    try{ if(startFn)await startFn(); reconnectTries=0; }
+    catch(e){ if(reconnectTries<5)handleLost(); }
+    finally{ reconnecting=false; }
+  },wait);
+}
+
+async function connectVoice(){
+  const r=await fetch('/session?gate=1&src=qb&tier='+encodeURIComponent(AXON_TIER)+'&tod='+axonTimeOfDay(),{cache:'no-store'});
+  const data=await r.json();
+  if(!r.ok||data.error){
+    const err=new Error(r.status===429?'busy':(data.error||'session'));
+    err.status=r.status;
+    throw err;
+  }
+  const key=data.value||(data.client_secret&&data.client_secret.value);
+  if(!key)throw new Error('no token');
+  pc=new RTCPeerConnection();
+  const audio=ensureAudio();
+  let remoteStream=null;
+  pc.ontrack=e=>{remoteStream=e.streams[0];if(audio.srcObject!==e.streams[0]){audio.srcObject=e.streams[0];audio.play().catch(()=>{})}};
+  localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  const micTrack=localStream.getTracks()[0];
+  // Silent until the opening line finishes, so nothing the mic hears - the
+  // caller saying "hi", or the speaker feeding back - can trigger a second
+  // response that talks over the greeting.
+  micTrack.enabled=false;
+  pc.addTrack(micTrack);
+  dc=pc.createDataChannel('oai-events');
+  let greeted=false;
+  /* The mic is owned by axon-voice.js now; this just lets it re-evaluate. */
+  function openMic(){if(voice)voice.refreshMic();}
+  dc.addEventListener('open',()=>{
+    const line=String((data&&data.greeting)||'Hello Joe, how are you today? What can I do for you?').trim();
+    if(!line)openMic();
+    if(line&&!greeted){
+      greeted=true;
+      try{dc.send(JSON.stringify({type:'response.create',response:{instructions:'Say exactly this once, warmly, then stop and wait: "'+line+'"'}}))}catch(e){}
+    }
+  });
+  dc.addEventListener('message',ev=>{
+    try{
+      const msg=JSON.parse(ev.data);
+      if(msg.type==='response.done'||msg.type==='response.audio.done'){
+        if(msg.type==='response.done'&&window.AxonWebTools&&window.AxonWebTools.handleRealtimeWebTools){
+          window.AxonWebTools.handleRealtimeWebTools(msg,dc,{onStatus:function(){setMode('speaking')}}).then(function(handled){
+            if(!handled)openMic();
+          }).catch(function(){openMic()});
+        }else{
+          openMic();
+        }
+      }
+      // When Joe finishes speaking a books ask, open the board from his words
+      if(msg.type==='conversation.item.input_audio_transcription.completed'&&msg.transcript){
+        noteTurn('user',msg.transcript);
+        maybeOpenBoardFromSpeech(msg.transcript);
+      }
+      if((msg.type==='response.audio_transcript.done'||msg.type==='response.output_audio_transcript.done')&&msg.transcript){
+        noteTurn('assistant',msg.transcript);
+      }
+    }catch(e){}
+  });
+  const offer=await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  const sdp=await fetch('https://api.openai.com/v1/realtime/calls',{
+    method:'POST',body:offer.sdp,
+    headers:{Authorization:'Bearer '+key,'Content-Type':'application/sdp'}
+  });
+  if(!sdp.ok){
+    let detail='';
+    try{detail=await sdp.text()}catch(e){}
+    // 429 covers two very different things: real throttling, and an OpenAI
+    // account with no credit left. Tell them apart so the screen is honest.
+    const outOfCredit=/insufficient_quota|exceeded your current quota|billing/i.test(detail);
+    const err=new Error(outOfCredit?'quota':(sdp.status===429?'busy':'sdp'));
+    err.status=sdp.status;
+    throw err;
+  }
+  await pc.setRemoteDescription({type:'answer',sdp:await sdp.text()});
+  voice=AxonVoice.attach({dc:dc,micTrack:micTrack,localStream:localStream,remoteStream:remoteStream,voice:data.voice,pc:pc,onLost:handleLost});
+  setMode('listening');
+}
+
+async function toggleVoice(){
+  if(starting)return;
+  if(pc){await stopVoice();return}
+  starting=true;setMode('connecting');
+  try{await connectVoice()}
+  catch(e){console.error(e);starting=false;await stopVoice();setMode('error');return}
+  starting=false;
+}
+
+async function sendText(question,opts){
+  const q=String(question||'').trim();
+  if(!q)return;
+  sendBtn.disabled=true;
+  setMode('texting');
+  printMsg('user',q);
+
+  if(!(opts&&opts.forceHttp)&&dc&&dc.readyState==='open'){
+    try{
+      noteTurn('user',q);
+dc.send(JSON.stringify({type:'conversation.item.create',item:{type:'message',role:'user',content:[{type:'input_text',text:q}]}}));
+      dc.send(JSON.stringify({type:'response.create'}));
+      if(looksLikeBooksAsk(q)){
+        fetch('/api/brain/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,tier:AXON_TIER})})
+          .then(r=>r.json()).then(d=>showBooksResult(d)).catch(()=>{});
+      }
+      qInput.value='';sendBtn.disabled=false;setMode('listening');return;
+    }catch(e){}
+  }
+
+  try{
+    const r=await fetch('/api/brain/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,tier:AXON_TIER})});
+    const d=await r.json();
+    noteTurn('user',q);
+    if(d.answer)noteTurn('assistant',d.answer);
+    showBooksResult(d);
+    qInput.value='';
+  }catch(e){printMsg('bot','That did not go through. Try again.')}
+  sendBtn.disabled=false;
+}
+
+textForm.addEventListener('submit',e=>{e.preventDefault();sendText(qInput.value,{forceHttp:true})});
+qInput.addEventListener('focus',()=>{if(mode==='idle'||mode==='error')setMode('texting')});
+uploadBtn.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',async()=>{
+  const file=fileInput.files&&fileInput.files[0];
+  fileInput.value='';
+  if(!file)return;
+  uploadBtn.disabled=true;
+  teachMeta.textContent='Teaching from “'+file.name+'”…';
+  try{
+    const fd=new FormData();fd.append('file',file);
+    const r=await fetch('/api/brain/teach',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!r.ok||!d.ok)throw new Error(d.error||'Upload failed');
+    await refreshDocs();
+  }catch(e){await refreshDocs()}
+  uploadBtn.disabled=false;
+});
+
+function openSheet(kind){
+  sheetKind=kind==='pay'?'pay':'qb';
+  if(sheetKind==='pay'){
+    sheetTitle.textContent='Connect demo payroll';
+    sheetCopy.textContent='Midwest Payroll Partners is a SAMPLE company. Not Gusto, not ADP, not Joe’s live run. Show it first so if a number looks off, nobody’s real payroll is to blame.';
+    demoKey.placeholder=PAY_SHOW;
+    demoKey.value='';
+  }else{
+    sheetTitle.textContent='Connect demo QuickBooks';
+    sheetCopy.textContent='Show key only — not Joe’s Intuit login. Sample numbers so you can see it work. If a figure looks wrong, it is demo data on purpose.';
+    demoKey.placeholder=QB_SHOW;
+    demoKey.value='';
+  }
+  scrim.classList.add('open');
+  setTimeout(()=>demoKey.focus(),50);
+}
+function closeSheet(){scrim.classList.remove('open')}
+qbBtn.addEventListener('click',()=>{
+  if(qbOn){setQbConnected(false);closeBoard();return}
+  openSheet('qb');
+});
+payBtn.addEventListener('click',()=>{
+  if(payOn){setPayConnected(false);closeBoard();return}
+  openSheet('pay');
+});
+speakBtn.addEventListener('click',()=>{
+  printMsg('bot','When Axon talks out loud, that lane costs more. This desk is the cheap one: you talk, it types. Live voice stays on the Axon host.');
+});
+sheetCancel.addEventListener('click',closeSheet);
+scrim.addEventListener('click',e=>{if(e.target===scrim)closeSheet()});
+sheetConnect.addEventListener('click',()=>{
+  const typed=String(demoKey.value||'').trim().toLowerCase();
+  const need=sheetKind==='pay'?PAY_SHOW:QB_SHOW;
+  if(typed&&typed!==need){
+    sheetCopy.textContent='That key does not match the show key. Use '+need+' — it is a demo switch, not a real password.';
+    return;
+  }
+  if(sheetKind==='pay')setPayConnected(true);
+  else setQbConnected(true);
+  closeSheet();
+});
+boardClose.addEventListener('click',closeBoard);
+
+function SpeechRec(){
+  return window.SpeechRecognition||window.webkitSpeechRecognition||null;
+}
+
+function stopListen(){
+  try{if(rec){rec.onend=null;rec.stop()}}catch(e){}
+  rec=null;
+  if(mode==='listening'&&!pc)setMode('idle');
+}
+
+function startListenToType(){
+  const Ctor=SpeechRec();
+  if(!Ctor){
+    printMsg('bot','This browser will not listen. Type below — same memory, same demo books.');
+    qInput.focus();
+    return;
+  }
+  if(rec){stopListen();return}
+  rec=new Ctor();
+  rec.lang='en-US';
+  rec.interimResults=true;
+  rec.continuous=false;
+  let finalText='';
+  rec.onresult=function(ev){
+    let bits='';
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      bits+=ev.results[i][0].transcript;
+      if(ev.results[i].isFinal)finalText+=ev.results[i][0].transcript;
+    }
+    qInput.value=finalText||bits;
+  };
+  rec.onerror=function(){setMode('error');rec=null};
+  rec.onend=function(){
+    rec=null;
+    const q=String(qInput.value||finalText||'').trim();
+    setMode('idle');
+    if(q)sendText(q,{forceHttp:true});
+  };
+  setMode('listening');
+  rec.start();
+}
+
+async function onOrb(){
+  startListenToType();
+}
+
+orb.addEventListener('click',onOrb);
+orb.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOrb()}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(scrim.classList.contains('open'))closeSheet();
+    else if(splitOn)closeBoard();
+    else stopVoice();
+  }
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(pc||starting)stopVoice();else flushMemory('pagehide')}});
+window.addEventListener('resize',()=>{if(lastChart&&splitOn)drawChart(lastChart)});
+window.addEventListener('pagehide',()=>flushMemory('pagehide'));
+</script>
+</body>
+</html>
