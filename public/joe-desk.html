@@ -802,7 +802,7 @@ function paintChart(chart){
     const bh=(Math.abs(val)/maxY)*ih*0.88;
     const x=pad.l+i*(bw+gap);
     const y=pad.t+ih-bh;
-    ctx.fillStyle=p.color||green;
+    ctx.fillStyle=green;
     roundRect(ctx,x,y,bw,bh,4);ctx.fill();
     ctx.fillStyle='#6b6b6b';ctx.font=labelFont;ctx.textAlign='center';
     ctx.fillText(String(p.x),x+bw/2,h-12);
