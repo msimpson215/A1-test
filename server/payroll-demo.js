@@ -109,7 +109,7 @@ function ask(question) {
       points: snap.crews.map(c => ({
         x: c.name.split(' ')[0],
         y: c.lastGross,
-        color: '#3b82f6'
+        color: '#2CA01C'
       }))
     }
   }

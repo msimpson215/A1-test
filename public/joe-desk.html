@@ -98,70 +98,129 @@ body.split .stage{
   grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
 }
 
-/* Left board — slides in for P&L / chart */
+body.split .brand,
+body.split .subgreet,
+body.split .qb-bar{
+  left:50%;
+  width:50%;
+}
+
+/* Left board — QuickBooks-style report */
 .board{
   position:relative;
   display:none;
   flex-direction:column;
   min-width:0;
   height:100%;
-  padding:5.5rem 1.1rem 6.8rem 1.25rem;
-  background:linear-gradient(180deg,#fbfbfb 0%,#f4f4f4 100%);
-  border-right:1px solid #ececec;
+  padding:0;
+  background:#fff;
+  border-right:1px solid #d4d7dc;
   overflow:hidden;
   animation:boardIn .45s cubic-bezier(.2,.8,.2,1) both;
+  font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;
+  color:#1a1a1a;
 }
 body.split .board{display:flex}
 @keyframes boardIn{
   from{opacity:0;transform:translateX(-18px)}
   to{opacity:1;transform:none}
 }
-.board-hd{
-  display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;
-  margin-bottom:.85rem;flex-shrink:0;
+.qb-top{
+  flex-shrink:0;
+  background:#2CA01C;
+  color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.55rem .85rem .55rem 1rem;
 }
-.board-hd h2{
-  font-size:1rem;font-weight:750;letter-spacing:-0.02em;color:#111;
+.qb-word{
+  font-weight:800;font-size:.95rem;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:.45rem;
 }
-.board-hd .sub{
-  font-size:.72rem;color:#888;font-weight:600;margin-top:.2rem;
+.qb-word i{
+  font-style:normal;background:#fff;color:#2CA01C;
+  width:22px;height:22px;border-radius:4px;
+  display:grid;place-items:center;font-size:.72rem;font-weight:900;
+}
+.qb-sample{
+  font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  background:rgba(0,0,0,.18);padding:.22rem .5rem;border-radius:999px;
 }
 .board-x{
-  border:0;background:#fff;border:1px solid #e6e6e6;border-radius:999px;
-  width:28px;height:28px;cursor:pointer;color:#666;font-size:1rem;line-height:1;
+  border:0;background:rgba(255,255,255,.18);border-radius:999px;
+  width:28px;height:28px;cursor:pointer;color:#fff;font-size:1.05rem;line-height:1;
   flex-shrink:0;
 }
-.board-x:hover{color:#111;border-color:#ccc}
-.board-body{
+.board-x:hover{background:rgba(255,255,255,.3)}
+.qb-scroll{
   flex:1;min-height:0;overflow:auto;
-  background:#fff;border:1px solid #ececec;border-radius:16px;
-  padding:1rem 1.05rem;
+  background:#fff;
+}
+.qb-report{
+  flex-shrink:0;
+  background:#fff;
+  padding:1.15rem 1.35rem .35rem;
+}
+.qb-co{
+  text-align:center;font-size:.78rem;color:#5a5a5a;font-weight:600;
+}
+.qb-rtitle{
+  text-align:center;font-size:1.35rem;font-weight:700;color:#1a1a1a;
+  margin:.15rem 0 .1rem;
+}
+.qb-rdates{
+  text-align:center;font-size:.8rem;color:#5a5a5a;margin-bottom:.15rem;
+}
+.qb-basis{
+  text-align:center;font-size:.72rem;color:#8a8a8a;margin-bottom:.85rem;
+}
+.qb-banner{
+  background:#fff6d6;border:1px solid #f0d56a;color:#6a5300;
+  font-size:.72rem;font-weight:700;text-align:center;
+  padding:.4rem .6rem;margin-bottom:.85rem;border-radius:4px;
+}
+.board-body{
+  background:#fff;border:0;border-radius:0;
+  padding:0 1.35rem 1.6rem;
   -webkit-user-select:text;user-select:text;
 }
 .board-body.chart-mode{
-  display:flex;flex-direction:column;padding:.85rem .9rem 1rem;
+  display:block;padding:0 1.35rem 1.6rem;
 }
+.board-hd{display:none}
 #pnlView{display:none}
 #pnlView.show{display:block}
-#chartView{display:none;flex:1;min-height:220px;flex-direction:column}
-#chartView.show{display:flex}
-#boardChart{width:100%;flex:1;min-height:200px;display:block}
+#chartView{display:none;height:240px;flex-direction:column;padding:0 0 1.2rem}
+#chartView.show{display:block}
+#boardChart{width:100%;height:240px;display:block}
 
-.pnl-period{font-size:.78rem;color:#888;margin-bottom:.75rem}
 .pnl-table{width:100%;border-collapse:collapse;font-size:.84rem}
 .pnl-table th{
-  text-align:left;font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;
-  color:#999;font-weight:700;padding:.35rem 0;border-bottom:1px solid #eee;
+  text-align:left;font-size:.68rem;font-weight:700;color:#6b6b6b;
+  padding:.35rem 0 .4rem;border-bottom:1px solid #cfcfcf;
 }
-.pnl-table td{padding:.38rem 0;border-bottom:1px solid #f3f3f3;vertical-align:top}
-.pnl-table td.amt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.pnl-table tr.section td{padding-top:.85rem;font-weight:700;color:#111;border-bottom:0}
+.pnl-table th.amt{text-align:right}
+.pnl-table td.muted{color:#5a5a5a}
+.pnl-table td.amt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;color:#1a1a1a}
+.pnl-table tr.section td{padding-top:.75rem;font-weight:700;color:#1a1a1a;border-bottom:0}
+.pnl-table tr.indent td:first-child{padding-left:1.1rem}
 .pnl-table tr.total td{
-  font-weight:750;border-bottom:0;border-top:1px solid #e8e8e8;padding-top:.55rem;
+  font-weight:700;color:#1a1a1a;border-bottom:0;border-top:1px solid #cfcfcf;padding-top:.5rem;
 }
-.pnl-table tr.net td{color:#111;font-size:.95rem;padding-top:.7rem}
-.pnl-table tr.net.pos td.amt{color:#1f7a3a}
+.pnl-table tr.net td{
+  font-weight:800;color:#1a1a1a;font-size:.92rem;padding-top:.65rem;
+  border-top:2px solid #1a1a1a;border-bottom:3px double #1a1a1a;
+}
+.pnl-table tr.net.pos td.amt{color:#1a1a1a}
 .pnl-table tr.net.neg td.amt{color:#c0392b}
+.pay-kpis{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  border:1px solid #d4d7dc;margin-bottom:.9rem;
+}
+.pay-kpis div{padding:.55rem .7rem;border-right:1px solid #d4d7dc}
+.pay-kpis div:last-child{border-right:0}
+.pay-kpis .k{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6b6b6b}
+.pay-kpis .v{font-size:1.02rem;font-weight:700;color:#1a1a1a;margin-top:.15rem;font-variant-numeric:tabular-nums}
+.pay-note{font-size:.72rem;color:#6b6b6b;margin:.15rem 0 .85rem}
 
 /* Right / center — orb side */
 .orb-side{
@@ -320,11 +379,16 @@ body.split .dock{
 #file{display:none}
 
 @media(max-width:820px){
+  .pay-kpis{grid-template-columns:1fr}
+  .pay-kpis div{border-right:0;border-bottom:1px solid #d4d7dc}
+  .pay-kpis div:last-child{border-bottom:0}
+  body.split .brand,
+  body.split .subgreet,
+  body.split .qb-bar{display:none}
   body.split .stage{grid-template-columns:1fr}
   .board{
     position:absolute;inset:0;z-index:5;
-    padding:5.2rem 1rem 7.2rem;border-right:0;
-    background:rgba(255,255,255,.97);
+    padding:0 0 7.2rem;border-right:0;
   }
   body.split .dock{
     left:50%;right:auto;transform:translateX(-50%);
@@ -349,16 +413,23 @@ body.split .dock{
 
   <div class="stage">
     <aside class="board" id="board" aria-live="polite">
-      <div class="board-hd">
-        <div>
-          <h2 id="boardTitle">Report</h2>
-          <div class="sub" id="boardSub">DEMO — not live books</div>
-        </div>
+      <div class="qb-top">
+        <div class="qb-word"><i>QB</i> QuickBooks <span style="opacity:.85;font-weight:600;font-size:.78rem">Online</span></div>
+        <span class="qb-sample">Sample company</span>
         <button type="button" class="board-x" id="boardClose" aria-label="Close">×</button>
+      </div>
+      <div class="qb-scroll">
+      <div class="qb-report" id="qbChrome">
+        <div class="qb-co" id="qbCompany">A1 Professional Asphalt &amp; Sealing (sample)</div>
+        <div class="qb-rtitle" id="boardTitle">Profit and Loss</div>
+        <div class="qb-rdates" id="boardSub">January – December</div>
+        <div class="qb-basis" id="qbBasis">Accrual Basis · DEMO — not Joe’s live company</div>
+        <div class="qb-banner" id="qbBanner">Intuit does not give out a public API key. This is a sample company so you can see the report first. Live QuickBooks later is a one-time Connect click.</div>
       </div>
       <div class="board-body" id="boardBody">
         <div id="pnlView"></div>
         <div id="chartView"><canvas id="boardChart"></canvas></div>
+      </div>
       </div>
     </aside>
 
@@ -432,6 +503,9 @@ const boardBody=document.getElementById('boardBody');
 const boardTitle=document.getElementById('boardTitle');
 const boardSub=document.getElementById('boardSub');
 const boardClose=document.getElementById('boardClose');
+const qbCompany=document.getElementById('qbCompany');
+const qbBasis=document.getElementById('qbBasis');
+const qbBanner=document.getElementById('qbBanner');
 const pnlView=document.getElementById('pnlView');
 const chartView=document.getElementById('chartView');
 const canvas=document.getElementById('boardChart');
@@ -442,7 +516,7 @@ const PAY_KEY='joeAssistant.payMock';
 const SPEAK_KEY='joeAssistant.speakOut';
 const QB_SHOW='axon-demo-qb';
 const PAY_SHOW='axon-demo-payroll';
-let pc=null,localStream=null,dc=null,starting=false,audioEl=null,voice=null,rec=null;
+let rec=null;
 let mode='idle',lastChart=null,qbOn=false,payOn=false,splitOn=false,speakOut=false,sheetKind='qb';
 
 function timeOfDay(){
@@ -515,43 +589,27 @@ function openBoard(){
   syncBodyClass();
 }
 
+function setQbChrome(opts){
+  qbCompany.innerHTML=opts.company||'A1 Professional Asphalt &amp; Sealing LLC';
+  boardTitle.textContent=opts.title||'Report';
+  boardSub.textContent=opts.dates||'';
+  qbBasis.textContent=opts.basis||'Accrual Basis · DEMO — not Joe’s live company';
+  qbBanner.textContent=opts.banner||'Intuit does not give out a public API key. This is a sample company so you can see the report first. Live QuickBooks later is a one-time Connect click.';
+}
+
 function showBooksResult(d){
   if(!d)return;
   if(d.answer)printMsg('bot',d.answer,d.demo||d.mode==='demo'||d.warning);
   if(d.intent==='pnl'&&d.report){
     lastChart=null;
     renderPnL(d.report);
-  }else if((d.intent==='payroll_chart'||d.intent==='payroll_company')&&d.chart){
-    lastChart=d.chart;
-    drawChart(d.chart);
+  }else if(d.intent==='payroll_company'&&d.report){
+    lastChart=d.chart||null;
+    renderPayroll(d.report,d.chart);
+  }else if(d.intent==='payroll_chart'&&(d.chart||d.report)){
+    lastChart=d.chart||null;
+    renderPayrollTrend(d.report,d.chart);
   }
-}
-
-function looksLikeBooksAsk(text){
-  const t=String(text||'').toLowerCase();
-  return /payroll|wages|salar|gusto|adp|roster|headcount|p\s*&\s*l|\bpnl\b|profit\s*and\s*loss|income statement|xy chart|chart.*payroll|payroll.*chart|profit and loss.*may|may.*profit|may of last year|may last year/i.test(t);
-}
-
-let lastSpeechKey='';
-let speechTimer=null;
-async function maybeOpenBoardFromSpeech(transcript){
-  const t=String(transcript||'').trim();
-  if(!t||t.length<10||!looksLikeBooksAsk(t))return;
-  clearTimeout(speechTimer);
-  speechTimer=setTimeout(async()=>{
-    const key=t.toLowerCase().replace(/\s+/g,' ').slice(0,120);
-    if(key===lastSpeechKey)return;
-    lastSpeechKey=key;
-    try{
-      const r=await fetch('/api/brain/chat',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({question:t})
-      });
-      const d=await r.json();
-      showBooksResult(d);
-    }catch(e){}
-  },700);
 }
 
 function renderPnL(report){
@@ -561,22 +619,25 @@ function renderPnL(report){
   const income=report.income||[];
   const expenses=report.expenses||[];
   const net=totals.netIncome||0;
-  let html='<div class="pnl-period">DEMO BOOKS — not live QuickBooks'+(period.label?' · '+period.label:'')+'</div>';
-  html+='<table class="pnl-table"><thead><tr><th>Account</th><th style="text-align:right">Amount</th></tr></thead><tbody>';
+  setQbChrome({
+    company:'A1 Professional Asphalt &amp; Sealing LLC',
+    title:'Profit and Loss',
+    dates:period.label||'May 2025',
+    basis:'Accrual Basis'
+  });
+  let html='<table class="pnl-table"><thead><tr><th></th><th class="amt">Total</th></tr></thead><tbody>';
   html+='<tr class="section"><td colspan="2">Income</td></tr>';
-  income.forEach(r=>{html+='<tr><td>'+esc(r.name)+'</td><td class="amt">'+money(r.amount)+'</td></tr>'});
-  html+='<tr class="total"><td>Total income</td><td class="amt">'+money(totals.income)+'</td></tr>';
+  income.forEach(r=>{html+='<tr class="indent"><td>'+esc(r.name)+'</td><td class="amt">'+money(r.amount)+'</td></tr>'});
+  html+='<tr class="total"><td>Total Income</td><td class="amt">'+money(totals.income)+'</td></tr>';
   html+='<tr class="section"><td colspan="2">Expenses</td></tr>';
-  expenses.forEach(r=>{html+='<tr><td>'+esc(r.name)+'</td><td class="amt">'+money(r.amount)+'</td></tr>'});
-  html+='<tr class="total"><td>Total expenses</td><td class="amt">'+money(totals.expenses)+'</td></tr>';
-  html+='<tr class="net '+(net>=0?'pos':'neg')+'"><td>Net income</td><td class="amt">'+money(net)+'</td></tr>';
+  expenses.forEach(r=>{html+='<tr class="indent"><td>'+esc(r.name)+'</td><td class="amt">'+money(r.amount)+'</td></tr>'});
+  html+='<tr class="total"><td>Total Expenses</td><td class="amt">'+money(totals.expenses)+'</td></tr>';
+  html+='<tr class="net '+(net>=0?'pos':'neg')+'"><td>Net Income</td><td class="amt">'+money(net)+'</td></tr>';
   html+='</tbody></table>';
   pnlView.innerHTML=html;
   pnlView.classList.add('show');
   chartView.classList.remove('show');
   boardBody.classList.remove('chart-mode');
-  boardTitle.textContent='Profit & Loss';
-  boardSub.textContent='DEMO — not live books'+(period.label?' · '+period.label:'');
   openBoard();
 }
 
@@ -606,111 +667,155 @@ function roundRect(c,x,y,w,h,r){
   c.closePath();
 }
 
-function drawChart(chart){
+function renderPayroll(report,chart){
+  if(!report)return;
+  const last=report.lastRun||{};
+  const roster=report.sampleRoster||[];
+  setQbChrome({
+    company:esc(report.company||'Midwest Payroll Partners'),
+    title:'Payroll Summary',
+    dates:(last.label||'Last pay run')+' · '+esc(report.paySchedule||'Weekly'),
+    basis:'Sample company · not Gusto, not ADP, not live payroll',
+    banner:'This is a sample payroll company so you can see the report first. Live Gusto/ADP later is a Connect click — same idea as QuickBooks. No public API key to paste.'
+  });
+  let html='<div class="pay-kpis">';
+  html+='<div><div class="k">Gross pay</div><div class="v">'+money(last.gross)+'</div></div>';
+  html+='<div><div class="k">Net pay</div><div class="v">'+money(last.net)+'</div></div>';
+  html+='<div><div class="k">Taxes &amp; other</div><div class="v">'+money(last.taxes)+'</div></div>';
+  html+='</div>';
+  html+='<p class="pay-note">'+esc(last.headcount||'')+' employees paid · Next run '+(report.nextRun&&report.nextRun.label?esc(report.nextRun.label):'')+' · YTD gross '+money(report.ytdGross)+'</p>';
+  html+='<table class="pnl-table"><thead><tr><th>Employee</th><th>Role</th><th class="amt">YTD gross</th></tr></thead><tbody>';
+  roster.forEach(r=>{
+    html+='<tr class="indent"><td>'+esc(r.name)+'</td><td class="muted">'+esc(r.role)+'</td><td class="amt">'+money(r.ytd)+'</td></tr>';
+  });
+  const ytd=roster.reduce((t,r)=>t+(Number(r.ytd)||0),0);
+  html+='<tr class="total"><td colspan="2">Total YTD (sample roster)</td><td class="amt">'+money(ytd)+'</td></tr>';
+  html+='</tbody></table>';
+  pnlView.innerHTML=html;
+  pnlView.classList.add('show');
+  if(chart){
+    chartView.classList.add('show');
+    boardBody.classList.add('chart-mode');
+    lastChart=chart;
+    openBoard();
+    requestAnimationFrame(()=>paintChart(chart));
+  }else{
+    chartView.classList.remove('show');
+    boardBody.classList.remove('chart-mode');
+    openBoard();
+  }
+}
+
+function renderPayrollTrend(report,chart){
+  const period=report&&report.period||{};
+  const years=period.years||((report&&report.series)||[]).length||5;
+  const series=(report&&report.series)||(chart&&chart.series&&chart.series[0]&&chart.series[0].points)||[];
+  const first=series[0]&&series[0].x;
+  const last=series.length&&series[series.length-1].x;
+  setQbChrome({
+    company:'A1 Professional Asphalt &amp; Sealing LLC',
+    title:'Payroll Expenses',
+    dates:(first&&last)?(first+' – '+last):('Past '+years+' years'),
+    basis:'Accrual Basis'
+  });
+  let html='';
+  if(report&&report.summary){
+    html+='<div class="pay-kpis">';
+    html+='<div><div class="k">First year</div><div class="v">'+money(report.summary.first)+'</div></div>';
+    html+='<div><div class="k">Latest year</div><div class="v">'+money(report.summary.last)+'</div></div>';
+    html+='<div><div class="k">Change</div><div class="v">'+(report.summary.changePct>=0?'+':'')+report.summary.changePct+'%</div></div>';
+    html+='</div>';
+  }
+  pnlView.innerHTML=html;
+  pnlView.classList.toggle('show',!!html);
+  if(chart){
+    lastChart=chart;
+    chartView.classList.add('show');
+    boardBody.classList.add('chart-mode');
+    openBoard();
+    requestAnimationFrame(()=>paintChart(chart));
+  }else{
+    chartView.classList.remove('show');
+    boardBody.classList.remove('chart-mode');
+    openBoard();
+  }
+}
+
+function paintChart(chart){
   if(!chart)return;
-  pnlView.classList.remove('show');
-  chartView.classList.add('show');
-  boardBody.classList.add('chart-mode');
-  boardTitle.textContent=chart.title||'Chart';
-  boardSub.textContent='DEMO — not live books · sample';
-  openBoard();
-  requestAnimationFrame(()=>{
-    const {w,h}=fitCanvas();
-    ctx.clearRect(0,0,w,h);
-    const pad={t:18,r:14,b:36,l:54};
-    const iw=w-pad.l-pad.r;
-    const ih=h-pad.t-pad.b;
+  const {w,h}=fitCanvas();
+  ctx.clearRect(0,0,w,h);
+  const pad={t:18,r:14,b:36,l:58};
+  const iw=w-pad.l-pad.r;
+  const ih=h-pad.t-pad.b;
+  const green='#2CA01C';
+  const labelFont='11px Arial,Helvetica,sans-serif';
 
-    if(chart.type==='line'||(chart.series&&chart.series[0]&&chart.type!=='waterfall')){
-      const pts=(chart.series[0].points)||[];
-      if(!pts.length)return;
-      const ys=pts.map(p=>Number(p.y)||0);
-      let minY=Math.min(...ys)*0.9;
-      let maxY=Math.max(...ys)*1.08;
-      if(minY===maxY)maxY=minY+1;
-      ctx.strokeStyle='#eee';
-      for(let i=0;i<=4;i++){
-        const y=pad.t+ih*(i/4);
-        ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+iw,y);ctx.stroke();
-        const val=maxY-(maxY-minY)*(i/4);
-        ctx.fillStyle='#999';ctx.font='11px system-ui,sans-serif';ctx.textAlign='right';
-        ctx.fillText(money(val),pad.l-8,y+4);
-      }
-      // area
-      ctx.beginPath();
-      pts.forEach((p,i)=>{
-        const x=pad.l+(pts.length===1?iw/2:(i/(pts.length-1))*iw);
-        const y=pad.t+ih*((maxY-p.y)/(maxY-minY));
-        if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-      });
-      ctx.strokeStyle='#D4A017';ctx.lineWidth=2.6;ctx.stroke();
-      const last=pts[pts.length-1];
-      const xLast=pad.l+iw;
-      const yLast=pad.t+ih*((maxY-last.y)/(maxY-minY));
-      ctx.lineTo(xLast,pad.t+ih);ctx.lineTo(pad.l,pad.t+ih);ctx.closePath();
-      const g=ctx.createLinearGradient(0,pad.t,0,pad.t+ih);
-      g.addColorStop(0,'rgba(245,197,24,.28)');g.addColorStop(1,'rgba(245,197,24,0)');
-      ctx.fillStyle=g;ctx.fill();
-      pts.forEach((p,i)=>{
-        const x=pad.l+(pts.length===1?iw/2:(i/(pts.length-1))*iw);
-        const y=pad.t+ih*((maxY-p.y)/(maxY-minY));
-        ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);
-        ctx.fillStyle='#F5C518';ctx.fill();
-        ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
-        ctx.fillStyle='#666';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';
-        ctx.fillText(String(p.x),x,h-12);
-      });
-      return;
+  if(chart.type==='line'||(chart.series&&chart.series[0]&&chart.type!=='waterfall')){
+    const pts=(chart.series[0].points)||[];
+    if(!pts.length)return;
+    const ys=pts.map(p=>Number(p.y)||0);
+    let minY=Math.min(...ys)*0.9;
+    let maxY=Math.max(...ys)*1.08;
+    if(minY===maxY)maxY=minY+1;
+    ctx.strokeStyle='#e8e8e8';
+    for(let i=0;i<=4;i++){
+      const y=pad.t+ih*(i/4);
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+iw,y);ctx.stroke();
+      const val=maxY-(maxY-minY)*(i/4);
+      ctx.fillStyle='#6b6b6b';ctx.font=labelFont;ctx.textAlign='right';
+      ctx.fillText(money(val),pad.l-8,y+4);
     }
-
-    const points=chart.points||[];
-    if(!points.length)return;
-    const ys=points.map(p=>Math.abs(Number(p.y)||0));
-    const maxY=Math.max(...ys,1);
-    const gap=14;
-    const bw=(iw-(points.length-1)*gap)/points.length;
-    points.forEach((p,i)=>{
-      const val=Number(p.y)||0;
-      const bh=(Math.abs(val)/maxY)*ih*0.88;
-      const x=pad.l+i*(bw+gap);
-      const y=pad.t+ih-bh;
-      ctx.fillStyle=p.color||'#F5C518';
-      roundRect(ctx,x,y,bw,bh,8);ctx.fill();
-      ctx.fillStyle='#666';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';
-      ctx.fillText(String(p.x),x+bw/2,h-12);
-      ctx.fillStyle='#333';ctx.font='600 11px system-ui,sans-serif';
-      ctx.fillText(money(val),x+bw/2,y-8);
+    ctx.beginPath();
+    pts.forEach((p,i)=>{
+      const x=pad.l+(pts.length===1?iw/2:(i/(pts.length-1))*iw);
+      const y=pad.t+ih*((maxY-p.y)/(maxY-minY));
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
     });
+    ctx.strokeStyle=green;ctx.lineWidth=2.4;ctx.stroke();
+    const last=pts[pts.length-1];
+    const xLast=pad.l+(pts.length===1?iw/2:iw);
+    ctx.lineTo(xLast,pad.t+ih);ctx.lineTo(pad.l,pad.t+ih);ctx.closePath();
+    const g=ctx.createLinearGradient(0,pad.t,0,pad.t+ih);
+    g.addColorStop(0,'rgba(44,160,28,.22)');g.addColorStop(1,'rgba(44,160,28,0)');
+    ctx.fillStyle=g;ctx.fill();
+    pts.forEach((p,i)=>{
+      const x=pad.l+(pts.length===1?iw/2:(i/(pts.length-1))*iw);
+      const y=pad.t+ih*((maxY-p.y)/(maxY-minY));
+      ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
+      ctx.fillStyle=green;ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle='#6b6b6b';ctx.font=labelFont;ctx.textAlign='center';
+      ctx.fillText(String(p.x),x,h-12);
+    });
+    return;
+  }
+
+  const points=chart.points||[];
+  if(!points.length)return;
+  const ys=points.map(p=>Math.abs(Number(p.y)||0));
+  const maxY=Math.max(...ys,1);
+  const gap=14;
+  const bw=(iw-(points.length-1)*gap)/points.length;
+  points.forEach((p,i)=>{
+    const val=Number(p.y)||0;
+    const bh=(Math.abs(val)/maxY)*ih*0.88;
+    const x=pad.l+i*(bw+gap);
+    const y=pad.t+ih-bh;
+    ctx.fillStyle=p.color||green;
+    roundRect(ctx,x,y,bw,bh,4);ctx.fill();
+    ctx.fillStyle='#6b6b6b';ctx.font=labelFont;ctx.textAlign='center';
+    ctx.fillText(String(p.x),x+bw/2,h-12);
+    ctx.fillStyle='#1a1a1a';ctx.font='600 11px Arial,Helvetica,sans-serif';
+    ctx.fillText(money(val),x+bw/2,y-8);
   });
 }
 
-function ensureAudio(){
-  if(!audioEl){audioEl=document.createElement('audio');audioEl.autoplay=true;audioEl.playsInline=true}
-  return audioEl;
-}
-
-async function refreshDocs(){
-  try{
-    const r=await fetch('/api/brain/docs',{cache:'no-store'});
-    const d=await r.json();
-    const n=(d.docs||[]).length;
-    teachMeta.textContent=n?(n===1?'1 teaching doc loaded':n+' teaching docs loaded'):'No teaching docs yet';
-  }catch(e){teachMeta.textContent=''}
+function refreshDocs(){
+  teachMeta.textContent='Teaching docs live on the Axon host.';
 }
 refreshDocs();
 
-
-
-/* Cost tier chosen on the Axon app screen (light | moderate | advanced) */
-const AXON_TIER=(function(){
-  try{
-    const q=new URLSearchParams(location.search).get('tier');
-    if(q){localStorage.setItem('axon.tier',q);return q}
-    return localStorage.getItem('axon.tier')||'moderate';
-  }catch(e){return 'moderate'}
-})();
-
-/* ---- Automatic long-term memory (silent) ---- */
 const sessionTurns=[];
 let memoryFlushing=false;
 function noteTurn(role,text){
@@ -726,155 +831,19 @@ function flushMemory(source){
   fetch('/api/brain/memory/remember',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({turns,source:source||'voice'}),
+    body:JSON.stringify({turns,source:source||'desk'}),
     keepalive:true
   }).catch(()=>{}).finally(()=>{memoryFlushing=false});
 }
 
-async function stopVoice(){
-  if(voice){voice.detach();voice=null}
-  flushMemory('voice');
-  if(pc){try{pc.close()}catch(e){}pc=null}
-  if(localStream){try{localStream.getTracks().forEach(t=>t.stop())}catch(e){}localStream=null}
-  dc=null;starting=false;
-  if(mode!=='texting')setMode('idle');
-}
-
-/* Time of day from this device, so the spoken greeting matches the caller's clock */
-function axonTimeOfDay(){
-  const h=new Date().getHours();
-  return h<12?'morning':(h<18?'afternoon':'evening');
-}
-
-
-/* The call dropped. Nothing used to happen here, so the orb sat there looking
-   alive while nothing worked and the only fix was reloading the page. Rebuild
-   the connection quietly and keep going; axon-voice.js hands the previous turns
-   to the new session so it carries on instead of greeting again. */
-let reconnecting=false,reconnectTries=0;
-async function handleLost(){
-  if(reconnecting)return;
-  reconnecting=true;
-  const startFn=(typeof connectVoice==='function')?connectVoice:null;
-  try{if(voice){voice.detach();voice=null}}catch(e){}
-  try{if(pc){pc.close()}}catch(e){}
-  pc=null;
-  if(localStream){try{localStream.getTracks().forEach(function(t){t.stop()})}catch(e){}localStream=null}
-  const wait=Math.min(8000,600*Math.pow(2,reconnectTries++));
-  setTimeout(async function(){
-    try{ if(startFn)await startFn(); reconnectTries=0; }
-    catch(e){ if(reconnectTries<5)handleLost(); }
-    finally{ reconnecting=false; }
-  },wait);
-}
-
-async function connectVoice(){
-  const r=await fetch('/session?gate=1&src=qb&tier='+encodeURIComponent(AXON_TIER)+'&tod='+axonTimeOfDay(),{cache:'no-store'});
-  const data=await r.json();
-  if(!r.ok||data.error){
-    const err=new Error(r.status===429?'busy':(data.error||'session'));
-    err.status=r.status;
-    throw err;
-  }
-  const key=data.value||(data.client_secret&&data.client_secret.value);
-  if(!key)throw new Error('no token');
-  pc=new RTCPeerConnection();
-  const audio=ensureAudio();
-  let remoteStream=null;
-  pc.ontrack=e=>{remoteStream=e.streams[0];if(audio.srcObject!==e.streams[0]){audio.srcObject=e.streams[0];audio.play().catch(()=>{})}};
-  localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  const micTrack=localStream.getTracks()[0];
-  // Silent until the opening line finishes, so nothing the mic hears - the
-  // caller saying "hi", or the speaker feeding back - can trigger a second
-  // response that talks over the greeting.
-  micTrack.enabled=false;
-  pc.addTrack(micTrack);
-  dc=pc.createDataChannel('oai-events');
-  let greeted=false;
-  /* The mic is owned by axon-voice.js now; this just lets it re-evaluate. */
-  function openMic(){if(voice)voice.refreshMic();}
-  dc.addEventListener('open',()=>{
-    const line=String((data&&data.greeting)||'Hello Joe, how are you today? What can I do for you?').trim();
-    if(!line)openMic();
-    if(line&&!greeted){
-      greeted=true;
-      try{dc.send(JSON.stringify({type:'response.create',response:{instructions:'Say exactly this once, warmly, then stop and wait: "'+line+'"'}}))}catch(e){}
-    }
-  });
-  dc.addEventListener('message',ev=>{
-    try{
-      const msg=JSON.parse(ev.data);
-      if(msg.type==='response.done'||msg.type==='response.audio.done'){
-        if(msg.type==='response.done'&&window.AxonWebTools&&window.AxonWebTools.handleRealtimeWebTools){
-          window.AxonWebTools.handleRealtimeWebTools(msg,dc,{onStatus:function(){setMode('speaking')}}).then(function(handled){
-            if(!handled)openMic();
-          }).catch(function(){openMic()});
-        }else{
-          openMic();
-        }
-      }
-      // When Joe finishes speaking a books ask, open the board from his words
-      if(msg.type==='conversation.item.input_audio_transcription.completed'&&msg.transcript){
-        noteTurn('user',msg.transcript);
-        maybeOpenBoardFromSpeech(msg.transcript);
-      }
-      if((msg.type==='response.audio_transcript.done'||msg.type==='response.output_audio_transcript.done')&&msg.transcript){
-        noteTurn('assistant',msg.transcript);
-      }
-    }catch(e){}
-  });
-  const offer=await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  const sdp=await fetch('https://api.openai.com/v1/realtime/calls',{
-    method:'POST',body:offer.sdp,
-    headers:{Authorization:'Bearer '+key,'Content-Type':'application/sdp'}
-  });
-  if(!sdp.ok){
-    let detail='';
-    try{detail=await sdp.text()}catch(e){}
-    // 429 covers two very different things: real throttling, and an OpenAI
-    // account with no credit left. Tell them apart so the screen is honest.
-    const outOfCredit=/insufficient_quota|exceeded your current quota|billing/i.test(detail);
-    const err=new Error(outOfCredit?'quota':(sdp.status===429?'busy':'sdp'));
-    err.status=sdp.status;
-    throw err;
-  }
-  await pc.setRemoteDescription({type:'answer',sdp:await sdp.text()});
-  voice=AxonVoice.attach({dc:dc,micTrack:micTrack,localStream:localStream,remoteStream:remoteStream,voice:data.voice,pc:pc,onLost:handleLost});
-  setMode('listening');
-}
-
-async function toggleVoice(){
-  if(starting)return;
-  if(pc){await stopVoice();return}
-  starting=true;setMode('connecting');
-  try{await connectVoice()}
-  catch(e){console.error(e);starting=false;await stopVoice();setMode('error');return}
-  starting=false;
-}
-
-async function sendText(question,opts){
+async function sendText(question){
   const q=String(question||'').trim();
   if(!q)return;
   sendBtn.disabled=true;
   setMode('texting');
   printMsg('user',q);
-
-  if(!(opts&&opts.forceHttp)&&dc&&dc.readyState==='open'){
-    try{
-      noteTurn('user',q);
-dc.send(JSON.stringify({type:'conversation.item.create',item:{type:'message',role:'user',content:[{type:'input_text',text:q}]}}));
-      dc.send(JSON.stringify({type:'response.create'}));
-      if(looksLikeBooksAsk(q)){
-        fetch('/api/brain/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,tier:AXON_TIER})})
-          .then(r=>r.json()).then(d=>showBooksResult(d)).catch(()=>{});
-      }
-      qInput.value='';sendBtn.disabled=false;setMode('listening');return;
-    }catch(e){}
-  }
-
   try{
-    const r=await fetch('/api/brain/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,tier:AXON_TIER})});
+    const r=await fetch('/api/brain/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
     const d=await r.json();
     noteTurn('user',q);
     if(d.answer)noteTurn('assistant',d.answer);
@@ -882,9 +851,10 @@ dc.send(JSON.stringify({type:'conversation.item.create',item:{type:'message',rol
     qInput.value='';
   }catch(e){printMsg('bot','That did not go through. Try again.')}
   sendBtn.disabled=false;
+  setMode('idle');
 }
 
-textForm.addEventListener('submit',e=>{e.preventDefault();sendText(qInput.value,{forceHttp:true})});
+textForm.addEventListener('submit',e=>{e.preventDefault();sendText(qInput.value)});
 qInput.addEventListener('focus',()=>{if(mode==='idle'||mode==='error')setMode('texting')});
 uploadBtn.addEventListener('click',()=>fileInput.click());
 fileInput.addEventListener('change',async()=>{
@@ -953,7 +923,7 @@ function SpeechRec(){
 function stopListen(){
   try{if(rec){rec.onend=null;rec.stop()}}catch(e){}
   rec=null;
-  if(mode==='listening'&&!pc)setMode('idle');
+  if(mode==='listening')setMode('idle');
 }
 
 function startListenToType(){
@@ -982,7 +952,7 @@ function startListenToType(){
     rec=null;
     const q=String(qInput.value||finalText||'').trim();
     setMode('idle');
-    if(q)sendText(q,{forceHttp:true});
+    if(q)sendText(q);
   };
   setMode('listening');
   rec.start();
@@ -998,11 +968,11 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(scrim.classList.contains('open'))closeSheet();
     else if(splitOn)closeBoard();
-    else stopVoice();
+    else stopListen();
   }
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden){if(pc||starting)stopVoice();else flushMemory('pagehide')}});
-window.addEventListener('resize',()=>{if(lastChart&&splitOn)drawChart(lastChart)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopListen();flushMemory('pagehide')}});
+window.addEventListener('resize',()=>{if(lastChart&&splitOn)paintChart(lastChart)});
 window.addEventListener('pagehide',()=>flushMemory('pagehide'));
 </script>
 </body>
