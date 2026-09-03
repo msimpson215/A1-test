@@ -836,6 +836,10 @@ function friendlyVoiceError(err){
   if(name==='NotReadableError'){
     return 'Another app has the microphone. Close it and tap again.';
   }
+  const raw=String((err&&err.message)||'');
+  if(/unknown_parameter|invalid_request|API Failure|Realtime/i.test(raw)){
+    return 'The voice line did not connect. Tap the orb to try again.';
+  }
   return 'Voice did not start. Tap the orb and allow the microphone.';
 }
 
@@ -937,7 +941,8 @@ async function startVoice(micPromise){
         });
       });
     }
-    const sdpResponse=await fetch('/session?desk=1',{method:'POST',body:offer.sdp,headers:{'Content-Type':'application/sdp'}});
+    const sdpOut=(pc.localDescription&&pc.localDescription.sdp)||offer.sdp;
+    const sdpResponse=await fetch('/session?desk=1',{method:'POST',body:sdpOut,headers:{'Content-Type':'application/sdp'}});
     if(!sdpResponse.ok)throw new Error(await sdpResponse.text());
     await pc.setRemoteDescription({type:'answer',sdp:await sdpResponse.text()});
     starting=false;
