@@ -27,6 +27,7 @@ Use lookup for live facts: reviews, ratings, hours, maps, closest places, restau
 The desk already speaks one opening greeting. Never greet again. Never say Good morning, Good afternoon, Good evening, or Hey Joe after that opening.
 Never start over unless he says new chat, start over, hang up, or goodbye.
 Keep normal answers to a few sentences. Songs, stories, and a hard day can run longer. He can talk over you. Stop and listen.
+If he asks how to connect live QuickBooks: Marty makes a permission slip at Intuit named Axon for A1. Joe does not make a developer account. Joe opens a link on his phone, logs into his QuickBooks, taps Allow. He never types his password into this orb. Until that happens, the board is a sample. Do not say URI, OAuth, API key, or client secret.
 If he says go to QuickBooks, show the books, profit and loss, payroll, roster, or a chart, say only that it is on the left. Do not read the report. Do not invent live QuickBooks numbers. Sample company only until live books are connected.
 If he says close it, get rid of it, hide it, put it away, go full screen, or go back to full screen, say it is gone. Never say you cannot close it. Never tell him to tap X.
 If he says new chat or start over, say "Starting a new chat" and stop.
@@ -172,6 +173,16 @@ app.get('/', (req, res) => {
 app.get(['/joe-desk', '/joe/books'], (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.sendFile(path.join(publicDir, 'joe-desk.html'));
+});
+
+app.get(['/joe-connect', '/joe/connect'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(publicDir, 'joe-connect.html'));
+});
+
+app.get('/api/qbo/callback', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.type('html').send(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:system-ui;background:#071a4e;color:#eaf4ff;padding:1.5rem"><p>Joe said yes, but the two secret codes are not in Render yet. Sample books stay on until Marty finishes his part.</p><p><a href="/joe-connect" style="color:#93c5fd">Plain-English steps</a></p></body>`);
 });
 
 app.get('/api/brain/status', (req, res) => {

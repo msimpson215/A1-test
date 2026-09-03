@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Connect Joe’s QuickBooks — plain English</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,sans-serif;
+  background:#071a4e;color:#eaf4ff;
+  min-height:100%;padding:1.25rem 1.1rem 3rem;
+  line-height:1.45;
+}
+main{max-width:34rem;margin:0 auto}
+h1{font-size:1.6rem;letter-spacing:-.03em;margin:.4rem 0 1rem}
+h2{font-size:1.05rem;margin:1.4rem 0 .5rem;color:#fff}
+p,li{font-size:1.02rem;color:rgba(220,238,255,.92)}
+ol{padding-left:1.25rem}
+li{margin:.45rem 0}
+.who{background:rgba(255,255,255,.08);border-radius:14px;padding:.85rem 1rem;margin:1rem 0}
+.who b{color:#fff}
+.addr{
+  background:#03102c;border:1px solid rgba(160,210,255,.28);
+  border-radius:12px;padding:.75rem .85rem;margin:.6rem 0 1rem;
+  font:600 .88rem/1.4 ui-monospace,monospace;word-break:break-all;color:#fff;
+}
+.no{color:#fbbf24;font-weight:700}
+a{color:#93c5fd}
+.foot{margin-top:1.5rem;font-size:.88rem;color:rgba(178,216,255,.7)}
+</style>
+</head>
+<body>
+<main>
+  <p style="opacity:.75;font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Not for Joe to read. This is Marty’s sheet.</p>
+  <h1>Joe’s QuickBooks, like you’re five</h1>
+
+  <div class="who">
+    <p><b>You (Marty)</b> make a permission slip at Intuit.</p>
+    <p style="margin-top:.4rem"><b>Joe</b> already has QuickBooks. He just taps Allow on his phone. He does not make a developer account.</p>
+  </div>
+
+  <h2>What “the app” is</h2>
+  <p>Not the orb. Not ChatGPT. You create something at Intuit named <b>Axon for A1</b>. That’s the permission slip. When Joe’s phone opens Intuit, it will say <b>“Axon for A1 wants to look at your QuickBooks.”</b> He taps Allow. That’s the app.</p>
+
+  <h2>Your job (once)</h2>
+  <ol>
+    <li>Go to <a href="https://developer.intuit.com">developer.intuit.com</a>. Make a free account. That’s you, not Joe.</li>
+    <li>Create an app. Choose QuickBooks Online. Name it <b>Axon for A1</b>.</li>
+    <li>Intuit shows two secret codes. Paste those into Render → Environment. Not in chat. Not in GitHub. Not Joe’s password.</li>
+    <li>Intuit asks for a return address. That’s not a fancy word. After Joe taps Allow, Intuit has to send him <b>back to our website</b>. Paste this exact address:</li>
+  </ol>
+  <p class="addr">https://a1-test-fyjq.onrender.com/api/qbo/callback</p>
+  <p>On Intuit’s form that box is labeled Redirect URI. Ignore the label. It means <b>send him home to this page</b>.</p>
+
+  <h2>Joe’s job (one minute, phone is fine)</h2>
+  <ol>
+    <li>You text him a Connect link. He opens it on the phone. Safari or Chrome. Not inside Facebook.</li>
+    <li>Intuit’s own page opens. He logs into QuickBooks the same way he always does. Yes, on the phone.</li>
+    <li>He taps <b>Allow</b> for Axon for A1.</li>
+    <li>Done. He never types his password into the orb.</li>
+  </ol>
+
+  <h2 class="no">Never</h2>
+  <p>Never take Joe’s QuickBooks password. Never paste the secret codes here. Never ask Intuit for “an API key” in the regular QuickBooks product. That does not exist.</p>
+
+  <p class="foot">Until those two codes are in Render, the desk still shows a sample company. After Joe taps Allow, “go to QuickBooks” is his books. <a href="/joe-desk">Back to the desk</a></p>
+</main>
+</body>
+</html>
