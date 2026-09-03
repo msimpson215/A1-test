@@ -282,11 +282,8 @@ body.listening .hint::after{content:"Listening — go ahead"}
 body.error .hint::after{content:attr(data-err)}
 body.texting .hint::after{content:"Type below"}
 
-.tape{
-  width:min(100%,420px);max-height:22vh;overflow:auto;
-  margin-top:.85rem;padding:.2rem .2rem 0;
-  display:flex;flex-direction:column;gap:.45rem;
-}
+.tape{display:none}
+#speaker{position:absolute;left:-9999px;width:1px;height:1px}
 .tape .msg{
   max-width:92%;padding:.55rem .75rem;border-radius:14px;
   font-size:.82rem;line-height:1.4;font-weight:500;
@@ -308,6 +305,9 @@ body.texting .hint::after{content:"Type below"}
   width:min(100% - 2rem,440px);z-index:7;
   display:flex;flex-direction:column;gap:.5rem;
 }
+body.connecting .dock,
+body.speaking .dock,
+body.listening .dock{display:none}
 body.split .dock{
   left:auto;right:clamp(.75rem,3vw,1.5rem);transform:none;
   width:min(calc(50% - 2rem),400px);
@@ -376,8 +376,9 @@ body.split .dock{
     left:50%;right:auto;transform:translateX(-50%);
     width:min(100% - 2rem,440px);
   }
-  body.split .orb-side{opacity:.18;pointer-events:none}
+  body.split .orb-side{opacity:.18}
   body.split .board{pointer-events:auto}
+  .dock{display:none}
 }
 </style>
 </head>
@@ -414,9 +415,10 @@ body.split .dock{
         <button type="button" class="orb" id="orb" aria-label="Tap the orb to talk"></button>
       </div>
       <div class="hint" id="hint" aria-live="polite" data-err="Microphone blocked — allow it, then tap again"></div>
-      <div class="tape" id="tape" aria-live="polite"></div>
+      <div class="tape" id="tape" aria-live="polite" hidden></div>
     </div>
   </div>
+  <audio id="speaker" autoplay playsinline webkit-playsinline></audio>
 
   <div class="dock">
     <form class="row" id="textForm">
@@ -466,17 +468,7 @@ function syncBodyClass(){
 function setMode(s){mode=s;syncBodyClass()}
 
 function printMsg(role,text,demo){
-  const el=document.createElement('div');
-  el.className='msg '+(role==='user'?'user':'bot');
-  if(demo){
-    const flag=document.createElement('span');
-    flag.className='demo-flag';
-    flag.textContent='DEMO — not live books';
-    el.appendChild(flag);
-  }
-  el.appendChild(document.createTextNode(text));
-  tape.appendChild(el);
-  tape.scrollTop=tape.scrollHeight;
+  /* Voice only — do not print the conversation. */
 }
 
 function money(n){
@@ -507,7 +499,6 @@ function setQbChrome(opts){
 
 function showBooksResult(d){
   if(!d)return;
-  if(d.answer)printMsg('bot',d.answer,d.demo||d.mode==='demo'||d.warning);
   if(d.intent==='pnl'&&d.report){
     lastChart=null;
     renderPnL(d.report);
@@ -726,6 +717,10 @@ function looksLikeBooksAsk(text){
 function looksLikeNewChat(text){
   return /^(new chat|start over|start a new chat|start a new conversation|reset)\b/i.test(String(text||'').trim());
 }
+function looksLikeCloseBoard(text){
+  const t=String(text||'').toLowerCase();
+  return /get rid of|close (it|that|this|quickbooks|the books|the board|payroll)|hide (it|that|this|quickbooks|the books|the board)|put (it|that) away|dismiss|full ?screen|go full|take (it|that) (down|off|away)|get (it|that) off|clear the (screen|board)|back to (the )?(orb|desk)|i('m| am) done with (the )?(books|quickbooks)|close quickbooks|put (the )?(books|quickbooks) away/.test(t);
+}
 
 const sessionTurns=[];
 let memoryFlushing=false;
@@ -750,6 +745,9 @@ function flushMemory(source){
 function greetingLine(){
   return timeOfDay()+', Joe.';
 }
+
+const MIC_OPTS={audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}};
+const SILENCE_WAV='data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
 function setMicEnabled(on){
   if(!localStream)return;
@@ -814,7 +812,7 @@ function enableListening(){
               silence_duration_ms:2000,
               prefix_padding_ms:300,
               create_response:true,
-              interrupt_response:false
+              interrupt_response:true
             }
           }
         }
@@ -829,9 +827,17 @@ async function handleSpoken(transcript){
   noteTurn('user',t);
   printMsg('user',t);
   if(looksLikeNewChat(t)){
-    printMsg('bot','Starting a new chat.');
     stopVoice();
     setTimeout(function(){startVoice()},400);
+    return;
+  }
+  if(looksLikeCloseBoard(t)){
+    const wasOpen=splitOn;
+    closeBoard();
+    if(dc&&dc.readyState==='open'){
+      try{dc.send(JSON.stringify({type:'response.cancel'}))}catch(e){}
+      speakLine(wasOpen?"It's gone.":"Already full screen.");
+    }
     return;
   }
   if(!looksLikeBooksAsk(t))return;
@@ -869,21 +875,34 @@ function friendlyVoiceError(err){
 }
 
 function unlockSpeaker(){
+  remoteAudio=document.getElementById('speaker')||remoteAudio;
   if(!remoteAudio){
     remoteAudio=document.createElement('audio');
-    remoteAudio.autoplay=true;
-    remoteAudio.setAttribute('playsinline','');
-    remoteAudio.setAttribute('webkit-playsinline','');
-    remoteAudio.playsInline=true;
+    remoteAudio.id='speaker';
     document.body.appendChild(remoteAudio);
   }
+  remoteAudio.autoplay=true;
+  remoteAudio.setAttribute('playsinline','');
+  remoteAudio.setAttribute('webkit-playsinline','');
+  remoteAudio.playsInline=true;
+  remoteAudio.muted=false;
+  remoteAudio.volume=1;
   try{
     const Ctx=window.AudioContext||window.webkitAudioContext;
     if(Ctx){
       if(!window._axonAudioCtx)window._axonAudioCtx=new Ctx();
-      if(window._axonAudioCtx.state==='suspended')window._axonAudioCtx.resume();
+      const ctx=window._axonAudioCtx;
+      if(ctx.state==='suspended')ctx.resume();
+      const buf=ctx.createBuffer(1,1,22050);
+      const src=ctx.createBufferSource();
+      src.buffer=buf;
+      src.connect(ctx.destination);
+      src.start(0);
     }
   }catch(e){}
+  if(!remoteAudio.srcObject){
+    remoteAudio.src=SILENCE_WAV;
+  }
   remoteAudio.play().catch(function(){});
 }
 
@@ -903,9 +922,14 @@ function stopVoice(){
   try{if(pc)pc.close()}catch(e){}
   if(localStream){try{localStream.getTracks().forEach(function(t){t.stop()})}catch(e){}}
   if(remoteAudio){
-    try{remoteAudio.pause();remoteAudio.srcObject=null;remoteAudio.remove()}catch(e){}
+    try{
+      remoteAudio.pause();
+      remoteAudio.srcObject=null;
+      remoteAudio.removeAttribute('src');
+      remoteAudio.load();
+    }catch(e){}
   }
-  pc=null;dc=null;localStream=null;remoteAudio=null;starting=false;
+  pc=null;dc=null;localStream=null;starting=false;
   if(mode!=='texting')setMode('idle');
 }
 
@@ -916,7 +940,7 @@ async function startVoice(micPromise){
   setMode('connecting');
   try{
     if(!micPromise){
-      micPromise=navigator.mediaDevices.getUserMedia({audio:true});
+      micPromise=navigator.mediaDevices.getUserMedia(MIC_OPTS);
     }
     localStream=await micPromise;
     unlockSpeaker();
@@ -937,7 +961,7 @@ async function startVoice(micPromise){
       }
       if(t==='response.created'){
         setMode('speaking');
-        muteMic();
+        if(!greetingDone)muteMic();
         return;
       }
       if(t==='response.done'){
@@ -962,13 +986,16 @@ async function startVoice(micPromise){
       }
       if((t==='response.audio_transcript.done'||t==='response.output_audio_transcript.done')&&msg.transcript){
         noteTurn('assistant',msg.transcript);
-        printMsg('bot',msg.transcript);
       }
     });
     pc.ontrack=function(e){
       if(!remoteAudio)unlockSpeaker();
+      try{remoteAudio.removeAttribute('src')}catch(err){}
+      remoteAudio.muted=false;
+      remoteAudio.volume=1;
       if(remoteAudio.srcObject!==e.streams[0])remoteAudio.srcObject=e.streams[0];
-      remoteAudio.play().catch(function(){});
+      const play=remoteAudio.play();
+      if(play&&play.catch)play.catch(function(){});
     };
     setMicEnabled(false);
     pc.addTrack(localStream.getTracks()[0]);
@@ -1002,11 +1029,16 @@ async function sendText(question){
   const q=String(question||'').trim();
   if(!q)return;
   if(looksLikeNewChat(q)){
-    printMsg('user',q);
-    printMsg('bot','Starting a new chat.');
     qInput.value='';
     stopVoice();
     setTimeout(function(){startVoice()},400);
+    return;
+  }
+  if(looksLikeCloseBoard(q)){
+    const wasOpen=splitOn;
+    closeBoard();
+    qInput.value='';
+    if(dc&&dc.readyState==='open')speakLine(wasOpen?"It's gone.":"Already full screen.");
     return;
   }
   sendBtn.disabled=true;
@@ -1044,7 +1076,7 @@ async function onOrb(){
     return;
   }
   unlockSpeaker();
-  const micPromise=navigator.mediaDevices.getUserMedia({audio:true});
+  const micPromise=navigator.mediaDevices.getUserMedia(MIC_OPTS);
   await startVoice(micPromise);
 }
 
