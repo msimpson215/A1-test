@@ -275,7 +275,7 @@ body.error .orb{
 .hint{
   margin-top:1rem;font-weight:600;font-size:.9rem;color:rgba(178,216,255,.85);text-align:center;min-height:1.25rem;
 }
-body.idle .hint::after{content:"Tap the orb to talk"}
+body.idle .hint::after{content:"Tap to talk · tap again for a new chat"}
 body.connecting .hint::after{content:"Connecting…"}
 body.speaking .hint::after{content:"Speaking…"}
 body.listening .hint::after{content:"Listening — go ahead"}
@@ -384,13 +384,6 @@ body.split .dock{
 <body class="idle">
   <h1 class="brand" id="greeting">Good morning, Joe.</h1>
 
-  <div class="qb-bar">
-    <span class="qb-pill" id="qbPill"><span class="dot"></span><span id="qbLabel">QuickBooks · off</span><span class="stamp">demo</span></span>
-    <button type="button" class="qb-link" id="qbBtn">Connect demo</button>
-    <span class="qb-pill" id="payPill"><span class="dot"></span><span id="payLabel">Payroll · off</span><span class="stamp">demo</span></span>
-    <button type="button" class="qb-link" id="payBtn">Connect demo</button>
-  </div>
-
   <div class="stage">
     <aside class="board" id="board" aria-live="polite">
       <div class="qb-top">
@@ -434,39 +427,13 @@ body.split .dock{
 
   <div class="powered">Powered by <b>Axon AI</b></div>
 
-  <div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-    <div class="sheet">
-      <h2 id="sheetTitle">Connect demo QuickBooks</h2>
-      <p id="sheetCopy">Show key only — not Joe’s Intuit login. Sample numbers so you can see it work. If a figure looks wrong, it is demo data on purpose. Nobody’s live books are in this box.</p>
-      <label for="demoKey">Show key</label>
-      <input class="key" id="demoKey" type="text" autocomplete="off" spellcheck="false" placeholder="axon-demo-qb"/>
-      <div class="actions">
-        <button type="button" class="btn ghost" id="sheetCancel">Cancel</button>
-        <button type="button" class="btn yellow" id="sheetConnect">Light up demo</button>
-      </div>
-      <p class="note" id="sheetNote">QuickBooks show key: <b>axon-demo-qb</b>. Payroll: <b>axon-demo-payroll</b>. Real connect later is OAuth (he clicks Connect once). Never paste his password here.</p>
-    </div>
-  </div>
-
 <script>
 const orb=document.getElementById('orb');
 const qInput=document.getElementById('q');
 const textForm=document.getElementById('textForm');
 const sendBtn=document.getElementById('sendBtn');
-const qbPill=document.getElementById('qbPill');
-const qbLabel=document.getElementById('qbLabel');
-const qbBtn=document.getElementById('qbBtn');
-const payPill=document.getElementById('payPill');
-const payLabel=document.getElementById('payLabel');
-const payBtn=document.getElementById('payBtn');
 const greetingEl=document.getElementById('greeting');
 const tape=document.getElementById('tape');
-const demoKey=document.getElementById('demoKey');
-const sheetTitle=document.getElementById('sheetTitle');
-const sheetCopy=document.getElementById('sheetCopy');
-const scrim=document.getElementById('scrim');
-const sheetCancel=document.getElementById('sheetCancel');
-const sheetConnect=document.getElementById('sheetConnect');
 const board=document.getElementById('board');
 const boardBody=document.getElementById('boardBody');
 const boardTitle=document.getElementById('boardTitle');
@@ -480,12 +447,8 @@ const chartView=document.getElementById('chartView');
 const canvas=document.getElementById('boardChart');
 const ctx=canvas.getContext('2d');
 
-const QB_KEY='joeAssistant.qbMock';
-const PAY_KEY='joeAssistant.payMock';
-const QB_SHOW='axon-demo-qb';
-const PAY_SHOW='axon-demo-payroll';
 let pc=null,dc=null,localStream=null,remoteAudio=null,starting=false;
-let mode='idle',lastChart=null,qbOn=false,payOn=false,splitOn=false,sheetKind='qb';
+let mode='idle',lastChart=null,splitOn=false;
 
 function timeOfDay(){
   const h=new Date().getHours();
@@ -496,7 +459,7 @@ function timeOfDay(){
 greetingEl.textContent=timeOfDay()+', Joe.';
 
 function syncBodyClass(){
-  document.body.className=[mode,qbOn?'qb-on':'',payOn?'pay-on':'',splitOn?'split':''].filter(Boolean).join(' ');
+  document.body.className=[mode,splitOn?'split':''].filter(Boolean).join(' ');
 }
 function setMode(s){mode=s;syncBodyClass()}
 
@@ -513,25 +476,6 @@ function printMsg(role,text,demo){
   tape.appendChild(el);
   tape.scrollTop=tape.scrollHeight;
 }
-
-function setQbConnected(on){
-  qbOn=!!on;
-  try{localStorage.setItem(QB_KEY,on?'1':'0')}catch(e){}
-  qbPill.classList.toggle('on',qbOn);
-  qbLabel.textContent=qbOn?'QuickBooks · DEMO books':'QuickBooks · off';
-  qbBtn.textContent=qbOn?'Disconnect':'Connect demo';
-  syncBodyClass();
-}
-function setPayConnected(on){
-  payOn=!!on;
-  try{localStorage.setItem(PAY_KEY,on?'1':'0')}catch(e){}
-  payPill.classList.toggle('on',payOn);
-  payLabel.textContent=payOn?'Payroll · DEMO co.':'Payroll · off';
-  payBtn.textContent=payOn?'Disconnect':'Connect demo';
-  syncBodyClass();
-}
-try{setQbConnected(localStorage.getItem(QB_KEY)==='1')}catch(e){setQbConnected(false)}
-try{setPayConnected(localStorage.getItem(PAY_KEY)==='1')}catch(e){setPayConnected(false)}
 
 function money(n){
   return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0);
@@ -775,7 +719,10 @@ function paintChart(chart){
 
 function looksLikeBooksAsk(text){
   const t=String(text||'').toLowerCase();
-  return /payroll|wages|salar|gusto|adp|roster|headcount|p\s*&\s*l|\bpnl\b|profit\s*and\s*loss|income statement|chart.*payroll|payroll.*chart|may last year|may of last year/i.test(t);
+  return /quickbooks|go to (the )?books|show (my |the )?books|pull up (the )?books|payroll|wages|salar|gusto|adp|roster|headcount|p\s*&\s*l|\bpnl\b|profit\s*and\s*loss|income statement|chart.*payroll|payroll.*chart|may last year|may of last year/i.test(t);
+}
+function looksLikeNewChat(text){
+  return /^(new chat|start over|start a new chat|start a new conversation|reset)\b/i.test(String(text||'').trim());
 }
 
 const sessionTurns=[];
@@ -856,6 +803,12 @@ async function handleSpoken(transcript){
   if(!t)return;
   noteTurn('user',t);
   printMsg('user',t);
+  if(looksLikeNewChat(t)){
+    printMsg('bot','Starting a new chat.');
+    stopVoice();
+    setTimeout(function(){startVoice()},400);
+    return;
+  }
   if(!looksLikeBooksAsk(t))return;
   try{
     const r=await fetch('/api/brain/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:t})});
@@ -954,6 +907,14 @@ async function startVoice(){
 async function sendText(question){
   const q=String(question||'').trim();
   if(!q)return;
+  if(looksLikeNewChat(q)){
+    printMsg('user',q);
+    printMsg('bot','Starting a new chat.');
+    qInput.value='';
+    stopVoice();
+    setTimeout(function(){startVoice()},400);
+    return;
+  }
   sendBtn.disabled=true;
   setMode('texting');
   printMsg('user',q);
@@ -972,45 +933,6 @@ async function sendText(question){
 
 textForm.addEventListener('submit',e=>{e.preventDefault();sendText(qInput.value)});
 qInput.addEventListener('focus',()=>{if(mode==='idle'||mode==='error')setMode('texting')});
-
-function openSheet(kind){
-  sheetKind=kind==='pay'?'pay':'qb';
-  if(sheetKind==='pay'){
-    sheetTitle.textContent='Connect demo payroll';
-    sheetCopy.textContent='Midwest Payroll Partners is a SAMPLE company. Not Gusto, not ADP. Show it first so if a number looks off, nobody’s real payroll is to blame.';
-    demoKey.placeholder=PAY_SHOW;
-    demoKey.value='';
-  }else{
-    sheetTitle.textContent='Connect demo QuickBooks';
-    sheetCopy.textContent='Show key only — not an Intuit login. Sample numbers so you can see it work.';
-    demoKey.placeholder=QB_SHOW;
-    demoKey.value='';
-  }
-  scrim.classList.add('open');
-  setTimeout(()=>demoKey.focus(),50);
-}
-function closeSheet(){scrim.classList.remove('open')}
-qbBtn.addEventListener('click',()=>{
-  if(qbOn){setQbConnected(false);closeBoard();return}
-  openSheet('qb');
-});
-payBtn.addEventListener('click',()=>{
-  if(payOn){setPayConnected(false);closeBoard();return}
-  openSheet('pay');
-});
-sheetCancel.addEventListener('click',closeSheet);
-scrim.addEventListener('click',e=>{if(e.target===scrim)closeSheet()});
-sheetConnect.addEventListener('click',()=>{
-  const typed=String(demoKey.value||'').trim().toLowerCase();
-  const need=sheetKind==='pay'?PAY_SHOW:QB_SHOW;
-  if(typed&&typed!==need){
-    sheetCopy.textContent='That key does not match the show key. Use '+need+' — it is a demo switch, not a real password.';
-    return;
-  }
-  if(sheetKind==='pay')setPayConnected(true);
-  else setQbConnected(true);
-  closeSheet();
-});
 boardClose.addEventListener('click',closeBoard);
 
 async function onOrb(){
@@ -1023,8 +945,7 @@ orb.addEventListener('click',onOrb);
 orb.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOrb()}});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    if(scrim.classList.contains('open'))closeSheet();
-    else if(splitOn)closeBoard();
+    if(splitOn)closeBoard();
     else stopVoice();
   }
 });
