@@ -106,9 +106,10 @@ function detectIntent(question) {
   const wantsChart = /chart|graph|plot|xy|trend|over the|visualize|show me|pull up|bring up/i.test(q)
   const wantsPayroll = /payroll|wages|salary|salaries|labor cost/i.test(q)
   const wantsPnL = /profit\s*and\s*loss|p\s*&\s*l|\bpnl\b|income statement|net income/i.test(q)
+  const openBooks = /go to quickbooks|open quickbooks|show quickbooks|quickbooks|show (my |the )?books|pull up (the )?books|go to (the )?books/i.test(q)
   const mayAgo = /year ago.*may|may.*year ago|last may|may of last year/i.test(q)
   if (wantsPayroll) return { type: 'payroll_chart', years: parseYearSpan(q, 5) }
-  if (wantsPnL || mayAgo) {
+  if (wantsPnL || mayAgo || openBooks) {
     const period = parseRelativeMay()
     const monthNames = {
       january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
