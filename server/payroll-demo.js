@@ -75,7 +75,10 @@ function detectIntent(question) {
   const payrollCo =
     /payroll company|gusto|adp|paychex|who.?s on (the )?payroll|roster|last (payroll )?run|next payroll|paycheck|by crew|headcount/i.test(q)
   const payroll = /payroll|wages|salary|salaries|labor cost/i.test(q)
-  if (payrollCo || (payroll && /who|roster|run|crew|employee|staff/i.test(q))) {
+  if (/payroll/i.test(q) && /chart|trend|five year|5 year/i.test(q)) {
+    return { type: 'other' }
+  }
+  if (payrollCo || payroll) {
     return { type: 'payroll_company' }
   }
   return { type: 'other' }

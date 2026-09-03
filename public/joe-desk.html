@@ -719,7 +719,7 @@ function looksLikeNewChat(text){
 }
 function looksLikeCloseBoard(text){
   const t=String(text||'').toLowerCase();
-  return /get rid of|close (it|that|this|quickbooks|the books|the board|payroll)|hide (it|that|this|quickbooks|the books|the board)|put (it|that) away|dismiss|full ?screen|go full|take (it|that) (down|off|away)|get (it|that) off|clear the (screen|board)|back to (the )?(orb|desk)|i('m| am) done with (the )?(books|quickbooks)|close quickbooks|put (the )?(books|quickbooks) away/.test(t);
+  return /get rid of|close (it|that|this|quickbooks|the books|the board|payroll)|hide (it|that|this|quickbooks|the books|the board)|put (it|that) away|dismiss|full ?screen|go full|go back to (full ?screen|the (orb|desk|me))|back to full ?screen|take (it|that) (down|off|away)|get (it|that) off|clear the (screen|board)|back to (the )?(orb|desk|me)|i('m| am) done with (the )?(books|quickbooks|payroll)|close quickbooks|put (the )?(books|quickbooks|payroll) away|exit (payroll|quickbooks|the books)|done with payroll/.test(t);
 }
 
 const sessionTurns=[];
