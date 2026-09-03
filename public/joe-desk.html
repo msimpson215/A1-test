@@ -808,9 +808,9 @@ function enableListening(){
           input:{
             turn_detection:{
               type:'server_vad',
-              threshold:0.8,
-              silence_duration_ms:2000,
-              prefix_padding_ms:300,
+              threshold:0.7,
+              silence_duration_ms:700,
+              prefix_padding_ms:200,
               create_response:true,
               interrupt_response:true
             }
@@ -825,19 +825,13 @@ async function handleSpoken(transcript){
   const t=String(transcript||'').trim();
   if(!t)return;
   noteTurn('user',t);
-  printMsg('user',t);
   if(looksLikeNewChat(t)){
     stopVoice();
     setTimeout(function(){startVoice()},400);
     return;
   }
   if(looksLikeCloseBoard(t)){
-    const wasOpen=splitOn;
     closeBoard();
-    if(dc&&dc.readyState==='open'){
-      try{dc.send(JSON.stringify({type:'response.cancel'}))}catch(e){}
-      speakLine(wasOpen?"It's gone.":"Already full screen.");
-    }
     return;
   }
   if(!looksLikeBooksAsk(t))return;
@@ -846,10 +840,6 @@ async function handleSpoken(transcript){
     const d=await r.json();
     if(d.answer)noteTurn('assistant',d.answer);
     showBooksResult(d);
-    if(d.intent&&d.intent!=='chat'){
-      try{dc&&dc.send(JSON.stringify({type:'response.cancel'}))}catch(e){}
-      speakLine("It's on the left.");
-    }
   }catch(e){}
 }
 
@@ -964,6 +954,11 @@ async function startVoice(micPromise){
         if(!greetingDone)muteMic();
         return;
       }
+      if(t==='input_audio_buffer.speech_started'){
+        if(!greetingDone)return;
+        setMode('listening');
+        return;
+      }
       if(t==='response.done'){
         if(cancelled)return;
         if(awaitingSpeak||(greetingSent&&!greetingDone)){
@@ -977,7 +972,8 @@ async function startVoice(micPromise){
       }
       if(t==='output_audio_buffer.stopped'){
         if(!greetingDone||!speakFinished)return;
-        if(!listeningOn)scheduleListening(1000);
+        if(!listeningOn)scheduleListening(800);
+        else setMode('listening');
         return;
       }
       if(t==='input_audio_transcription.completed'||t==='conversation.item.input_audio_transcription.completed'){
@@ -1035,10 +1031,8 @@ async function sendText(question){
     return;
   }
   if(looksLikeCloseBoard(q)){
-    const wasOpen=splitOn;
     closeBoard();
     qInput.value='';
-    if(dc&&dc.readyState==='open')speakLine(wasOpen?"It's gone.":"Already full screen.");
     return;
   }
   sendBtn.disabled=true;
@@ -1050,10 +1044,6 @@ async function sendText(question){
     noteTurn('user',q);
     if(d.answer)noteTurn('assistant',d.answer);
     showBooksResult(d);
-    if(dc&&dc.readyState==='open'){
-      if(d.intent&&d.intent!=='chat')speakLine("It's on the left.");
-      else if(d.answer)speakLine(d.answer.slice(0,180));
-    }
     qInput.value='';
   }catch(e){printMsg('bot','That did not go through. Try again.')}
   sendBtn.disabled=false;
