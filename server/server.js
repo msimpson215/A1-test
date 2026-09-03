@@ -13,32 +13,40 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session behavior only. The opening "Hello" is triggered once in public/voice/index.html.
+// Session behavior only. The opening line is spoken once from the page.
 const SESSION_INSTRUCTIONS = `You help with A1 Professional Asphalt and Sealing in the St. Louis area.
 Answer in 1-3 sentences after the user speaks. Say Sealing, never Ceiling.
 No prices — say: "For pricing, call (618) 929-3301."
 Off-topic: "I can only help with A1 asphalt and sealing services."`;
 
-const sessionConfig = JSON.stringify({
-  type: 'realtime',
-  model: 'gpt-realtime-1.5',
-  output_modalities: ['audio'],
-  instructions: SESSION_INSTRUCTIONS,
-  audio: {
-    input: {
-      turn_detection: {
-        type: 'server_vad',
-        silence_duration_ms: 2000,
-        prefix_padding_ms: 300,
-        create_response: false,
-        interrupt_response: false
+const JOE_DESK_INSTRUCTIONS = `You are Joe's professional assistant, powered by Axon AI.
+Speak like a person. One to three sentences. After the opening greeting, do not greet again.
+If he asks for a profit and loss, payroll, roster, or a chart, say you are putting it on the left. Do not invent live QuickBooks numbers. Sample company only until live books are connected.
+Do not mention ChatGPT.`;
+
+function realtimeSessionConfig(desk) {
+  return JSON.stringify({
+    type: 'realtime',
+    model: 'gpt-realtime-1.5',
+    output_modalities: ['audio'],
+    instructions: desk ? JOE_DESK_INSTRUCTIONS : SESSION_INSTRUCTIONS,
+    audio: {
+      input: {
+        transcription: { model: 'gpt-4o-mini-transcribe' },
+        turn_detection: {
+          type: 'server_vad',
+          silence_duration_ms: 2000,
+          prefix_padding_ms: 300,
+          create_response: !desk,
+          interrupt_response: false
+        }
       }
     },
     output: {
       voice: 'coral'
     }
-  }
-});
+  });
+}
 
 const VOXTALK3_BACKEND = (process.env.VOXTALK3_BACKEND || 'https://a1-asphalt-voxtalk-3.onrender.com').replace(/\/$/, '');
 
@@ -58,7 +66,7 @@ async function proxyVoxtalk3Session(sdp, res) {
   res.type('application/sdp').send(body);
 }
 
-async function createRealtimeSession(sdp, res) {
+async function createRealtimeSession(sdp, res, desk) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return proxyVoxtalk3Session(sdp, res);
@@ -66,7 +74,7 @@ async function createRealtimeSession(sdp, res) {
 
   const fd = new FormData();
   fd.set('sdp', sdp);
-  fd.set('session', sessionConfig);
+  fd.set('session', realtimeSessionConfig(desk));
 
   const response = await fetch('https://api.openai.com/v1/realtime/calls', {
     method: 'POST',
@@ -87,7 +95,7 @@ async function createRealtimeSession(sdp, res) {
 
 app.post('/session', express.text({ type: ['application/sdp', 'text/plain'] }), async (req, res) => {
   try {
-    await createRealtimeSession(req.body, res);
+    await createRealtimeSession(req.body, res, req.query.desk === '1');
   } catch (error) {
     console.error('Session error:', error);
     res.status(500).json({ error: 'API Failure' });
@@ -96,7 +104,7 @@ app.post('/session', express.text({ type: ['application/sdp', 'text/plain'] }), 
 
 app.post('/voxtalk3/session', express.text({ type: ['application/sdp', 'text/plain'] }), async (req, res) => {
   try {
-    await createRealtimeSession(req.body, res);
+    await createRealtimeSession(req.body, res, false);
   } catch (error) {
     console.error('VoxTalk3 session error:', error);
     res.status(500).json({ error: 'API Failure' });
