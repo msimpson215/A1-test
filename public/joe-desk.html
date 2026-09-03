@@ -452,7 +452,7 @@ const ctx=canvas.getContext('2d');
 let pc=null,dc=null,localStream=null,remoteAudio=null,starting=false;
 let mode='idle',lastChart=null,splitOn=false;
 let greetingSent=false,greetingDone=false,listeningOn=false,listenTimer=null;
-let awaitingSpeak=false,speakFinished=false;
+let awaitingSpeak=false,speakFinished=false,lookupSeq=0;
 
 function timeOfDay(){
   const h=new Date().getHours();
@@ -821,6 +821,51 @@ function enableListening(){
   }catch(e){}
 }
 
+async function runLookup(callId, rawArgs){
+  const seq=++lookupSeq;
+  let query='';
+  try{
+    const args=JSON.parse(rawArgs||'{}');
+    query=String(args.query||args.q||'').trim();
+  }catch(e){
+    query=String(rawArgs||'').trim();
+  }
+  let output=joeHomeFallback();
+  try{
+    const r=await fetch('/api/brain/lookup',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:query||'Lebanon Illinois 62254'})
+    });
+    const d=await r.json();
+    if(d&&d.text)output=d.text;
+  }catch(e){}
+  if(!dc||dc.readyState!=='open')return;
+  try{
+    dc.send(JSON.stringify({
+      type:'conversation.item.create',
+      item:{type:'function_call_output',call_id:callId,output:String(output).slice(0,4500)}
+    }));
+    if(seq===lookupSeq)dc.send(JSON.stringify({type:'response.create'}));
+  }catch(e){}
+}
+
+function joeHomeFallback(){
+  return 'A1 Professional Asphalt & Sealing LLC, Joe Schanz, Lebanon Illinois 62254. a1asphaltpro.com. (618) 929-3301. Help him anyway.';
+}
+
+function functionCallFromMsg(msg){
+  if(!msg)return null;
+  if(msg.type==='response.function_call_arguments.done'&&(msg.name==='lookup'||!msg.name)){
+    return {call_id:msg.call_id,name:msg.name||'lookup',arguments:msg.arguments};
+  }
+  const item=msg.item||msg;
+  if(item&&item.type==='function_call'&&item.name==='lookup'){
+    return {call_id:item.call_id,name:item.name,arguments:item.arguments};
+  }
+  return null;
+}
+
 async function handleSpoken(transcript){
   const t=String(transcript||'').trim();
   if(!t)return;
@@ -902,6 +947,7 @@ function resetVoiceFlags(){
   listeningOn=false;
   awaitingSpeak=false;
   speakFinished=false;
+  lookupSeq+=1;
   if(listenTimer){clearTimeout(listenTimer);listenTimer=null}
 }
 
@@ -956,6 +1002,7 @@ async function startVoice(micPromise){
       }
       if(t==='input_audio_buffer.speech_started'){
         if(!greetingDone)return;
+        lookupSeq+=1;
         setMode('listening');
         return;
       }
@@ -975,6 +1022,13 @@ async function startVoice(micPromise){
         if(!listeningOn)scheduleListening(800);
         else setMode('listening');
         return;
+      }
+      if(t==='response.function_call_arguments.done'||t==='response.output_item.done'){
+        const call=functionCallFromMsg(msg);
+        if(call&&call.call_id&&greetingDone){
+          runLookup(call.call_id,call.arguments||'{}');
+          return;
+        }
       }
       if(t==='input_audio_transcription.completed'||t==='conversation.item.input_audio_transcription.completed'){
         if(!greetingDone||!listeningOn)return;

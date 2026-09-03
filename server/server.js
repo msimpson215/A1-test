@@ -3,6 +3,8 @@ const path = require('path');
 require('dotenv').config();
 const demoBooks = require('./demo-books');
 const payrollDemo = require('./payroll-demo');
+const joeKnowledge = require('./joe-knowledge');
+const lookup = require('./lookup');
 
 const app = express();
 const publicDir = path.join(__dirname, '..', 'public');
@@ -19,19 +21,32 @@ Answer in 1-3 sentences after the user speaks. Say Sealing, never Ceiling.
 No prices — say: "For pricing, call (618) 929-3301."
 Off-topic: "I can only help with A1 asphalt and sealing services."`;
 
-const JOE_DESK_INSTRUCTIONS = `You are Joe's professional assistant, powered by Axon AI.
-This is an open conversation. Talk about whatever he wants: business, songs, lyrics, music ideas, jokes, everyday stuff.
+const JOE_DESK_INSTRUCTIONS = `You are Joe's butler, partner, and full assistant, powered by Axon AI. Ask Jeeves energy. Anything he wants: business, reviews, maps, food, weather, news, music, jokes, the symphony, how long to get ready, Chinese near his zip, accounting firms in Metro East, or he just needs to talk. He can cry or whine. Stay with him.
+Home base: Lebanon, Illinois 62254, Metro East / St. Louis. Joe Schanz owns A1 Professional Asphalt & Sealing LLC. Listing: Lebanon, IL 62254. Site a1asphaltpro.com. Phones (618) 929-3301, (314) 949-5660, (314) 356-1142. Founded 2014. Sealcoating, crack filling, striping, paving, concrete, bollards. Say Sealing, never Ceiling. Never say you do not have the A1 listing. Never tell him to look elsewhere for his own company.
+Use lookup for live facts: reviews, ratings, hours, maps, closest places, restaurants, firms, news, weather, who is playing, current listings. Default zip 62254 unless he gives another. Then recommend: here is what people say, and this one looks even better if that is true. Never say you cannot give reviews. Never say you have no maps. Never say look it up yourself.
 The desk already speaks one opening greeting. Never greet again. Never say Good morning, Good afternoon, Good evening, or Hey Joe after that opening.
 Never start over unless he says new chat, start over, hang up, or goodbye.
-Keep normal answers to a few sentences. Songs and lyrics can be longer. You may sing or speak a melody line if he asks.
-He can talk over you. Stop and listen. Do not keep talking over him. Do not restart the greeting.
+Keep normal answers to a few sentences. Songs, stories, and a hard day can run longer. He can talk over you. Stop and listen.
 If he says go to QuickBooks, show the books, profit and loss, payroll, roster, or a chart, say only that it is on the left. Do not read the report. Do not invent live QuickBooks numbers. Sample company only until live books are connected.
 If he says close it, get rid of it, hide it, put it away, or go full screen, say it is gone. Never say you cannot close it. Never tell him to tap X.
 If he says new chat or start over, say "Starting a new chat" and stop.
-Do not mention ChatGPT.`;
+Do not mention ChatGPT, tools, or lookup by name.`;
+
+const LOOKUP_TOOL = {
+  type: 'function',
+  name: 'lookup',
+  description: 'Look up live facts for Joe: business listings, maps, reviews, ratings, hours, restaurants, Chinese food near a zip, accounting firms, Domino’s, news, weather, symphony times, anything on the web. Also use this for A1 Professional Asphalt in Lebanon Illinois. Always use this instead of saying you cannot help.',
+  parameters: {
+    type: 'object',
+    properties: {
+      query: { type: 'string', description: 'What to look up, including place names, city, and zip if he gave one' }
+    },
+    required: ['query']
+  }
+};
 
 function realtimeSessionConfig(desk) {
-  return JSON.stringify({
+  const session = {
     type: 'realtime',
     model: 'gpt-realtime-1.5',
     output_modalities: ['audio'],
@@ -53,7 +68,12 @@ function realtimeSessionConfig(desk) {
         voice: 'coral'
       }
     }
-  });
+  };
+  if (desk) {
+    session.tools = [LOOKUP_TOOL];
+    session.tool_choice = 'auto';
+  }
+  return JSON.stringify(session);
 }
 
 const VOXTALK3_BACKEND = (process.env.VOXTALK3_BACKEND || 'https://a1-asphalt-voxtalk-3.onrender.com').replace(/\/$/, '');
@@ -157,6 +177,8 @@ app.get('/api/brain/status', (req, res) => {
     ...payrollDemo.status(),
     openai: Boolean(process.env.OPENAI_API_KEY),
     memory: { count: 0, latestAt: null },
+    knowledge: { a1: true, home: 'Lebanon, IL 62254' },
+    lookup: true,
     docs: [],
     demoKeys: {
       quickbooks: demoBooks.SHOW_KEY,
@@ -174,7 +196,14 @@ app.post('/api/brain/chat', async (req, res) => {
     const pay = payrollDemo.ask(question);
     if (pay) return res.json(pay);
     const books = await demoBooks.ask(question);
-    return res.json(books);
+    if (books && books.intent && books.intent !== 'chat') return res.json(books);
+    const found = await lookup.ask(question);
+    return res.json({
+      ok: true,
+      intent: 'chat',
+      answer: found.text,
+      lookup: found.ok
+    });
   } catch (error) {
     return res.status(500).json({
       ok: false,
@@ -190,6 +219,23 @@ app.post('/api/brain/teach', (req, res) => {
 
 app.post('/api/brain/memory/remember', (req, res) => {
   res.json({ ok: true, stored: false, note: 'Memory banks live on the Axon host. This desk is the show copy.' });
+});
+
+app.post('/api/brain/lookup', async (req, res) => {
+  const query = String(req.body?.query || req.body?.q || '').trim();
+  const zip = String(req.body?.zip || '').trim();
+  if (!query) {
+    return res.status(400).json({ ok: false, text: 'No query.' });
+  }
+  try {
+    const found = await lookup.ask(query, zip);
+    res.json(found);
+  } catch (error) {
+    res.json({
+      ok: false,
+      text: joeKnowledge.PACK + ' Lookup hit a snag. Help him anyway. Never tell him to look it up himself.'
+    });
+  }
 });
 
 // Never let phones/proxies reuse a stale HTML page or voice assets.
