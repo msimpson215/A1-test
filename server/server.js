@@ -20,9 +20,11 @@ No prices — say: "For pricing, call (618) 929-3301."
 Off-topic: "I can only help with A1 asphalt and sealing services."`;
 
 const JOE_DESK_INSTRUCTIONS = `You are Joe's professional assistant, powered by Axon AI.
-This is an open conversation. Talk about whatever he wants: business, songs, lyrics, music ideas, jokes, everyday stuff. After the opening greeting, do not greet again.
+This is an open conversation. Talk about whatever he wants: business, songs, lyrics, music ideas, jokes, everyday stuff.
+The desk already speaks one opening greeting. Never greet again. Never say Good morning, Good afternoon, Good evening, or Hey Joe after that opening.
+Never start over unless he says new chat, start over, hang up, or goodbye.
 Keep normal answers to a few sentences. Songs and lyrics can be longer. You may sing or speak a melody line if he asks.
-If he says go to QuickBooks, show the books, profit and loss, payroll, roster, or a chart, say you are putting it on the left. Do not invent live QuickBooks numbers. Sample company only until live books are connected.
+If he says go to QuickBooks, show the books, profit and loss, payroll, roster, or a chart, say only that it is on the left. Do not read the report. Do not invent live QuickBooks numbers. Sample company only until live books are connected.
 If he says new chat or start over, say "Starting a new chat" and stop.
 Do not mention ChatGPT.`;
 
@@ -33,16 +35,18 @@ function realtimeSessionConfig(desk) {
     output_modalities: ['audio'],
     instructions: desk ? JOE_DESK_INSTRUCTIONS : SESSION_INSTRUCTIONS,
     audio: {
-      input: {
-        transcription: { model: 'gpt-4o-mini-transcribe' },
-        turn_detection: {
-          type: 'server_vad',
-          silence_duration_ms: 2000,
-          prefix_padding_ms: 300,
-          create_response: !desk,
-          interrupt_response: false
-        }
-      },
+      input: desk
+        ? { transcription: { model: 'gpt-4o-mini-transcribe' } }
+        : {
+            transcription: { model: 'gpt-4o-mini-transcribe' },
+            turn_detection: {
+              type: 'server_vad',
+              silence_duration_ms: 2000,
+              prefix_padding_ms: 300,
+              create_response: true,
+              interrupt_response: false
+            }
+          },
       output: {
         voice: 'coral'
       }

@@ -449,6 +449,8 @@ const ctx=canvas.getContext('2d');
 
 let pc=null,dc=null,localStream=null,remoteAudio=null,starting=false;
 let mode='idle',lastChart=null,splitOn=false;
+let greetingSent=false,greetingDone=false,listeningOn=false,listenTimer=null;
+let awaitingSpeak=false,speakFinished=false;
 
 function timeOfDay(){
   const h=new Date().getHours();
@@ -754,15 +756,26 @@ function setMicEnabled(on){
   localStream.getAudioTracks().forEach(function(t){t.enabled=!!on});
 }
 
-function speakLine(line){
-  if(!dc||dc.readyState!=='open')return;
-  setMode('speaking');
+function muteMic(){
+  listeningOn=false;
+  if(listenTimer){clearTimeout(listenTimer);listenTimer=null}
   setMicEnabled(false);
+  if(!dc||dc.readyState!=='open')return;
   try{
     dc.send(JSON.stringify({
       type:'session.update',
       session:{type:'realtime',audio:{input:{turn_detection:null}}}
     }));
+  }catch(e){}
+}
+
+function speakLine(line){
+  if(!dc||dc.readyState!=='open')return;
+  awaitingSpeak=true;
+  speakFinished=false;
+  setMode('speaking');
+  muteMic();
+  try{
     dc.send(JSON.stringify({
       type:'response.create',
       response:{
@@ -773,8 +786,19 @@ function speakLine(line){
   }catch(e){}
 }
 
+function scheduleListening(ms){
+  if(listeningOn)return;
+  if(listenTimer)clearTimeout(listenTimer);
+  listenTimer=setTimeout(function(){
+    listenTimer=null;
+    enableListening();
+  },ms||1000);
+}
+
 function enableListening(){
-  if(!dc||dc.readyState!=='open'||!pc)return;
+  if(listeningOn||!dc||dc.readyState!=='open'||!pc)return;
+  listeningOn=true;
+  awaitingSpeak=false;
   setMicEnabled(true);
   setMode('listening');
   try{
@@ -786,6 +810,7 @@ function enableListening(){
           input:{
             turn_detection:{
               type:'server_vad',
+              threshold:0.8,
               silence_duration_ms:2000,
               prefix_padding_ms:300,
               create_response:true,
@@ -815,9 +840,9 @@ async function handleSpoken(transcript){
     const d=await r.json();
     if(d.answer)noteTurn('assistant',d.answer);
     showBooksResult(d);
-    if(d.answer){
+    if(d.intent&&d.intent!=='chat'){
       try{dc&&dc.send(JSON.stringify({type:'response.cancel'}))}catch(e){}
-      speakLine(d.answer.slice(0,280));
+      speakLine("It's on the left.");
     }
   }catch(e){}
 }
@@ -862,8 +887,18 @@ function unlockSpeaker(){
   remoteAudio.play().catch(function(){});
 }
 
+function resetVoiceFlags(){
+  greetingSent=false;
+  greetingDone=false;
+  listeningOn=false;
+  awaitingSpeak=false;
+  speakFinished=false;
+  if(listenTimer){clearTimeout(listenTimer);listenTimer=null}
+}
+
 function stopVoice(){
   flushMemory('voice');
+  resetVoiceFlags();
   try{if(dc)dc.close()}catch(e){}
   try{if(pc)pc.close()}catch(e){}
   if(localStream){try{localStream.getTracks().forEach(function(t){t.stop()})}catch(e){}}
@@ -887,42 +922,48 @@ async function startVoice(micPromise){
     unlockSpeaker();
     pc=new RTCPeerConnection();
     dc=pc.createDataChannel('oai-events');
-    let greetingSent=false;
-    let greetingDone=false;
-    dc.addEventListener('open',function(){
-      if(greetingSent)return;
-      greetingSent=true;
-      const line=greetingLine();
-      greetingEl.textContent=line;
-      speakLine(line);
-    });
+    resetVoiceFlags();
     dc.addEventListener('message',function(ev){
       let msg;
       try{msg=JSON.parse(ev.data)}catch(e){return}
-      if(msg.type==='session.created'&&!greetingSent){
+      const t=msg.type;
+      const cancelled=msg.response&&msg.response.status==='cancelled';
+      if(t==='session.created'&&!greetingSent){
         greetingSent=true;
         const line=greetingLine();
         greetingEl.textContent=line;
         speakLine(line);
         return;
       }
-      if(msg.type==='response.done'&&greetingSent&&!greetingDone){
-        greetingDone=true;
+      if(t==='response.created'){
+        setMode('speaking');
+        muteMic();
         return;
       }
-      if(msg.type==='output_audio_buffer.stopped'){
-        if(greetingDone)enableListening();
-        else if(mode==='speaking')enableListening();
+      if(t==='response.done'){
+        if(cancelled)return;
+        if(awaitingSpeak||(greetingSent&&!greetingDone)){
+          awaitingSpeak=false;
+          speakFinished=true;
+          greetingDone=true;
+        }else{
+          speakFinished=true;
+        }
         return;
       }
-      if(msg.type==='input_audio_transcription.completed'||msg.type==='conversation.item.input_audio_transcription.completed'){
+      if(t==='output_audio_buffer.stopped'){
+        if(!greetingDone||!speakFinished)return;
+        if(!listeningOn)scheduleListening(1000);
+        return;
+      }
+      if(t==='input_audio_transcription.completed'||t==='conversation.item.input_audio_transcription.completed'){
+        if(!greetingDone||!listeningOn)return;
         handleSpoken(msg.transcript||msg.text||'');
       }
-      if((msg.type==='response.audio_transcript.done'||msg.type==='response.output_audio_transcript.done')&&msg.transcript){
+      if((t==='response.audio_transcript.done'||t==='response.output_audio_transcript.done')&&msg.transcript){
         noteTurn('assistant',msg.transcript);
         printMsg('bot',msg.transcript);
       }
-      if(msg.type==='response.created')setMode('speaking');
     });
     pc.ontrack=function(e){
       if(!remoteAudio)unlockSpeaker();
@@ -977,7 +1018,10 @@ async function sendText(question){
     noteTurn('user',q);
     if(d.answer)noteTurn('assistant',d.answer);
     showBooksResult(d);
-    if(d.answer&&dc&&dc.readyState==='open')speakLine(d.answer.slice(0,280));
+    if(dc&&dc.readyState==='open'){
+      if(d.intent&&d.intent!=='chat')speakLine("It's on the left.");
+      else if(d.answer)speakLine(d.answer.slice(0,180));
+    }
     qInput.value='';
   }catch(e){printMsg('bot','That did not go through. Try again.')}
   sendBtn.disabled=false;
