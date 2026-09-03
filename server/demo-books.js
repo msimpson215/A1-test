@@ -158,6 +158,18 @@ function narratePayroll(report) {
 
 async function ask(question) {
   const intent = detectIntent(question)
+  const qbo = require('./qbo')
+  if (qbo.isConnected() && (intent.type === 'pnl' || intent.type === 'payroll_chart')) {
+    const report = await qbo.profitAndLoss(intent.period && intent.period.label)
+    return {
+      ok: true,
+      live: true,
+      demo: false,
+      intent: 'pnl',
+      answer: 'It is on the left.',
+      report
+    }
+  }
   const st = status()
   if (intent.type === 'empty') {
     return { ok: false, mode: st.mode, answer: 'Try: “P&L for May last year,” or “Chart payroll over five years.”' }

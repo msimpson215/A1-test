@@ -493,8 +493,8 @@ function setQbChrome(opts){
   qbCompany.innerHTML=opts.company||'A1 Professional Asphalt &amp; Sealing LLC';
   boardTitle.textContent=opts.title||'Report';
   boardSub.textContent=opts.dates||'';
-  qbBasis.textContent=opts.basis||'Accrual Basis · DEMO — not Joe’s live company';
-  qbBanner.textContent=opts.banner||'Intuit does not give out a public API key. This is a sample company so you can see the report first. Live QuickBooks later is a one-time Connect click.';
+  qbBasis.textContent=opts.basis||'Accrual Basis';
+  qbBanner.textContent=opts.banner||'Joe taps Allow once. After that, this is his QuickBooks.';
 }
 
 function showBooksResult(d){
@@ -519,10 +519,11 @@ function renderPnL(report){
   const expenses=report.expenses||[];
   const net=totals.netIncome||0;
   setQbChrome({
-    company:'A1 Professional Asphalt &amp; Sealing LLC',
+    company: report.company || 'A1 Professional Asphalt &amp; Sealing LLC',
     title:'Profit and Loss',
-    dates:period.label||'May 2025',
-    basis:'Accrual Basis'
+    dates:period.label||'',
+    basis: report.live ? 'Accrual Basis' : 'Accrual Basis',
+    banner: report.live ? 'Joe’s QuickBooks. He already tapped Allow.' : 'Joe has not tapped Allow yet. Marty texts the Connect link.'
   });
   let html='<table class="pnl-table"><thead><tr><th></th><th class="amt">Total</th></tr></thead><tbody>';
   html+='<tr class="section"><td colspan="2">Income</td></tr>';

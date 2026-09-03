@@ -5,6 +5,7 @@ const demoBooks = require('./demo-books');
 const payrollDemo = require('./payroll-demo');
 const joeKnowledge = require('./joe-knowledge');
 const lookup = require('./lookup');
+const qbo = require('./qbo');
 
 const app = express();
 const publicDir = path.join(__dirname, '..', 'public');
@@ -27,8 +28,8 @@ Use lookup for live facts: reviews, ratings, hours, maps, closest places, restau
 The desk already speaks one opening greeting. Never greet again. Never say Good morning, Good afternoon, Good evening, or Hey Joe after that opening.
 Never start over unless he says new chat, start over, hang up, or goodbye.
 Keep normal answers to a few sentences. Songs, stories, and a hard day can run longer. He can talk over you. Stop and listen.
-If he asks how to connect live QuickBooks: Marty makes a permission slip at Intuit named Axon for A1. Joe does not make a developer account. Joe opens a link on his phone, logs into his QuickBooks, taps Allow. He never types his password into this orb. Until that happens, the board is a sample. Do not say URI, OAuth, API key, or client secret.
-If he says go to QuickBooks, show the books, profit and loss, payroll, roster, or a chart, say only that it is on the left. Do not read the report. Do not invent live QuickBooks numbers. Sample company only until live books are connected.
+If he asks how to connect QuickBooks: Marty texts a Connect link. Joe opens it on the phone, logs into QuickBooks, taps Allow for Axon for Asphalt. He never types his password into this orb. After Allow, go to QuickBooks is his books. Do not say URI, OAuth, API key, or client secret.
+If he says go to QuickBooks, show the books, profit and loss, payroll, roster, or a chart, say only that it is on the left. Do not read the whole report. If he has not tapped Allow yet, say Marty will text the Connect link.
 If he says close it, get rid of it, hide it, put it away, go full screen, or go back to full screen, say it is gone. Never say you cannot close it. Never tell him to tap X.
 If he says new chat or start over, say "Starting a new chat" and stop.
 Do not mention ChatGPT, tools, or lookup by name.`;
@@ -180,9 +181,32 @@ app.get(['/joe-connect', '/joe/connect'], (req, res) => {
   res.sendFile(path.join(publicDir, 'joe-connect.html'));
 });
 
-app.get('/api/qbo/callback', (req, res) => {
+app.get('/api/qbo/connect', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  res.type('html').send(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:system-ui;background:#071a4e;color:#eaf4ff;padding:1.5rem"><p>Joe said yes, but the two secret codes are not in Render yet. Sample books stay on until Marty finishes his part.</p><p><a href="/joe-connect" style="color:#93c5fd">Plain-English steps</a></p></body>`);
+  if (!qbo.keysReady()) {
+    return res.type('html').send(qbo.htmlPage(
+      'Not yet',
+      'The two Intuit codes are not in Render, or they still say pending. Put the real codes in, save, then open this link again.'
+    ));
+  }
+  res.redirect(qbo.authorizeUrl());
+});
+
+app.get('/api/qbo/callback', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  try {
+    const saved = await qbo.saveFromCallback(req.query);
+    const name = saved.company ? ' Connected to ' + saved.company + '.' : ' Joe tapped Allow.';
+    res.type('html').send(qbo.htmlPage(
+      'QuickBooks is connected',
+      name + ' He can say go to QuickBooks on the desk. He does not log in again on the orb.'
+    ));
+  } catch (error) {
+    res.status(400).type('html').send(qbo.htmlPage(
+      'Allow did not finish',
+      String(error.message || error) + ' Open the Connect link again. On Intuit Keys, the return address must be exactly ' + qbo.redirectUri()
+    ));
+  }
 });
 
 app.get('/api/brain/status', (req, res) => {
@@ -192,6 +216,7 @@ app.get('/api/brain/status', (req, res) => {
     ...payrollDemo.status(),
     openai: Boolean(process.env.OPENAI_API_KEY),
     realtime: deskRealtimeModel(),
+    ...qbo.status(),
     memory: { count: 0, latestAt: null },
     knowledge: { a1: true, home: 'Lebanon, IL 62254' },
     lookup: true,
@@ -209,8 +234,11 @@ app.post('/api/brain/chat', async (req, res) => {
     return res.status(400).json({ ok: false, answer: 'Type a question first.' });
   }
   try {
-    const pay = payrollDemo.ask(question);
-    if (pay) return res.json(pay);
+    const qboOn = qbo.isConnected();
+    if (!qboOn) {
+      const pay = payrollDemo.ask(question);
+      if (pay) return res.json(pay);
+    }
     const books = await demoBooks.ask(question);
     if (books && books.intent && books.intent !== 'chat') return res.json(books);
     const found = await lookup.ask(question);
