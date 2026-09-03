@@ -42,10 +42,10 @@ function realtimeSessionConfig(desk) {
           create_response: !desk,
           interrupt_response: false
         }
+      },
+      output: {
+        voice: 'coral'
       }
-    },
-    output: {
-      voice: 'coral'
     }
   });
 }
