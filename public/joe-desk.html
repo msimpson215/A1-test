@@ -279,7 +279,7 @@ body.idle .hint::after{content:"Tap to talk · tap again for a new chat"}
 body.connecting .hint::after{content:"Connecting…"}
 body.speaking .hint::after{content:"Speaking…"}
 body.listening .hint::after{content:"Listening — go ahead"}
-body.error .hint::after{content:"Couldn’t hear you — tap to try again"}
+body.error .hint::after{content:attr(data-err)}
 body.texting .hint::after{content:"Type below"}
 
 .tape{
@@ -413,7 +413,7 @@ body.split .dock{
         <span class="pulse" aria-hidden="true"></span>
         <button type="button" class="orb" id="orb" aria-label="Tap the orb to talk"></button>
       </div>
-      <div class="hint" aria-live="polite"></div>
+      <div class="hint" id="hint" aria-live="polite" data-err="Microphone blocked — allow it, then tap again"></div>
       <div class="tape" id="tape" aria-live="polite"></div>
     </div>
   </div>
@@ -822,6 +822,42 @@ async function handleSpoken(transcript){
   }catch(e){}
 }
 
+function friendlyVoiceError(err){
+  const name=err&&err.name;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    return 'Open this page in Safari or Chrome — not inside another app.';
+  }
+  if(name==='NotAllowedError'||name==='PermissionDeniedError'){
+    return 'Microphone is blocked. Allow the mic for this site, then tap the orb.';
+  }
+  if(name==='NotFoundError'||name==='DevicesNotFoundError'){
+    return 'No microphone found on this phone.';
+  }
+  if(name==='NotReadableError'){
+    return 'Another app has the microphone. Close it and tap again.';
+  }
+  return 'Voice did not start. Tap the orb and allow the microphone.';
+}
+
+function unlockSpeaker(){
+  if(!remoteAudio){
+    remoteAudio=document.createElement('audio');
+    remoteAudio.autoplay=true;
+    remoteAudio.setAttribute('playsinline','');
+    remoteAudio.setAttribute('webkit-playsinline','');
+    remoteAudio.playsInline=true;
+    document.body.appendChild(remoteAudio);
+  }
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(Ctx){
+      if(!window._axonAudioCtx)window._axonAudioCtx=new Ctx();
+      if(window._axonAudioCtx.state==='suspended')window._axonAudioCtx.resume();
+    }
+  }catch(e){}
+  remoteAudio.play().catch(function(){});
+}
+
 function stopVoice(){
   flushMemory('voice');
   try{if(dc)dc.close()}catch(e){}
@@ -834,12 +870,17 @@ function stopVoice(){
   if(mode!=='texting')setMode('idle');
 }
 
-async function startVoice(){
+async function startVoice(micPromise){
   if(starting)return;
   if(pc){stopVoice();return}
   starting=true;
   setMode('connecting');
   try{
+    if(!micPromise){
+      micPromise=navigator.mediaDevices.getUserMedia({audio:true});
+    }
+    localStream=await micPromise;
+    unlockSpeaker();
     pc=new RTCPeerConnection();
     dc=pc.createDataChannel('oai-events');
     let greetingSent=false;
@@ -879,28 +920,35 @@ async function startVoice(){
       }
       if(msg.type==='response.created')setMode('speaking');
     });
-    remoteAudio=document.createElement('audio');
-    remoteAudio.autoplay=true;
-    remoteAudio.playsInline=true;
-    document.body.appendChild(remoteAudio);
     pc.ontrack=function(e){
+      if(!remoteAudio)unlockSpeaker();
       if(remoteAudio.srcObject!==e.streams[0])remoteAudio.srcObject=e.streams[0];
       remoteAudio.play().catch(function(){});
     };
-    localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     setMicEnabled(false);
     pc.addTrack(localStream.getTracks()[0]);
     const offer=await pc.createOffer();
     await pc.setLocalDescription(offer);
+    if(pc.iceGatheringState!=='complete'){
+      await new Promise(function(resolve){
+        const t=setTimeout(resolve,1500);
+        pc.addEventListener('icegatheringstatechange',function(){
+          if(pc.iceGatheringState==='complete'){clearTimeout(t);resolve();}
+        });
+      });
+    }
     const sdpResponse=await fetch('/session?desk=1',{method:'POST',body:offer.sdp,headers:{'Content-Type':'application/sdp'}});
     if(!sdpResponse.ok)throw new Error(await sdpResponse.text());
     await pc.setRemoteDescription({type:'answer',sdp:await sdpResponse.text()});
     starting=false;
   }catch(err){
     console.error(err);
+    const msg=friendlyVoiceError(err);
     stopVoice();
+    const hint=document.getElementById('hint');
+    if(hint)hint.setAttribute('data-err',msg);
     setMode('error');
-    printMsg('bot','Could not start voice. Tap the orb to try again.');
+    printMsg('bot',msg);
   }
 }
 
@@ -938,11 +986,30 @@ boardClose.addEventListener('click',closeBoard);
 async function onOrb(){
   if(starting)return;
   if(pc){stopVoice();return}
-  await startVoice();
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    const hint=document.getElementById('hint');
+    const msg='Open this page in Safari or Chrome — not inside another app.';
+    if(hint)hint.setAttribute('data-err',msg);
+    setMode('error');
+    printMsg('bot',msg);
+    return;
+  }
+  unlockSpeaker();
+  const micPromise=navigator.mediaDevices.getUserMedia({audio:true});
+  await startVoice(micPromise);
 }
 
-orb.addEventListener('click',onOrb);
-orb.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOrb()}});
+let lastOrbTap=0;
+async function onOrbTap(e){
+  if(e)e.preventDefault();
+  const now=Date.now();
+  if(now-lastOrbTap<700)return;
+  lastOrbTap=now;
+  await onOrb();
+}
+orb.addEventListener('click',onOrbTap);
+orb.addEventListener('touchend',onOrbTap,{passive:false});
+orb.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOrbTap(e)}});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(splitOn)closeBoard();
