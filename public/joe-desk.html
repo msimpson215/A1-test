@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-title" content="Axon Partner"/>
+<meta name="apple-mobile-web-app-title" content="Axon AI"/>
 <meta name="theme-color" content="#061a4e"/>
 <meta name="cache-control" content="no-store"/>
 <link rel="manifest" href="/manifest.webmanifest"/>
@@ -42,19 +42,9 @@ body{
   z-index:6;
   text-shadow:0 2px 18px rgba(3,18,54,.45);
 }
-.subgreet{
-  position:fixed;
-  top:clamp(2.55rem,6vh,3.35rem);
-  left:0;right:0;
-  text-align:center;
-  font-size:.9rem;
-  font-weight:500;
-  color:rgba(214,235,255,.9);
-  z-index:6;
-}
 .qb-bar{
   position:fixed;
-  top:clamp(4.15rem,9.2vh,5.05rem);
+  top:clamp(3.05rem,7.2vh,4.05rem);
   left:0;right:0;
   z-index:6;
   display:flex;
@@ -80,13 +70,6 @@ body{
   cursor:pointer;text-decoration:underline;text-underline-offset:2px;
 }
 .qb-link:hover{color:#fff}
-.speak-toggle{
-  border:1px solid rgba(160,210,255,.28);background:rgba(255,255,255,.08);
-  color:rgba(220,238,255,.9);border-radius:999px;
-  padding:.28rem .7rem;font:600 .68rem/1 "Plus Jakarta Sans",sans-serif;cursor:pointer;
-}
-.speak-toggle.on{background:rgba(239,68,68,.18);border-color:rgba(248,113,113,.55);color:#fecaca}
-
 .stage{
   position:fixed;
   inset:0;
@@ -99,7 +82,6 @@ body.split .stage{
 }
 
 body.split .brand,
-body.split .subgreet,
 body.split .qb-bar{
   left:50%;
   width:50%;
@@ -293,11 +275,12 @@ body.error .orb{
 .hint{
   margin-top:1rem;font-weight:600;font-size:.9rem;color:rgba(178,216,255,.85);text-align:center;min-height:1.25rem;
 }
-body.idle .hint::after{content:"Tap the orb — you talk, it types"}
+body.idle .hint::after{content:"Tap the orb to talk"}
 body.connecting .hint::after{content:"Connecting…"}
+body.speaking .hint::after{content:"Speaking…"}
 body.listening .hint::after{content:"Listening — go ahead"}
 body.error .hint::after{content:"Couldn’t hear you — tap to try again"}
-body.texting .hint::after{content:"Type below — it prints the answer"}
+body.texting .hint::after{content:"Type below"}
 
 .tape{
   width:min(100%,420px);max-height:22vh;overflow:auto;
@@ -383,7 +366,6 @@ body.split .dock{
   .pay-kpis div{border-right:0;border-bottom:1px solid #d4d7dc}
   .pay-kpis div:last-child{border-bottom:0}
   body.split .brand,
-  body.split .subgreet,
   body.split .qb-bar{display:none}
   body.split .stage{grid-template-columns:1fr}
   .board{
@@ -401,14 +383,12 @@ body.split .dock{
 </head>
 <body class="idle">
   <h1 class="brand" id="greeting">Good morning, Joe.</h1>
-  <p class="subgreet">You talk. It types. Demo books until you say otherwise.</p>
 
   <div class="qb-bar">
     <span class="qb-pill" id="qbPill"><span class="dot"></span><span id="qbLabel">QuickBooks · off</span><span class="stamp">demo</span></span>
     <button type="button" class="qb-link" id="qbBtn">Connect demo</button>
     <span class="qb-pill" id="payPill"><span class="dot"></span><span id="payLabel">Payroll · off</span><span class="stamp">demo</span></span>
     <button type="button" class="qb-link" id="payBtn">Connect demo</button>
-    <button type="button" class="speak-toggle" id="speakBtn" title="Voice-out is the expensive lane. This desk types.">This desk types (cheaper)</button>
   </div>
 
   <div class="stage">
@@ -438,7 +418,7 @@ body.split .dock{
         <span class="pulse" aria-hidden="true"></span>
         <span class="pulse" aria-hidden="true"></span>
         <span class="pulse" aria-hidden="true"></span>
-        <button type="button" class="orb" id="orb" aria-label="Tap to talk — it types the answer"></button>
+        <button type="button" class="orb" id="orb" aria-label="Tap the orb to talk"></button>
       </div>
       <div class="hint" aria-live="polite"></div>
       <div class="tape" id="tape" aria-live="polite"></div>
@@ -447,19 +427,12 @@ body.split .dock{
 
   <div class="dock">
     <form class="row" id="textForm">
-      <input id="q" type="text" autocomplete="off" placeholder="Or type here — it prints" enterkeyhint="send" aria-label="Type your question"/>
+      <input id="q" type="text" autocomplete="off" placeholder="Or type here" enterkeyhint="send" aria-label="Type your question"/>
       <button class="btn" type="submit" id="sendBtn">Send</button>
     </form>
-    <div class="teach">
-      <span class="teach-meta" id="teachMeta">No teaching docs yet</span>
-      <div class="row" style="gap:.4rem;flex:0 0 auto">
-        <button type="button" class="btn ghost" id="uploadBtn">Upload docs</button>
-        <input id="file" type="file" accept=".txt,.md,.pdf,.docx,text/plain,application/pdf"/>
-      </div>
-    </div>
   </div>
 
-  <div class="powered">Powered by <b>Axon Partner</b></div>
+  <div class="powered">Powered by <b>Axon AI</b></div>
 
   <div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet">
@@ -480,16 +453,12 @@ const orb=document.getElementById('orb');
 const qInput=document.getElementById('q');
 const textForm=document.getElementById('textForm');
 const sendBtn=document.getElementById('sendBtn');
-const teachMeta=document.getElementById('teachMeta');
-const uploadBtn=document.getElementById('uploadBtn');
-const fileInput=document.getElementById('file');
 const qbPill=document.getElementById('qbPill');
 const qbLabel=document.getElementById('qbLabel');
 const qbBtn=document.getElementById('qbBtn');
 const payPill=document.getElementById('payPill');
 const payLabel=document.getElementById('payLabel');
 const payBtn=document.getElementById('payBtn');
-const speakBtn=document.getElementById('speakBtn');
 const greetingEl=document.getElementById('greeting');
 const tape=document.getElementById('tape');
 const demoKey=document.getElementById('demoKey');
@@ -513,11 +482,10 @@ const ctx=canvas.getContext('2d');
 
 const QB_KEY='joeAssistant.qbMock';
 const PAY_KEY='joeAssistant.payMock';
-const SPEAK_KEY='joeAssistant.speakOut';
 const QB_SHOW='axon-demo-qb';
 const PAY_SHOW='axon-demo-payroll';
-let rec=null;
-let mode='idle',lastChart=null,qbOn=false,payOn=false,splitOn=false,speakOut=false,sheetKind='qb';
+let pc=null,dc=null,localStream=null,remoteAudio=null,starting=false;
+let mode='idle',lastChart=null,qbOn=false,payOn=false,splitOn=false,sheetKind='qb';
 
 function timeOfDay(){
   const h=new Date().getHours();
@@ -562,14 +530,8 @@ function setPayConnected(on){
   payBtn.textContent=payOn?'Disconnect':'Connect demo';
   syncBodyClass();
 }
-function setSpeakOut(on){
-  speakOut=false;
-  speakBtn.classList.remove('on');
-  speakBtn.textContent='This desk types (cheaper)';
-}
 try{setQbConnected(localStorage.getItem(QB_KEY)==='1')}catch(e){setQbConnected(false)}
 try{setPayConnected(localStorage.getItem(PAY_KEY)==='1')}catch(e){setPayConnected(false)}
-try{setSpeakOut(localStorage.getItem(SPEAK_KEY)==='1')}catch(e){setSpeakOut(false)}
 
 function money(n){
   return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0);
@@ -811,10 +773,10 @@ function paintChart(chart){
   });
 }
 
-function refreshDocs(){
-  teachMeta.textContent='Teaching docs live on the Axon host.';
+function looksLikeBooksAsk(text){
+  const t=String(text||'').toLowerCase();
+  return /payroll|wages|salar|gusto|adp|roster|headcount|p\s*&\s*l|\bpnl\b|profit\s*and\s*loss|income statement|chart.*payroll|payroll.*chart|may last year|may of last year/i.test(t);
 }
-refreshDocs();
 
 const sessionTurns=[];
 let memoryFlushing=false;
@@ -836,6 +798,159 @@ function flushMemory(source){
   }).catch(()=>{}).finally(()=>{memoryFlushing=false});
 }
 
+function greetingLine(){
+  return timeOfDay()+', Joe.';
+}
+
+function setMicEnabled(on){
+  if(!localStream)return;
+  localStream.getAudioTracks().forEach(function(t){t.enabled=!!on});
+}
+
+function speakLine(line){
+  if(!dc||dc.readyState!=='open')return;
+  setMode('speaking');
+  setMicEnabled(false);
+  try{
+    dc.send(JSON.stringify({
+      type:'session.update',
+      session:{type:'realtime',audio:{input:{turn_detection:null}}}
+    }));
+    dc.send(JSON.stringify({
+      type:'response.create',
+      response:{
+        output_modalities:['audio'],
+        instructions:'Say exactly this, word for word, then stop: "'+line+'"'
+      }
+    }));
+  }catch(e){}
+}
+
+function enableListening(){
+  if(!dc||dc.readyState!=='open'||!pc)return;
+  setMicEnabled(true);
+  setMode('listening');
+  try{
+    dc.send(JSON.stringify({
+      type:'session.update',
+      session:{
+        type:'realtime',
+        audio:{
+          input:{
+            turn_detection:{
+              type:'server_vad',
+              silence_duration_ms:2000,
+              prefix_padding_ms:300,
+              create_response:true,
+              interrupt_response:false
+            }
+          }
+        }
+      }
+    }));
+  }catch(e){}
+}
+
+async function handleSpoken(transcript){
+  const t=String(transcript||'').trim();
+  if(!t)return;
+  noteTurn('user',t);
+  printMsg('user',t);
+  if(!looksLikeBooksAsk(t))return;
+  try{
+    const r=await fetch('/api/brain/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:t})});
+    const d=await r.json();
+    if(d.answer)noteTurn('assistant',d.answer);
+    showBooksResult(d);
+    if(d.answer){
+      try{dc&&dc.send(JSON.stringify({type:'response.cancel'}))}catch(e){}
+      speakLine(d.answer.slice(0,280));
+    }
+  }catch(e){}
+}
+
+function stopVoice(){
+  flushMemory('voice');
+  try{if(dc)dc.close()}catch(e){}
+  try{if(pc)pc.close()}catch(e){}
+  if(localStream){try{localStream.getTracks().forEach(function(t){t.stop()})}catch(e){}}
+  if(remoteAudio){
+    try{remoteAudio.pause();remoteAudio.srcObject=null;remoteAudio.remove()}catch(e){}
+  }
+  pc=null;dc=null;localStream=null;remoteAudio=null;starting=false;
+  if(mode!=='texting')setMode('idle');
+}
+
+async function startVoice(){
+  if(starting)return;
+  if(pc){stopVoice();return}
+  starting=true;
+  setMode('connecting');
+  try{
+    pc=new RTCPeerConnection();
+    dc=pc.createDataChannel('oai-events');
+    let greetingSent=false;
+    let greetingDone=false;
+    dc.addEventListener('open',function(){
+      if(greetingSent)return;
+      greetingSent=true;
+      const line=greetingLine();
+      greetingEl.textContent=line;
+      speakLine(line);
+    });
+    dc.addEventListener('message',function(ev){
+      let msg;
+      try{msg=JSON.parse(ev.data)}catch(e){return}
+      if(msg.type==='session.created'&&!greetingSent){
+        greetingSent=true;
+        const line=greetingLine();
+        greetingEl.textContent=line;
+        speakLine(line);
+        return;
+      }
+      if(msg.type==='response.done'&&greetingSent&&!greetingDone){
+        greetingDone=true;
+        return;
+      }
+      if(msg.type==='output_audio_buffer.stopped'){
+        if(greetingDone)enableListening();
+        else if(mode==='speaking')enableListening();
+        return;
+      }
+      if(msg.type==='input_audio_transcription.completed'||msg.type==='conversation.item.input_audio_transcription.completed'){
+        handleSpoken(msg.transcript||msg.text||'');
+      }
+      if((msg.type==='response.audio_transcript.done'||msg.type==='response.output_audio_transcript.done')&&msg.transcript){
+        noteTurn('assistant',msg.transcript);
+        printMsg('bot',msg.transcript);
+      }
+      if(msg.type==='response.created')setMode('speaking');
+    });
+    remoteAudio=document.createElement('audio');
+    remoteAudio.autoplay=true;
+    remoteAudio.playsInline=true;
+    document.body.appendChild(remoteAudio);
+    pc.ontrack=function(e){
+      if(remoteAudio.srcObject!==e.streams[0])remoteAudio.srcObject=e.streams[0];
+      remoteAudio.play().catch(function(){});
+    };
+    localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    setMicEnabled(false);
+    pc.addTrack(localStream.getTracks()[0]);
+    const offer=await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    const sdpResponse=await fetch('/session?desk=1',{method:'POST',body:offer.sdp,headers:{'Content-Type':'application/sdp'}});
+    if(!sdpResponse.ok)throw new Error(await sdpResponse.text());
+    await pc.setRemoteDescription({type:'answer',sdp:await sdpResponse.text()});
+    starting=false;
+  }catch(err){
+    console.error(err);
+    stopVoice();
+    setMode('error');
+    printMsg('bot','Could not start voice. Tap the orb to try again.');
+  }
+}
+
 async function sendText(question){
   const q=String(question||'').trim();
   if(!q)return;
@@ -848,41 +963,26 @@ async function sendText(question){
     noteTurn('user',q);
     if(d.answer)noteTurn('assistant',d.answer);
     showBooksResult(d);
+    if(d.answer&&dc&&dc.readyState==='open')speakLine(d.answer.slice(0,280));
     qInput.value='';
   }catch(e){printMsg('bot','That did not go through. Try again.')}
   sendBtn.disabled=false;
-  setMode('idle');
+  if(!pc)setMode('idle');
 }
 
 textForm.addEventListener('submit',e=>{e.preventDefault();sendText(qInput.value)});
 qInput.addEventListener('focus',()=>{if(mode==='idle'||mode==='error')setMode('texting')});
-uploadBtn.addEventListener('click',()=>fileInput.click());
-fileInput.addEventListener('change',async()=>{
-  const file=fileInput.files&&fileInput.files[0];
-  fileInput.value='';
-  if(!file)return;
-  uploadBtn.disabled=true;
-  teachMeta.textContent='Teaching from “'+file.name+'”…';
-  try{
-    const fd=new FormData();fd.append('file',file);
-    const r=await fetch('/api/brain/teach',{method:'POST',body:fd});
-    const d=await r.json();
-    if(!r.ok||!d.ok)throw new Error(d.error||'Upload failed');
-    await refreshDocs();
-  }catch(e){await refreshDocs()}
-  uploadBtn.disabled=false;
-});
 
 function openSheet(kind){
   sheetKind=kind==='pay'?'pay':'qb';
   if(sheetKind==='pay'){
     sheetTitle.textContent='Connect demo payroll';
-    sheetCopy.textContent='Midwest Payroll Partners is a SAMPLE company. Not Gusto, not ADP, not Joe’s live run. Show it first so if a number looks off, nobody’s real payroll is to blame.';
+    sheetCopy.textContent='Midwest Payroll Partners is a SAMPLE company. Not Gusto, not ADP. Show it first so if a number looks off, nobody’s real payroll is to blame.';
     demoKey.placeholder=PAY_SHOW;
     demoKey.value='';
   }else{
     sheetTitle.textContent='Connect demo QuickBooks';
-    sheetCopy.textContent='Show key only — not Joe’s Intuit login. Sample numbers so you can see it work. If a figure looks wrong, it is demo data on purpose.';
+    sheetCopy.textContent='Show key only — not an Intuit login. Sample numbers so you can see it work.';
     demoKey.placeholder=QB_SHOW;
     demoKey.value='';
   }
@@ -897,9 +997,6 @@ qbBtn.addEventListener('click',()=>{
 payBtn.addEventListener('click',()=>{
   if(payOn){setPayConnected(false);closeBoard();return}
   openSheet('pay');
-});
-speakBtn.addEventListener('click',()=>{
-  printMsg('bot','When Axon talks out loud, that lane costs more. This desk is the cheap one: you talk, it types. Live voice stays on the Axon host.');
 });
 sheetCancel.addEventListener('click',closeSheet);
 scrim.addEventListener('click',e=>{if(e.target===scrim)closeSheet()});
@@ -916,50 +1013,10 @@ sheetConnect.addEventListener('click',()=>{
 });
 boardClose.addEventListener('click',closeBoard);
 
-function SpeechRec(){
-  return window.SpeechRecognition||window.webkitSpeechRecognition||null;
-}
-
-function stopListen(){
-  try{if(rec){rec.onend=null;rec.stop()}}catch(e){}
-  rec=null;
-  if(mode==='listening')setMode('idle');
-}
-
-function startListenToType(){
-  const Ctor=SpeechRec();
-  if(!Ctor){
-    printMsg('bot','This browser will not listen. Type below — same memory, same demo books.');
-    qInput.focus();
-    return;
-  }
-  if(rec){stopListen();return}
-  rec=new Ctor();
-  rec.lang='en-US';
-  rec.interimResults=true;
-  rec.continuous=false;
-  let finalText='';
-  rec.onresult=function(ev){
-    let bits='';
-    for(let i=ev.resultIndex;i<ev.results.length;i++){
-      bits+=ev.results[i][0].transcript;
-      if(ev.results[i].isFinal)finalText+=ev.results[i][0].transcript;
-    }
-    qInput.value=finalText||bits;
-  };
-  rec.onerror=function(){setMode('error');rec=null};
-  rec.onend=function(){
-    rec=null;
-    const q=String(qInput.value||finalText||'').trim();
-    setMode('idle');
-    if(q)sendText(q);
-  };
-  setMode('listening');
-  rec.start();
-}
-
 async function onOrb(){
-  startListenToType();
+  if(starting)return;
+  if(pc){stopVoice();return}
+  await startVoice();
 }
 
 orb.addEventListener('click',onOrb);
@@ -968,12 +1025,13 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(scrim.classList.contains('open'))closeSheet();
     else if(splitOn)closeBoard();
-    else stopListen();
+    else stopVoice();
   }
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden){stopListen();flushMemory('pagehide')}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushMemory('pagehide')});
 window.addEventListener('resize',()=>{if(lastChart&&splitOn)paintChart(lastChart)});
 window.addEventListener('pagehide',()=>flushMemory('pagehide'));
+
 </script>
 </body>
 </html>
