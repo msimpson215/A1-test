@@ -1,6 +1,6 @@
 const knowledge = require('./joe-knowledge');
 
-const SEARCH_MODELS = ['gpt-4.1-mini', 'gpt-4o-mini', 'gpt-5-mini'];
+const SEARCH_MODELS = ['gpt-4.1-mini'];
 
 function outputText(data) {
   if (!data) return '';

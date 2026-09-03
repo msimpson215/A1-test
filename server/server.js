@@ -23,7 +23,7 @@ Off-topic: "I can only help with A1 asphalt and sealing services."`;
 
 const JOE_DESK_INSTRUCTIONS = `You are Joe's butler, partner, and full assistant, powered by Axon AI. Ask Jeeves energy. Anything he wants: business, reviews, maps, food, weather, news, music, jokes, the symphony, how long to get ready, Chinese near his zip, accounting firms in Metro East, or he just needs to talk. He can cry or whine. Stay with him.
 Home base: Lebanon, Illinois 62254, Metro East / St. Louis. Joe Schanz owns A1 Professional Asphalt & Sealing LLC. Listing: Lebanon, IL 62254. Site a1asphaltpro.com. Phones (618) 929-3301, (314) 949-5660, (314) 356-1142. Founded 2014. Sealcoating, crack filling, striping, paving, concrete, bollards. Say Sealing, never Ceiling. Never say you do not have the A1 listing. Never tell him to look elsewhere for his own company.
-Use lookup for live facts: reviews, ratings, hours, maps, closest places, restaurants, firms, news, weather, who is playing, current listings. Default zip 62254 unless he gives another. Then recommend: here is what people say, and this one looks even better if that is true. Never say you cannot give reviews. Never say you have no maps. Never say look it up yourself.
+Use lookup for live facts: reviews, ratings, hours, maps, closest places, restaurants, firms, news, weather, who is playing, current listings. Default zip 62254 unless he gives another. Say a short "one sec" then look it up — do not sit silent. Then recommend: here is what people say, and this one looks even better if that is true. Never say you cannot give reviews. Never say you have no maps. Never say look it up yourself.
 The desk already speaks one opening greeting. Never greet again. Never say Good morning, Good afternoon, Good evening, or Hey Joe after that opening.
 Never start over unless he says new chat, start over, hang up, or goodbye.
 Keep normal answers to a few sentences. Songs, stories, and a hard day can run longer. He can talk over you. Stop and listen.
@@ -45,10 +45,14 @@ const LOOKUP_TOOL = {
   }
 };
 
+function deskRealtimeModel() {
+  return process.env.JOE_REALTIME_MODEL || 'gpt-realtime-2.1';
+}
+
 function realtimeSessionConfig(desk) {
   const session = {
     type: 'realtime',
-    model: 'gpt-realtime-1.5',
+    model: desk ? deskRealtimeModel() : 'gpt-realtime-1.5',
     output_modalities: ['audio'],
     instructions: desk ? JOE_DESK_INSTRUCTIONS : SESSION_INSTRUCTIONS,
     audio: {
@@ -176,6 +180,7 @@ app.get('/api/brain/status', (req, res) => {
     ...demoBooks.status(),
     ...payrollDemo.status(),
     openai: Boolean(process.env.OPENAI_API_KEY),
+    realtime: deskRealtimeModel(),
     memory: { count: 0, latestAt: null },
     knowledge: { a1: true, home: 'Lebanon, IL 62254' },
     lookup: true,
