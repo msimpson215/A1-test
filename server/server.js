@@ -189,6 +189,9 @@ app.get('/api/qbo/connect', (req, res) => {
       'The two Intuit codes are not in Render, or they still say pending. Put the real codes in, save, then open this link again.'
     ));
   }
+  if (req.query.go !== '1') {
+    return res.type('html').send(qbo.connectLandingHtml());
+  }
   res.redirect(qbo.authorizeUrl());
 });
 
