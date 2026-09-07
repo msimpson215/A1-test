@@ -81,27 +81,61 @@ check("no shelf showing before anyone asks", (await page.$(".axon-merch")) === n
 await page.click(".shopper-nav-pill");
 await page.waitForSelector(".axon-strip-input");
 await wait(900);
-check("greeting is spoken", (await page.evaluate(() => window.__spoken.length)) > 0);
+const greeting = await page.evaluate(() => window.__spoken.join(" "));
+check("greeting is spoken", greeting.length > 0);
 check(
-  "the greeting points at milk",
-  /milk/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent)),
-  await page.$eval(".axon-strip-hint", (el) => el.textContent)
+  "greeting says what it is and offers to shop",
+  /personal assistant/i.test(greeting) && /not a chatbot/i.test(greeting) && /shop for today/i.test(greeting),
+  greeting
 );
 
-/* 3. Asking for milk SHOWS milk. It must not buy it. */
-await type("I need milk.");
+/* 3. "How does this work?" explains itself. */
+await type("What is this? How does this work?");
 await wait(1600);
-const shown = await cards();
-check("exactly one product on the shelf", shown.length === 1, `${shown.length} cards: ${shown.join(", ")}`);
-check("and it is the milk", /milk/i.test(shown[0] ?? ""), shown[0] ?? "none");
+const explained = await page.evaluate(() => window.__spoken.join(" "));
+check(
+  "it explains how to use it",
+  /talk to the store/i.test(explained) && /add it to my cart/i.test(explained),
+  explained.slice(-150)
+);
+check("explaining did not open a shelf", (await page.$(".axon-merch")) === null);
+
+/* 4. Asking for milk brings up the milk, and asks which kind. */
+await type("I need milk.");
+await wait(1800);
+const wall = await cards();
+check("the milk wall appears", wall.length === 4, `${wall.length} cards`);
+check(
+  "all four kinds are there",
+  ["Whole", "2%", "1%", "Skim"].every((k) => wall.some((n) => n.includes(k))),
+  wall.join(" | ")
+);
 check("asking did not buy anything", (await cart()) === "0 items $0.00", await cart());
+check(
+  "it asks which kind",
+  /which would you like/i.test(await page.evaluate(() => window.__spoken.join(" ")))
+);
 check(
   "the input clears so the next request starts empty",
   (await page.$eval(".axon-strip-input", (el) => el.value)) === "",
   JSON.stringify(await page.$eval(".axon-strip-input", (el) => el.value))
 );
 
-/* 4. Adding it flies the carton to the cart, and only then does the cart move. */
+/* 5. An unspecific add is a question, not a guess. */
+await page.type(".axon-strip-input", "Add it to my cart.");
+await page.keyboard.press("Enter");
+await wait(1600);
+check("it will not guess which milk", (await cart()) === "0 items $0.00", await cart());
+
+/* 6. Naming a kind narrows the shelf to one. */
+await page.type(".axon-strip-input", "Two percent.");
+await page.keyboard.press("Enter");
+await wait(1800);
+const narrowed = await cards();
+check("the shelf narrows to one", narrowed.length === 1, narrowed.join(" | "));
+check("and it is the 2%", /2%/.test(narrowed[0] ?? ""), narrowed[0] ?? "none");
+
+/* 7. Now adding flies the jug to the cart, and only then does the cart move. */
 let sawFlyer = false;
 let cartDuringFlight = null;
 const watch = setInterval(async () => {
@@ -118,9 +152,9 @@ await page.keyboard.press("Enter");
 await wait(2800);
 clearInterval(watch);
 
-check("the carton visibly flies to the cart", sawFlyer);
-check("the cart waits until the carton lands", cartDuringFlight === "0 items $0.00", String(cartDuringFlight));
-check("cart reads 1 item $4.39", (await cart()) === "1 item $4.39", await cart());
+check("the jug visibly flies to the cart", sawFlyer);
+check("the cart waits until the jug lands", cartDuringFlight === "0 items $0.00", String(cartDuringFlight));
+check("cart reads 1 item $4.24", (await cart()) === "1 item $4.24", await cart());
 check("the card shows it is in the cart", (await page.$(".db-add.is-added")) !== null);
 
 /* 5. Same loop, spoken, with no microphone press. */
@@ -128,7 +162,7 @@ await page.click(".reset-demo");
 await wait(500);
 check("reset empties the cart", (await cart()) === "0 items $0.00", await cart());
 
-await page.evaluate(() => { window.__script = ["I need milk", "add it to my cart"]; });
+await page.evaluate(() => { window.__script = ["I need milk", "I will take the two percent"]; });
 await page.click(".shopper-nav-pill");
 let listened = false;
 for (let i = 0; i < 120 && !listened; i += 1) {
@@ -144,7 +178,7 @@ for (let i = 0; i < 40; i += 1) {
   if ((await page.evaluate(() => window.__script.length)) === 0) break;
 }
 await wait(3500);
-check("the spoken loop also reaches 1 item $4.39", (await cart()) === "1 item $4.39", await cart());
+check("the spoken loop also reaches 1 item $4.24", (await cart()) === "1 item $4.24", await cart());
 check("no microphone press was needed", true);
 
 check("no page errors", errors.length === 0, errors.join(" | "));

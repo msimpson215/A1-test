@@ -8,11 +8,13 @@ import {
   borden,
   cheddarProducts,
   milk,
+  milkGallons,
+  milkHalfGallons,
   staplesProducts,
   type DemoProduct
 } from "@/data/dierbergs-demo-products";
 import { asset } from "@/lib/asset-base";
-import { parseIntent } from "@/lib/dierbergs-demo-intents";
+import { parseRequest, type MilkVariety, type MilkVolume } from "@/lib/dierbergs-demo-intents";
 import {
   browserName,
   cancelSpeech,
@@ -43,8 +45,11 @@ function log(...parts: unknown[]) {
 
 const BUILD = process.env.NEXT_PUBLIC_BUILD_STAMP || "dev";
 
-const WELCOME = "Welcome to Dierbergs. How can I help you today?";
-const SUBLINE = "Conversational AI, not a chatbot. Try saying: I need milk.";
+const WELCOME = "Welcome to Dierbergs. What would you like to shop for today?";
+const SUBLINE =
+  "I'm a conversational AI personal assistant, not a chatbot. Try \u201CI need milk,\u201D or ask how this works.";
+const SPOKEN_WELCOME =
+  "Welcome to Dierbergs. I'm your conversational AI personal assistant, not a chatbot. What would you like to shop for today?";
 
 export default function DierbergsDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
@@ -60,6 +65,8 @@ export default function DierbergsDemo() {
   const [cart, setCart] = useState<DemoProduct[]>([]);
   const [pulse, setPulse] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [milkVolume, setMilkVolume] = useState<MilkVolume>("gallon");
+  const [milkVariety, setMilkVariety] = useState<MilkVariety | null>(null);
   const [flight, setFlight] = useState<{ src: string; from: DOMRect; to: DOMRect } | null>(null);
   const [lastHeard, setLastHeard] = useState("");
   const [lastError, setLastError] = useState("");
@@ -74,8 +81,10 @@ export default function DierbergsDemo() {
   const axonOn = phase !== "idle";
   const cartIds = cart.map((p) => p.id);
   const cartTotalCents = cart.reduce((sum, p) => sum + p.priceCents, 0);
+  const milkPool = milkVolume === "half gallon" ? milkHalfGallons : milkGallons;
+  const milkShelf = milkVariety ? milkPool.filter((p) => p.variety === milkVariety) : milkPool;
   const merchProducts =
-    view === "milk" ? [milk]
+    view === "milk" ? milkShelf
     : view === "bread" ? [bread]
     : view === "cheddars" ? cheddarProducts
     : staplesProducts;
@@ -144,10 +153,16 @@ export default function DierbergsDemo() {
     setSelectedId(null);
   }, [cart, say]);
 
+  const shelfFor = useCallback((variety: MilkVariety | null, volume: MilkVolume) => {
+    const pool = volume === "half gallon" ? milkHalfGallons : milkGallons;
+    return variety ? pool.filter((p) => p.variety === variety) : pool;
+  }, []);
+
   const handleUtterance = useCallback(
     async (text: string) => {
-      const intent = parseIntent(text);
-      log("heard", JSON.stringify(text), "->", intent);
+      const req = parseRequest(text);
+      const intent = req.intent;
+      log("heard", JSON.stringify(text), "->", intent, req.variety ?? "", req.volume ?? "");
       setLastHeard(`${text} (${intent})`);
       setQuery(text);
       setBusy(true);
@@ -155,11 +170,31 @@ export default function DierbergsDemo() {
       await new Promise((r) => setTimeout(r, 260));
 
       switch (intent) {
-        case "SHOW_MILK":
+        case "SHOW_MILK": {
+          const volume = req.volume ?? milkVolume;
+          const variety = req.variety ?? null;
+          const shelf = shelfFor(variety, volume);
+          setMilkVolume(volume);
+          setMilkVariety(variety);
           setView("milk");
-          setMerchHeading("Here's the milk.");
-          await say("Here's our milk.", "Say \u201Cadd it to my cart\u201D when you want it.");
+          if (shelf.length === 1) {
+            const only = shelf[0];
+            setMerchHeading(`${only.name}.`);
+            await say(
+              `${only.shortName}, ${only.price}.`,
+              "Say \u201Cadd it to my cart\u201D when you want it."
+            );
+          } else {
+            setMerchHeading(volume === "gallon" ? "Our milk, by the gallon." : "Our milk, by the half gallon.");
+            await say(
+              "We carry four. Whole, two percent, one percent and skim. Which would you like?",
+              volume === "gallon"
+                ? "Name a kind \u2014 or ask for a half gallon."
+                : "Name a kind \u2014 or ask for a gallon."
+            );
+          }
           break;
+        }
 
         case "SHOW_BREAD":
           setView("bread");
@@ -184,10 +219,34 @@ export default function DierbergsDemo() {
           await addProduct(borden);
           break;
 
-        case "ADD_MILK":
-          if (!view) setView("milk");
-          await addProduct(milk);
+        case "ADD_MILK": {
+          const volume = req.volume ?? milkVolume;
+          const variety = req.variety ?? milkVariety;
+          // A milk already on screen on its own is the one they mean, whether it
+          // is on the shelf or sitting in the Also Requested column.
+          const onShelf = [...merchProducts, ...alsoRequested].filter((p) => p.category === "milk");
+          if (!variety && !req.volume && onShelf.length === 1) {
+            await addProduct(onShelf[0]);
+            break;
+          }
+          const shelf = shelfFor(variety, volume);
+          setMilkVolume(volume);
+          setView("milk");
+          if (shelf.length === 1) {
+            setMilkVariety(shelf[0].variety ?? null);
+            await addProduct(shelf[0]);
+          } else {
+            // They asked for milk without saying which. Put the wall up and ask
+            // rather than guessing on their behalf.
+            setMilkVariety(null);
+            setMerchHeading(volume === "gallon" ? "Our milk, by the gallon." : "Our milk, by the half gallon.");
+            await say(
+              "Happy to. Which one \u2014 whole, two percent, one percent or skim?",
+              "Name a kind and I'll drop it in."
+            );
+          }
           break;
+        }
 
         case "ADD_BREAD":
           if (!view) setView("bread");
@@ -206,17 +265,18 @@ export default function DierbergsDemo() {
           }
           break;
 
-        case "CAPABILITIES":
+        case "HOW_IT_WORKS":
           await say(
-            "I'm a conversational shopper built into Dierbergs, not a chatbot.",
-            "Ask for a grocery the way you'd ask a person. Try: I need milk."
+            "Talk to the store the way you'd talk to a person.",
+            "Ask for a grocery and the shelves change. Narrow it down, then say \u201Cadd it to my cart.\u201D",
+            "Talk to the store the way you'd talk to a person. Ask for a grocery and the shelves change. Try: I need milk. Then narrow it down, like two percent, or a half gallon. When you're ready, say add it to my cart."
           );
           break;
 
         default:
           await say(
             "I didn't catch a grocery in that.",
-            "Try: I need milk."
+            "Try \u201CI need milk,\u201D or ask me how this works."
           );
       }
 
@@ -226,7 +286,7 @@ export default function DierbergsDemo() {
       setBusy(false);
       log("done", intent);
     },
-    [addProduct, merchProducts, say, view]
+    [addProduct, alsoRequested, merchProducts, milkVariety, milkVolume, say, shelfFor, view]
   );
 
   // Held in a ref so a state change mid-sentence cannot tear down and restart
@@ -290,11 +350,7 @@ export default function DierbergsDemo() {
     setBusy(true);
     // One utterance, not two: cancelling a queued second line is unreliable, and
     // a shopper who interrupts the greeting must be listened to immediately.
-    await say(
-      WELCOME,
-      SUBLINE,
-      `${WELCOME} I'm a conversational shopper, so just tell me what you need.`
-    );
+    await say(WELCOME, SUBLINE, SPOKEN_WELCOME);
     setBusy(false);
     // Start listening without being asked. Waiting on a microphone press reads
     // as the shopper greeting you and then ignoring you.
@@ -344,6 +400,8 @@ export default function DierbergsDemo() {
     setPulse(false);
     setSelectedId(null);
     setFlight(null);
+    setMilkVolume("gallon");
+    setMilkVariety(null);
     setLastHeard("");
     setLastError("");
   }

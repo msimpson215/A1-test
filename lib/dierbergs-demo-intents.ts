@@ -7,8 +7,19 @@ export type DemoIntent =
   | "ADD_BREAD"
   | "ADD_CHEESE"
   | "ADD_CURRENT"
-  | "CAPABILITIES"
+  | "HOW_IT_WORKS"
   | "UNKNOWN";
+
+export type MilkVariety = "whole" | "2%" | "1%" | "skim";
+export type MilkVolume = "gallon" | "half gallon";
+
+export type ParsedRequest = {
+  intent: DemoIntent;
+  /** Set when the shopper named a kind of milk, e.g. "two percent". */
+  variety: MilkVariety | null;
+  /** Set when the shopper named a jug size. */
+  volume: MilkVolume | null;
+};
 
 export function normalizeUtterance(raw: string): string {
   return raw
@@ -16,7 +27,7 @@ export function normalizeUtterance(raw: string): string {
     .trim()
     // Apostrophes close up rather than split, so "I'll" reads as one word.
     .replace(/['\u2019]/g, "")
-    .replace(/[^\w\s.$]/g, " ")
+    .replace(/[^\w\s.%$]/g, " ")
     .replace(/\s+/g, " ");
 }
 
@@ -29,21 +40,42 @@ const TAKE_PHRASE =
 const CART_WORD = /\b(cart|basket|bag|checkout)\b/;
 const CONFIRM = /^(yes|yep|yeah|yup|sure|ok|okay|do it|go ahead|please|that one|this one|the first one)\b/;
 
-const BROWSE_WORD =
-  /\b(show|different|other|kinds|kind|types|sorts|options|variety|varieties|have|what|which|else|see|browse|compare|look|find|need|want|got)\b/;
-
 function wantsToAdd(t: string): boolean {
   return ADD_VERB.test(t) || TAKE_PHRASE.test(t) || CART_WORD.test(t) || CONFIRM.test(t);
 }
 
-export function parseIntent(raw: string): DemoIntent {
-  const t = normalizeUtterance(raw);
+function readVariety(t: string): MilkVariety | null {
+  if (/\b(whole|vitamin d|full fat|red cap)\b/.test(t)) return "whole";
+  if (/\b(2 ?%|2 percent|two percent|reduced fat)\b/.test(t)) return "2%";
+  if (/\b(1 ?%|1 percent|one percent|low ?fat|lowfat)\b/.test(t)) return "1%";
+  if (/\b(skim|fat ?free|nonfat|non fat|blue cap)\b/.test(t)) return "skim";
+  return null;
+}
 
-  if (/\b(what can you do|who are you|how does this work|what do you do|are you a chatbot|what are you)\b/.test(t)) {
-    return "CAPABILITIES";
+function readVolume(t: string): MilkVolume | null {
+  if (/\b(half gallon|half a gallon|halfgallon|64 ?oz|small(er)?)\b/.test(t)) return "half gallon";
+  if (/\b(gallon|128 ?oz|big|large|bigger|full size)\b/.test(t)) return "gallon";
+  return null;
+}
+
+export function parseRequest(raw: string): ParsedRequest {
+  const t = normalizeUtterance(raw);
+  const variety = readVariety(t);
+  const volume = readVolume(t);
+  const intent = readIntent(t, variety, volume);
+  return { intent, variety, volume };
+}
+
+function readIntent(t: string, variety: MilkVariety | null, volume: MilkVolume | null): DemoIntent {
+  if (
+    /\b(what is this|whats this|how does this work|how do i use|what can you do|who are you|what are you|are you a chatbot|help|instructions|explain)\b/.test(
+      t
+    )
+  ) {
+    return "HOW_IT_WORKS";
   }
 
-  const hasMilk = /\bmilk\b/.test(t);
+  const hasMilk = /\bmilk\b/.test(t) || (variety !== null && !/\bcheese|cheddar|bread\b/.test(t));
   const hasBread = /\bbread\b/.test(t);
   const hasCheese = /\b(cheese|cheddar|borden|sargento|cabot|land o lakes)\b/.test(t);
   const named = [hasMilk, hasBread, hasCheese].filter(Boolean).length;
@@ -55,7 +87,6 @@ export function parseIntent(raw: string): DemoIntent {
     if (hasMilk) return "ADD_MILK";
     if (hasBread) return "ADD_BREAD";
     if (hasCheese) return "ADD_CHEESE";
-    // "add it to my cart" — whatever is on screen.
     return "ADD_CURRENT";
   }
 
@@ -66,8 +97,13 @@ export function parseIntent(raw: string): DemoIntent {
   if (hasMilk) return "SHOW_MILK";
   if (hasBread) return "SHOW_BREAD";
 
-  // A bare "show me what you've got" with nothing named.
-  if (BROWSE_WORD.test(t) && /\b(everything|anything|something)\b/.test(t)) return "SHOW_STAPLES";
+  // "Do you have a smaller one?" while the milk wall is up.
+  if (volume !== null) return "SHOW_MILK";
 
   return "UNKNOWN";
+}
+
+/** Kept for callers that only care which branch to take. */
+export function parseIntent(raw: string): DemoIntent {
+  return parseRequest(raw).intent;
 }

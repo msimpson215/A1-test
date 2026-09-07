@@ -10,19 +10,52 @@ export type DemoProduct = {
   category: "milk" | "bread" | "cheddar";
   image: string;
   aisle: string;
+  /** Milk only: how much fat, and how big the jug is. */
+  variety?: "whole" | "2%" | "1%" | "skim";
+  volume?: "gallon" | "half gallon";
 };
 
-export const milk: DemoProduct = {
-  id: "dierbergs-milk-1",
-  name: "Dierbergs 1% Milk - Gallon",
-  shortName: "Dierbergs 1% Milk",
-  size: "128 oz",
-  price: "$4.39",
-  priceCents: 439,
-  category: "milk",
-  image: asset("/dierbergs/products/milk-dierbergs.png"),
-  aisle: "Aisle 12 - A"
-};
+// The real Dierbergs own-brand milk wall, prices as listed on the storefront.
+function milkProduct(
+  id: string,
+  variety: NonNullable<DemoProduct["variety"]>,
+  volume: NonNullable<DemoProduct["volume"]>,
+  priceCents: number,
+  file: string
+): DemoProduct {
+  const label = variety === "whole" ? "Whole" : variety === "skim" ? "Skim" : variety;
+  const jug = volume === "gallon" ? "Gallon" : "Half Gallon";
+  return {
+    id,
+    name: `Dierbergs ${label} Milk - ${jug}`,
+    shortName: `Dierbergs ${label} Milk`,
+    size: volume === "gallon" ? "128 oz" : "64 oz",
+    price: `$${(priceCents / 100).toFixed(2)}`,
+    priceCents,
+    category: "milk",
+    image: asset(`/dierbergs/products/${file}.png`),
+    aisle: "Aisle 12 - A",
+    variety,
+    volume
+  };
+}
+
+export const milkWholeGallon = milkProduct("dierbergs-whole-gal", "whole", "gallon", 444, "milk-whole-gal");
+export const milkTwoGallon = milkProduct("dierbergs-2pct-gal", "2%", "gallon", 424, "milk-2pct-gal");
+export const milkOneGallon = milkProduct("dierbergs-1pct-gal", "1%", "gallon", 424, "milk-1pct-gal");
+export const milkSkimGallon = milkProduct("dierbergs-skim-gal", "skim", "gallon", 424, "milk-skim-gal");
+
+export const milkWholeHalf = milkProduct("dierbergs-whole-half", "whole", "half gallon", 269, "milk-whole-half");
+export const milkTwoHalf = milkProduct("dierbergs-2pct-half", "2%", "half gallon", 269, "milk-2pct-half");
+export const milkOneHalf = milkProduct("dierbergs-1pct-half", "1%", "half gallon", 269, "milk-1pct-half");
+export const milkSkimHalf = milkProduct("dierbergs-skim-half", "skim", "half gallon", 269, "milk-skim-half");
+
+export const milkGallons = [milkWholeGallon, milkTwoGallon, milkOneGallon, milkSkimGallon];
+export const milkHalfGallons = [milkWholeHalf, milkTwoHalf, milkOneHalf, milkSkimHalf];
+export const milkProducts = [...milkGallons, ...milkHalfGallons];
+
+/** The one milk used when a request does not name a variety. */
+export const milk = milkOneGallon;
 
 export const bread: DemoProduct = {
   id: "bunny-white-bread",

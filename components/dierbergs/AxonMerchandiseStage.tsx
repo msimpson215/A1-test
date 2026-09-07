@@ -42,7 +42,7 @@ export default function AxonMerchandiseStage({
         >
           <div className="merch-main">
             {heading ? <h2 className="merch-heading">{heading}</h2> : null}
-            <div className={`merch-grid merch-grid-${mode === "cheddars" ? "cheddars" : "staples"}`}>
+            <div className={`merch-grid merch-grid-${products.length >= 4 ? "cheddars" : "staples"}`}>
               {products.map((p, i) => (
                 <motion.div
                   key={p.id}

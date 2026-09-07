@@ -117,7 +117,7 @@ check(
 );
 check(
   "explains it is conversational AI, not a chatbot",
-  /conversational ai, not a chatbot/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent || ""))
+  /conversational ai personal assistant, not a chatbot/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent || ""))
 );
 check("orb carries no face or text", (await page.$eval(".axon-orb", (el) => el.textContent.trim())) === "");
 check(
@@ -162,7 +162,7 @@ check("added card shows an in-cart state", (await page.$(".db-add.is-added")) !=
 
 await type("I would like the milk now.");
 await new Promise((r) => setTimeout(r, 3000));
-check("second item accumulates to 2 items $8.30", (await cart()) === "2 items $8.30", await cart());
+check("second item accumulates to 2 items $8.15", (await cart()) === "2 items $8.15", await cart());
 
 /* Same conversation again, spoken, and with no microphone press at all. */
 await page.click(".reset-demo");
@@ -191,7 +191,7 @@ for (let i = 0; i < 50; i += 1) {
   if ((await page.evaluate(() => window.__script.length)) === 0) break;
 }
 await new Promise((r) => setTimeout(r, 4000));
-check("hands-free voice run reaches 2 items $8.30", (await cart()) === "2 items $8.30", await cart());
+check("hands-free voice run reaches 2 items $8.15", (await cart()) === "2 items $8.15", await cart());
 check(
   "voice run needed no microphone press at all",
   (await page.evaluate(() => window.__spoken.length)) >= 6,
