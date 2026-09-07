@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/server.js",
     "demo": "next dev -p 3001",
-    "demo:build": "next build"
+    "demo:build": "next build",
+    "demo:static": "bash scripts/build-demo-static.sh"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

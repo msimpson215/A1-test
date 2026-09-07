@@ -10,6 +10,7 @@ import {
   staplesProducts,
   type DemoProduct
 } from "@/data/dierbergs-demo-products";
+import { asset } from "@/lib/asset-base";
 import { parseIntent } from "@/lib/dierbergs-demo-intents";
 import { speak } from "@/lib/dierbergs-speech";
 import DierbergsStaticBackground from "./DierbergsStaticBackground";
@@ -140,7 +141,7 @@ export default function DierbergsDemo() {
 
   return (
     <div className="demo-page">
-      <DierbergsStaticBackground src="/dierbergs/dierbergs-storefront-full.png" />
+      <DierbergsStaticBackground src={asset("/dierbergs/dierbergs-storefront-full.png")} />
 
       <div className="axon-overlay">
         <AxonNavControl active={axonOn} onActivate={activate} />

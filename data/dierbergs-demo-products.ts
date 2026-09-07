@@ -1,3 +1,5 @@
+import { asset } from "@/lib/asset-base";
+
 export type DemoProduct = {
   id: string;
   name: string;
@@ -16,7 +18,7 @@ export const milk: DemoProduct = {
   price: "$4.39",
   priceCents: 439,
   category: "milk",
-  image: "/dierbergs/products/milk-dierbergs.png",
+  image: asset("/dierbergs/products/milk-dierbergs.png"),
   aisle: "Aisle 12 - A"
 };
 
@@ -27,7 +29,7 @@ export const bread: DemoProduct = {
   price: "$2.09",
   priceCents: 209,
   category: "bread",
-  image: "/dierbergs/products/bread-bunny.png",
+  image: asset("/dierbergs/products/bread-bunny.png"),
   aisle: "Aisle 9 - C"
 };
 
@@ -38,7 +40,7 @@ export const borden: DemoProduct = {
   price: "$3.91",
   priceCents: 391,
   category: "cheddar",
-  image: "/dierbergs/products/cheese-borden.png",
+  image: asset("/dierbergs/products/cheese-borden.png"),
   aisle: "Aisle 12 - B"
 };
 
@@ -49,7 +51,7 @@ export const sargento: DemoProduct = {
   price: "$4.36",
   priceCents: 436,
   category: "cheddar",
-  image: "/dierbergs/products/cheese-sargento.png",
+  image: asset("/dierbergs/products/cheese-sargento.png"),
   aisle: "Aisle 12 - B"
 };
 
@@ -60,7 +62,7 @@ export const landOLakes: DemoProduct = {
   price: "$4.69",
   priceCents: 469,
   category: "cheddar",
-  image: "/dierbergs/products/cheese-landolakes.png",
+  image: asset("/dierbergs/products/cheese-landolakes.png"),
   aisle: "Aisle 12 - B"
 };
 
@@ -71,7 +73,7 @@ export const cabot: DemoProduct = {
   price: "$4.80",
   priceCents: 480,
   category: "cheddar",
-  image: "/dierbergs/products/cheese-cabot.png",
+  image: asset("/dierbergs/products/cheese-cabot.png"),
   aisle: "Aisle 12 - B"
 };
 
