@@ -17,6 +17,7 @@ npx next build
 mkdir -p demo-static
 cp -r out/_next out/dierbergs out/dierbergs-demo demo-static/
 cp out/404.html demo-static/404.html
+cp out/icon.png demo-static/icon.png
 # Served from the domain root, so the demo is also the index.
 cp out/dierbergs-demo/index.html demo-static/index.html
 

@@ -66,9 +66,50 @@ export function primeVoices(): void {
   };
 }
 
+// Resolving the in-flight utterance here matters: browsers routinely skip
+// onend for a cancelled utterance, and anything awaiting speak() would
+// otherwise stay blocked for seconds after the shopper interrupts.
+let finishActiveUtterance: (() => void) | null = null;
+
 export function cancelSpeech(): void {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+  try {
+    window.speechSynthesis.cancel();
+  } catch {
+    /* nothing to cancel */
+  }
+  const finish = finishActiveUtterance;
+  finishActiveUtterance = null;
+  finish?.();
+}
+
+export function describeSpeechError(kind: string): { line: string; hint: string } {
+  switch (kind) {
+    case "not-allowed":
+    case "service-not-allowed":
+      return {
+        line: "Your browser is blocking the microphone.",
+        hint: "Allow mic access for this site, then press the microphone again — or just type below."
+      };
+    case "no-speech":
+      return { line: "I didn't hear anything.", hint: "Press the microphone and try again, or type below." };
+    case "audio-capture":
+      return { line: "I can't reach a microphone.", hint: "Check the input device, or type below." };
+    case "network":
+    case "language-not-supported":
+    case "service-unavailable":
+      return {
+        line: "Voice recognition didn't connect in this browser.",
+        hint: "Microsoft Edge often blocks it. Type below, or open the demo in Chrome for voice."
+      };
+    case "aborted":
+      return { line: "Voice stopped.", hint: "Press the microphone to start again, or type below." };
+    default:
+      return {
+        line: "Voice isn't working in this browser.",
+        hint: "Type below, or open the demo in Chrome for voice."
+      };
+  }
 }
 
 // Never rejects and never hangs: a failed voice must not stall the conversation.
@@ -99,11 +140,12 @@ export function speak(text: string): Promise<void> {
       if (settled) return;
       settled = true;
       window.clearTimeout(guard);
+      if (finishActiveUtterance === finish) finishActiveUtterance = null;
       resolve();
     };
+    finishActiveUtterance = finish;
 
-    // Chrome drops onend when an utterance is cancelled mid-flight, which would
-    // otherwise leave the conversation loop waiting forever.
+    // Last resort for browsers that drop onend entirely on some voices.
     const guard = window.setTimeout(finish, 1200 + text.length * 90);
 
     utter.onend = finish;

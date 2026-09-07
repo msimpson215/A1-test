@@ -1,5 +1,6 @@
 "use client";
 
+import type { RefObject } from "react";
 import AxonOrb, { type OrbMood } from "./AxonOrb";
 import VoiceControl from "./VoiceControl";
 
@@ -10,6 +11,7 @@ type Props = {
   query: string;
   listening: boolean;
   voiceAvailable: boolean;
+  inputRef?: RefObject<HTMLInputElement | null>;
   onQueryChange: (value: string) => void;
   onSubmit: (text: string) => void;
   onToggleListen: () => void;
@@ -23,6 +25,7 @@ export default function AxonInteractionStrip({
   query,
   listening,
   voiceAvailable,
+  inputRef,
   onQueryChange,
   onSubmit,
   onToggleListen,
@@ -50,6 +53,7 @@ export default function AxonInteractionStrip({
       >
         <div className={`axon-strip-field${listening ? " is-listening" : ""}`}>
           <input
+            ref={inputRef}
             className="axon-strip-input"
             value={query}
             disabled={disabled}

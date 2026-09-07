@@ -15,6 +15,7 @@ import { asset } from "@/lib/asset-base";
 import { parseIntent } from "@/lib/dierbergs-demo-intents";
 import {
   cancelSpeech,
+  describeSpeechError,
   primeVoices,
   speak,
   speechRecognitionAvailable,
@@ -31,6 +32,12 @@ import type { OrbMood } from "./AxonOrb";
 
 export type DemoPhase = "idle" | "active" | "adding";
 export type MerchView = null | "staples" | "cheddars";
+
+// Left on deliberately: this demo is driven on machines we cannot attach a
+// debugger to, so the console is the only trace of where a run stopped.
+function log(...parts: unknown[]) {
+  if (typeof console !== "undefined") console.info("[Your Shopper]", ...parts);
+}
 
 const WELCOME = "Welcome to Dierbergs. How can I help you today?";
 const SUBLINE =
@@ -55,6 +62,7 @@ export default function DierbergsDemo() {
   const cartRef = useRef<HTMLDivElement>(null);
   const imgRefs = useRef<Record<string, HTMLImageElement | null>>({});
   const recRef = useRef<SpeechRecognition | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const pendingAdd = useRef<DemoProduct | null>(null);
   const voiceAvailable = speechRecognitionAvailable();
 
@@ -67,13 +75,14 @@ export default function DierbergsDemo() {
 
   useEffect(() => {
     primeVoices();
+    log("ready", { voiceRecognition: speechRecognitionAvailable(), userAgent: navigator.userAgent });
   }, []);
 
-  const say = useCallback(async (line: string, sub?: string) => {
+  const say = useCallback(async (line: string, sub?: string, spoken?: string) => {
     setPrompt(line);
     if (sub !== undefined) setHint(sub);
     setMood("speaking");
-    await speak(line);
+    await speak(spoken ?? line);
     setMood("resting");
   }, []);
 
@@ -129,6 +138,7 @@ export default function DierbergsDemo() {
   const handleUtterance = useCallback(
     async (text: string) => {
       const intent = parseIntent(text);
+      log("heard", JSON.stringify(text), "->", intent);
       setQuery(text);
       setBusy(true);
       setMood("thinking");
@@ -177,6 +187,7 @@ export default function DierbergsDemo() {
       }
 
       setBusy(false);
+      log("done", intent);
     },
     [addProduct, say, view]
   );
@@ -198,6 +209,7 @@ export default function DierbergsDemo() {
       return;
     }
 
+    log("listening");
     setListening(true);
     recRef.current = startListening({
       onInterim: (text) => setQuery(text),
@@ -209,16 +221,13 @@ export default function DierbergsDemo() {
       onError: (kind) => {
         recRef.current = null;
         setListening(false);
-        if (kind === "not-allowed" || kind === "service-not-allowed") {
-          setVoiceMode(false);
-          setPrompt("Chrome is blocking the microphone.");
-          setHint("Allow mic access for this site, then press the microphone again.");
-        } else if (kind === "no-speech") {
-          setHint("I didn't hear anything. Press the microphone and try again.");
-          setVoiceMode(false);
-        } else {
-          setVoiceMode(false);
-        }
+        setVoiceMode(false);
+        // Voice failing must never look like the shopper stopped working.
+        const { line, hint: help } = describeSpeechError(kind);
+        log("recognition error", kind);
+        setPrompt(line);
+        setHint(help);
+        inputRef.current?.focus();
       },
       onEnd: () => {
         recRef.current = null;
@@ -241,8 +250,13 @@ export default function DierbergsDemo() {
     if (phase !== "idle") return;
     setPhase("active");
     setBusy(true);
-    await say(WELCOME, SUBLINE);
-    await speak("I'm a conversational shopper, so just tell me what you need.");
+    // One utterance, not two: cancelling a queued second line is unreliable, and
+    // a shopper who interrupts the greeting must be listened to immediately.
+    await say(
+      WELCOME,
+      SUBLINE,
+      `${WELCOME} I'm a conversational shopper, so just tell me what you need.`
+    );
     setBusy(false);
   }
 
@@ -306,6 +320,7 @@ export default function DierbergsDemo() {
                   query={query}
                   listening={listening}
                   voiceAvailable={voiceAvailable}
+                  inputRef={inputRef}
                   onQueryChange={setQuery}
                   onSubmit={handleUtterance}
                   onToggleListen={toggleListen}
