@@ -1,143 +1,279 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import {
-  alsoRequestedProducts,
+  bread,
   borden,
   cheddarProducts,
+  milk,
   staplesProducts,
   type DemoProduct
 } from "@/data/dierbergs-demo-products";
 import { asset } from "@/lib/asset-base";
 import { parseIntent } from "@/lib/dierbergs-demo-intents";
-import { speak } from "@/lib/dierbergs-speech";
+import {
+  cancelSpeech,
+  primeVoices,
+  speak,
+  speechRecognitionAvailable,
+  startListening,
+  stopListening
+} from "@/lib/dierbergs-speech";
 import DierbergsStaticBackground from "./DierbergsStaticBackground";
 import AxonNavControl from "./AxonNavControl";
 import AxonInteractionStrip from "./AxonInteractionStrip";
 import AxonMerchandiseStage from "./AxonMerchandiseStage";
-import AxonOrb from "./AxonOrb";
 import DierbergsCartOverlay from "./DierbergsCartOverlay";
 import FlyingCartItem from "./FlyingCartItem";
 import type { OrbMood } from "./AxonOrb";
 
-export type DemoState =
-  | "idle"
-  | "axonActive"
-  | "staples"
-  | "cheddars"
-  | "adding"
-  | "cartUpdated";
+export type DemoPhase = "idle" | "active" | "adding";
+export type MerchView = null | "staples" | "cheddars";
+
+const WELCOME = "Welcome to Dierbergs. How can I help you today?";
+const SUBLINE =
+  "Conversational AI, not a chatbot — ask for anything in the store and the shelves come to you.";
 
 export default function DierbergsDemo() {
-  const [state, setState] = useState<DemoState>("idle");
+  const [phase, setPhase] = useState<DemoPhase>("idle");
+  const [view, setView] = useState<MerchView>(null);
   const [query, setQuery] = useState("");
-  const [prompt, setPrompt] = useState("Welcome to Dierbergs. How can I help you today?");
+  const [prompt, setPrompt] = useState(WELCOME);
+  const [hint, setHint] = useState(SUBLINE);
+  const [merchHeading, setMerchHeading] = useState("");
   const [mood, setMood] = useState<OrbMood>("resting");
+  const [voiceMode, setVoiceMode] = useState(false);
   const [listening, setListening] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [cartTotalCents, setCartTotalCents] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [cart, setCart] = useState<DemoProduct[]>([]);
   const [pulse, setPulse] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [flight, setFlight] = useState<{ src: string; from: DOMRect; to: DOMRect } | null>(null);
 
   const cartRef = useRef<HTMLDivElement>(null);
-  const bordenImgRef = useRef<HTMLImageElement | null>(null);
+  const imgRefs = useRef<Record<string, HTMLImageElement | null>>({});
+  const recRef = useRef<SpeechRecognition | null>(null);
+  const pendingAdd = useRef<DemoProduct | null>(null);
+  const voiceAvailable = speechRecognitionAvailable();
 
-  const axonOn = state !== "idle";
-  const merchOn = state === "staples" || state === "cheddars" || state === "adding" || state === "cartUpdated";
-  const merchMode = state === "cheddars" || state === "adding" || state === "cartUpdated" ? "cheddars" : merchOn ? "staples" : null;
-  const merchProducts: DemoProduct[] = merchMode === "cheddars" ? cheddarProducts : staplesProducts;
+  const axonOn = phase !== "idle";
+  const cartIds = cart.map((p) => p.id);
+  const cartTotalCents = cart.reduce((sum, p) => sum + p.priceCents, 0);
+  const merchProducts = view === "cheddars" ? cheddarProducts : staplesProducts;
+  // Milk and bread stay reachable as reminders once the grid pivots to cheddar.
+  const alsoRequested = view === "cheddars" ? [milk, bread] : [];
+
+  useEffect(() => {
+    primeVoices();
+  }, []);
+
+  const say = useCallback(async (line: string, sub?: string) => {
+    setPrompt(line);
+    if (sub !== undefined) setHint(sub);
+    setMood("speaking");
+    await speak(line);
+    setMood("resting");
+  }, []);
+
+  const setProductImage = useCallback((id: string, node: HTMLImageElement | null) => {
+    imgRefs.current[id] = node;
+  }, []);
+
+  const addProduct = useCallback(
+    async (product: DemoProduct) => {
+      if (cartIds.includes(product.id)) {
+        await say(`${product.shortName} is already in your cart.`, SUBLINE);
+        return;
+      }
+      const img = imgRefs.current[product.id];
+      const cartEl = cartRef.current;
+      if (!img || !cartEl) return;
+
+      setSelectedId(product.id);
+      setPhase("adding");
+      setPrompt(`Adding ${product.shortName}.`);
+      setHint("Watch the cart.");
+      pendingAdd.current = product;
+      setFlight({
+        src: product.image,
+        from: img.getBoundingClientRect(),
+        to: cartEl.getBoundingClientRect()
+      });
+    },
+    [cartIds, say]
+  );
+
+  const onFlightDone = useCallback(async () => {
+    const product = pendingAdd.current;
+    pendingAdd.current = null;
+    setFlight(null);
+    if (!product) return;
+
+    const next = [...cart, product];
+    setCart(next);
+    setPulse(true);
+    setPhase("active");
+    window.setTimeout(() => setPulse(false), 240);
+
+    const total = next.reduce((sum, p) => sum + p.priceCents, 0);
+    const count = `${next.length} ${next.length === 1 ? "item" : "items"}`;
+    await say(
+      `${product.shortName} is in your cart.`,
+      `Cart: ${count}, $${(total / 100).toFixed(2)}. Anything else?`
+    );
+    setSelectedId(null);
+  }, [cart, say]);
+
+  const handleUtterance = useCallback(
+    async (text: string) => {
+      const intent = parseIntent(text);
+      setQuery(text);
+      setBusy(true);
+      setMood("thinking");
+      await new Promise((r) => setTimeout(r, 260));
+
+      switch (intent) {
+        case "REQUEST_STAPLES":
+          setView("staples");
+          setMerchHeading("Here are a few good matches.");
+          await say("Sure. Here are a few good matches.", "Ask me to narrow it down, or say what to add.");
+          break;
+
+        case "REQUEST_CHEDDARS":
+          setView("cheddars");
+          setMerchHeading("Here are four cheddar options.");
+          await say("Here are four cheddar options.", "Milk and bread are still on your list.");
+          break;
+
+        case "ADD_CHEESE":
+          if (!view) setView("staples");
+          await addProduct(borden);
+          break;
+
+        case "ADD_MILK":
+          if (!view) setView("staples");
+          await addProduct(milk);
+          break;
+
+        case "ADD_BREAD":
+          if (!view) setView("staples");
+          await addProduct(bread);
+          break;
+
+        case "CAPABILITIES":
+          await say(
+            "I'm a conversational shopper built into Dierbergs.",
+            "Ask for groceries the way you'd ask a person — the aisles rearrange around you."
+          );
+          break;
+
+        default:
+          await say(
+            "I didn't catch a grocery in that.",
+            "Try: I need milk, bread and cheese."
+          );
+      }
+
+      setBusy(false);
+    },
+    [addProduct, say, view]
+  );
+
+  // Held in a ref so a state change mid-sentence cannot tear down and restart
+  // the recogniser, which would swallow whatever the shopper was saying.
+  const utteranceHandler = useRef(handleUtterance);
+  useEffect(() => {
+    utteranceHandler.current = handleUtterance;
+  }, [handleUtterance]);
+
+  // One microphone press opens a running conversation: listen, answer, listen
+  // again, without making the shopper click between every request.
+  useEffect(() => {
+    if (!voiceMode || busy || phase === "adding") {
+      stopListening(recRef.current);
+      recRef.current = null;
+      setListening(false);
+      return;
+    }
+
+    setListening(true);
+    recRef.current = startListening({
+      onInterim: (text) => setQuery(text),
+      onFinal: (text) => {
+        recRef.current = null;
+        setListening(false);
+        void utteranceHandler.current(text);
+      },
+      onError: (kind) => {
+        recRef.current = null;
+        setListening(false);
+        if (kind === "not-allowed" || kind === "service-not-allowed") {
+          setVoiceMode(false);
+          setPrompt("Chrome is blocking the microphone.");
+          setHint("Allow mic access for this site, then press the microphone again.");
+        } else if (kind === "no-speech") {
+          setHint("I didn't hear anything. Press the microphone and try again.");
+          setVoiceMode(false);
+        } else {
+          setVoiceMode(false);
+        }
+      },
+      onEnd: () => {
+        recRef.current = null;
+        setListening(false);
+      }
+    });
+
+    return () => {
+      stopListening(recRef.current);
+      recRef.current = null;
+    };
+  }, [voiceMode, busy, phase]);
 
   useEffect(() => {
     if (listening) setMood("listening");
     else if (mood === "listening") setMood("resting");
-  }, [listening]);
+  }, [listening, mood]);
 
   async function activate() {
-    if (state !== "idle") return;
-    setState("axonActive");
-    setPrompt("Welcome to Dierbergs. How can I help you today?");
-    setMood("speaking");
-    await speak("Welcome to Dierbergs. How can I help you today? What can I find for you?");
-    setMood("resting");
+    if (phase !== "idle") return;
+    setPhase("active");
+    setBusy(true);
+    await say(WELCOME, SUBLINE);
+    await speak("I'm a conversational shopper, so just tell me what you need.");
+    setBusy(false);
   }
 
-  async function handleUtterance(text: string) {
-    const intent = parseIntent(text);
-    setQuery(text);
-    setMood("thinking");
-    await new Promise((r) => setTimeout(r, 280));
-
-    if (intent === "REQUEST_STAPLES" && (state === "axonActive" || state === "staples" || state === "idle" || state === "cartUpdated")) {
-      if (state === "idle") setState("axonActive");
-      setPrompt("Sure. Here are a few good matches.");
-      setState("staples");
-      setMood("speaking");
-      await speak("Sure. Here are a few good matches.");
-      setMood("resting");
-      return;
-    }
-
-    if (intent === "REQUEST_CHEDDARS" && (state === "staples" || state === "cheddars" || state === "axonActive")) {
-      setPrompt("Here are four cheddar options.");
-      setState("cheddars");
-      setMood("speaking");
-      await speak("Here are four cheddar options.");
-      setMood("resting");
-      return;
-    }
-
-    if (intent === "SELECT_BORDEN" && (state === "cheddars" || state === "staples" || state === "cartUpdated")) {
-      addBorden();
-      return;
-    }
-
-    setPrompt("For this demo, try asking me for milk, bread and cheese.");
-    setMood("speaking");
-    await speak("For this demo, try asking me for milk, bread and cheese.");
-    setMood("resting");
-  }
-
-  function addBorden() {
-    const img = bordenImgRef.current;
-    const cart = cartRef.current;
-    if (!img || !cart) return;
-    setSelectedId(borden.id);
-    setState("adding");
-    setPrompt("Adding Borden Extra Sharp Cheddar.");
-    setFlight({
-      src: borden.image,
-      from: img.getBoundingClientRect(),
-      to: cart.getBoundingClientRect()
-    });
-  }
-
-  function onFlightDone() {
-    setFlight(null);
-    setCartCount(1);
-    setCartTotalCents(391);
-    setPulse(true);
-    setState("cartUpdated");
-    setMood("resting");
-    window.setTimeout(() => setPulse(false), 220);
+  function toggleListen() {
+    if (!voiceAvailable) return;
+    cancelSpeech();
+    setVoiceMode((on) => !on);
   }
 
   function reset() {
-    setState("idle");
+    cancelSpeech();
+    stopListening(recRef.current);
+    recRef.current = null;
+    pendingAdd.current = null;
+    setPhase("idle");
+    setView(null);
     setQuery("");
-    setPrompt("Welcome to Dierbergs. How can I help you today?");
+    setPrompt(WELCOME);
+    setHint(SUBLINE);
+    setMerchHeading("");
     setMood("resting");
+    setVoiceMode(false);
     setListening(false);
-    setCartCount(0);
-    setCartTotalCents(0);
+    setBusy(false);
+    setCart([]);
     setPulse(false);
     setSelectedId(null);
     setFlight(null);
   }
 
-  const { axonStrip, merchandiseStage, cartPatch } = dierbergsLayout;
+  const { axonStrip, stripFiller, merchandiseStage, cartPatch } = dierbergsLayout;
 
   return (
     <div className="demo-page">
@@ -148,32 +284,44 @@ export default function DierbergsDemo() {
 
         <div className="db-cart-patch" style={{ left: cartPatch.left, top: cartPatch.top, width: cartPatch.width, height: cartPatch.height }} />
         <div className="db-cart-slot" style={{ left: cartPatch.left, top: cartPatch.top, width: cartPatch.width, height: cartPatch.height }}>
-          <DierbergsCartOverlay ref={cartRef} count={cartCount} totalCents={cartTotalCents} pulse={pulse} />
+          <DierbergsCartOverlay ref={cartRef} count={cart.length} totalCents={cartTotalCents} pulse={pulse} />
         </div>
 
         <AnimatePresence>
           {axonOn ? (
-            <motion.div
-              className="axon-strip-slot"
-              style={{ left: axonStrip.left, top: axonStrip.top, width: axonStrip.width, height: axonStrip.height }}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.32 }}
-            >
-              <div className="axon-strip-orb">
-                <AxonOrb size={34} mood={mood} />
-              </div>
-              <AxonInteractionStrip
-                prompt={prompt}
-                hint={state === "axonActive" ? "What can I find for you?" : undefined}
-                query={query}
-                onQueryChange={setQuery}
-                onSubmit={handleUtterance}
-                onListeningChange={setListening}
-                disabled={state === "adding"}
+            <>
+              <motion.div
+                key="strip"
+                className="axon-strip-slot"
+                style={{ left: axonStrip.left, top: axonStrip.top, width: axonStrip.width, height: axonStrip.height }}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.32 }}
+              >
+                <AxonInteractionStrip
+                  prompt={prompt}
+                  hint={hint}
+                  mood={mood}
+                  query={query}
+                  listening={listening}
+                  voiceAvailable={voiceAvailable}
+                  onQueryChange={setQuery}
+                  onSubmit={handleUtterance}
+                  onToggleListen={toggleListen}
+                  disabled={phase === "adding"}
+                />
+              </motion.div>
+              <motion.div
+                key="filler"
+                className="axon-strip-filler"
+                style={{ left: stripFiller.left, top: stripFiller.top, width: stripFiller.width, height: stripFiller.height }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.32 }}
               />
-            </motion.div>
+            </>
           ) : null}
         </AnimatePresence>
 
@@ -184,25 +332,25 @@ export default function DierbergsDemo() {
             top: merchandiseStage.top,
             width: merchandiseStage.width,
             height: merchandiseStage.height,
-            pointerEvents: merchOn ? "auto" : "none"
+            pointerEvents: view ? "auto" : "none"
           }}
         >
           <AxonMerchandiseStage
-            visible={merchOn}
-            mode={merchMode}
-            heading={merchOn ? prompt : ""}
+            visible={view !== null}
+            mode={view}
+            heading={merchHeading}
             products={merchProducts}
-            alsoRequested={alsoRequestedProducts}
+            alsoRequested={alsoRequested}
             selectedId={selectedId}
-            onBordenImage={(node) => {
-              bordenImgRef.current = node;
-            }}
+            cartIds={cartIds}
+            onProductImage={setProductImage}
+            onAdd={(p) => void addProduct(p)}
           />
         </div>
       </div>
 
       {flight ? (
-        <FlyingCartItem src={flight.src} from={flight.from} to={flight.to} onComplete={onFlightDone} />
+        <FlyingCartItem src={flight.src} from={flight.from} to={flight.to} onComplete={() => void onFlightDone()} />
       ) : null}
 
       <button type="button" className="reset-demo" onClick={reset}>

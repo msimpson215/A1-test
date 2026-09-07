@@ -1,8 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
-import AxonOrb from "./AxonOrb";
 
 type Props = {
   active: boolean;
@@ -10,44 +9,32 @@ type Props = {
 };
 
 export default function AxonNavControl({ active, onActivate }: Props) {
-  const { axonNav } = dierbergsLayout;
+  const { shopperNav } = dierbergsLayout;
   return (
     <div
-      className="axon-nav"
+      className="shopper-nav"
       style={{
-        left: axonNav.left,
-        top: axonNav.top,
-        width: axonNav.width,
-        height: axonNav.height
+        left: shopperNav.left,
+        top: shopperNav.top,
+        width: shopperNav.width,
+        height: shopperNav.height
       }}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        {active ? (
-          <motion.div
-            key="orb"
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: [0.7, 1.12, 1] }}
-            exit={{ opacity: 0, scale: 0.85 }}
-            transition={{ duration: 0.38 }}
-            className="axon-nav-orb-wrap"
-          >
-            <AxonOrb size={36} mood="resting" />
-          </motion.div>
-        ) : (
-          <motion.button
-            key="label"
-            type="button"
-            className="axon-nav-label"
-            onClick={onActivate}
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.32 }}
-          >
-            AXON AI
-          </motion.button>
-        )}
-      </AnimatePresence>
+      <motion.button
+        type="button"
+        className={`shopper-nav-pill${active ? " is-active" : ""}`}
+        onClick={onActivate}
+        animate={active ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+        transition={{ duration: 0.36 }}
+      >
+        <svg className="shopper-nav-ico" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M7 18a2 2 0 102 2 2 2 0 00-2-2zm10 0a2 2 0 102 2 2 2 0 00-2-2zM6.2 6l1.6 7.2a1 1 0 001 .8h8.6a1 1 0 001-.76L20 7.5H7.4l-.3-1.3A1 1 0 006.1 5.4H3.5v1.4z"
+          />
+        </svg>
+        Your Shopper
+      </motion.button>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { asset } from "@/lib/asset-base";
 export type DemoProduct = {
   id: string;
   name: string;
+  shortName: string;
   size: string;
   price: string;
   priceCents: number;
@@ -14,6 +15,7 @@ export type DemoProduct = {
 export const milk: DemoProduct = {
   id: "dierbergs-milk-1",
   name: "Dierbergs 1% Milk - Gallon",
+  shortName: "Dierbergs 1% Milk",
   size: "128 oz",
   price: "$4.39",
   priceCents: 439,
@@ -25,6 +27,7 @@ export const milk: DemoProduct = {
 export const bread: DemoProduct = {
   id: "bunny-white-bread",
   name: "Bunny Bread Original Soft-Twist White Enriched Bread",
+  shortName: "Bunny Bread Original",
   size: "16 oz",
   price: "$2.09",
   priceCents: 209,
@@ -36,6 +39,7 @@ export const bread: DemoProduct = {
 export const borden: DemoProduct = {
   id: "borden-extra-sharp",
   name: "Borden Finely Shredded Cheese - Extra Sharp Cheddar",
+  shortName: "Borden Extra Sharp Cheddar",
   size: "7 oz",
   price: "$3.91",
   priceCents: 391,
@@ -47,6 +51,7 @@ export const borden: DemoProduct = {
 export const sargento: DemoProduct = {
   id: "sargento-sharp",
   name: "Sargento Ultra Thin Sharp Cheddar Sliced Cheese",
+  shortName: "Sargento Sharp Cheddar",
   size: "6.84 oz",
   price: "$4.36",
   priceCents: 436,
@@ -58,6 +63,7 @@ export const sargento: DemoProduct = {
 export const landOLakes: DemoProduct = {
   id: "land-o-lakes-extra-sharp",
   name: "Land O Lakes Cheese, Extra Sharp White Cheddar",
+  shortName: "Land O Lakes Extra Sharp",
   size: "8 oz",
   price: "$4.69",
   priceCents: 469,
@@ -69,6 +75,7 @@ export const landOLakes: DemoProduct = {
 export const cabot: DemoProduct = {
   id: "cabot-extra-sharp",
   name: "Cabot Extra Sharp Cheddar Cheese Block",
+  shortName: "Cabot Extra Sharp Cheddar",
   size: "8 oz",
   price: "$4.80",
   priceCents: 480,

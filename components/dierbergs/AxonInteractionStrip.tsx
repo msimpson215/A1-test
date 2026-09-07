@@ -1,35 +1,44 @@
 "use client";
 
-import { useRef } from "react";
+import AxonOrb, { type OrbMood } from "./AxonOrb";
 import VoiceControl from "./VoiceControl";
 
 type Props = {
   prompt: string;
   hint?: string;
+  mood: OrbMood;
   query: string;
+  listening: boolean;
+  voiceAvailable: boolean;
   onQueryChange: (value: string) => void;
   onSubmit: (text: string) => void;
-  onListeningChange: (listening: boolean) => void;
+  onToggleListen: () => void;
   disabled?: boolean;
 };
 
 export default function AxonInteractionStrip({
   prompt,
   hint,
+  mood,
   query,
+  listening,
+  voiceAvailable,
   onQueryChange,
   onSubmit,
-  onListeningChange,
+  onToggleListen,
   disabled
 }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
   return (
     <div className="axon-strip">
+      <div className="axon-strip-orb">
+        <AxonOrb size={30} mood={mood} />
+      </div>
+
       <div className="axon-strip-copy">
         <p className="axon-strip-prompt">{prompt}</p>
         {hint ? <p className="axon-strip-hint">{hint}</p> : null}
       </div>
+
       <form
         className="axon-strip-form"
         onSubmit={(e) => {
@@ -39,27 +48,24 @@ export default function AxonInteractionStrip({
           onSubmit(text);
         }}
       >
-        <div className="axon-strip-field">
+        <div className={`axon-strip-field${listening ? " is-listening" : ""}`}>
           <input
-            ref={inputRef}
             className="axon-strip-input"
             value={query}
             disabled={disabled}
-            placeholder="What can I find for you?"
+            placeholder={listening ? "Listening…" : "What can I find for you?"}
             onChange={(e) => onQueryChange(e.target.value)}
           />
           <VoiceControl
+            available={voiceAvailable}
+            listening={listening}
             disabled={disabled}
-            onTranscript={(text) => {
-              onQueryChange(text);
-              onSubmit(text);
-            }}
-            onListeningChange={onListeningChange}
+            onToggle={onToggleListen}
           />
         </div>
         <button className="axon-strip-send" type="submit" disabled={disabled} aria-label="Send">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       </form>
