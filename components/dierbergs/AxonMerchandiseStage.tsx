@@ -8,6 +8,7 @@ import RequestedItemMiniCard from "./RequestedItemMiniCard";
 type Props = {
   visible: boolean;
   mode: "staples" | "cheddars" | null;
+  heading: string;
   products: DemoProduct[];
   alsoRequested: DemoProduct[];
   selectedId: string | null;
@@ -17,6 +18,7 @@ type Props = {
 export default function AxonMerchandiseStage({
   visible,
   mode,
+  heading,
   products,
   alsoRequested,
   selectedId,
@@ -46,7 +48,9 @@ export default function AxonMerchandiseStage({
             </motion.aside>
           ) : null}
 
-          <div className={`merch-grid merch-grid-${mode || "staples"}`}>
+          <div className="merch-main">
+            {heading ? <h2 className="merch-heading">{heading}</h2> : null}
+            <div className={`merch-grid merch-grid-${mode || "staples"}`}>
             {products.map((p, i) => (
               <motion.div
                 key={p.id}
@@ -61,6 +65,7 @@ export default function AxonMerchandiseStage({
                 />
               </motion.div>
             ))}
+            </div>
           </div>
         </motion.div>
       ) : null}

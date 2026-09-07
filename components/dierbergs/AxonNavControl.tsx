@@ -26,7 +26,7 @@ export default function AxonNavControl({ active, onActivate }: Props) {
           <motion.div
             key="orb"
             initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1, scale: [0.7, 1.12, 1] }}
             exit={{ opacity: 0, scale: 0.85 }}
             transition={{ duration: 0.38 }}
             className="axon-nav-orb-wrap"

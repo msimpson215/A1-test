@@ -65,7 +65,7 @@ export default function DierbergsDemo() {
 
   async function handleUtterance(text: string) {
     const intent = parseIntent(text);
-    setQuery("");
+    setQuery(text);
     setMood("thinking");
     await new Promise((r) => setTimeout(r, 280));
 
@@ -165,6 +165,7 @@ export default function DierbergsDemo() {
               </div>
               <AxonInteractionStrip
                 prompt={prompt}
+                hint={state === "axonActive" ? "What can I find for you?" : undefined}
                 query={query}
                 onQueryChange={setQuery}
                 onSubmit={handleUtterance}
@@ -188,6 +189,7 @@ export default function DierbergsDemo() {
           <AxonMerchandiseStage
             visible={merchOn}
             mode={merchMode}
+            heading={merchOn ? prompt : ""}
             products={merchProducts}
             alsoRequested={alsoRequestedProducts}
             selectedId={selectedId}

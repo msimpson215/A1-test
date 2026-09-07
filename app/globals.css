@@ -128,12 +128,17 @@ body { min-height: 100vh; }
   gap: 18px;
   min-width: 0;
 }
-.axon-strip-copy { min-width: 280px; max-width: 420px; }
+.axon-strip-copy { min-width: 280px; max-width: 440px; }
 .axon-strip-prompt {
   margin: 0;
   font-size: 14px;
   line-height: 1.35;
   color: var(--db-ink);
+}
+.axon-strip-hint {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--db-muted);
 }
 .axon-strip-form {
   flex: 1;
@@ -142,12 +147,17 @@ body { min-height: 100vh; }
   gap: 8px;
   min-width: 0;
 }
-.axon-strip-input {
+.axon-strip-field {
   flex: 1;
-  height: 40px;
+  position: relative;
+  min-width: 0;
+}
+.axon-strip-input {
+  width: 100%;
+  height: 42px;
   border: 1px solid #d7d7d7;
   border-radius: 999px;
-  padding: 0 16px;
+  padding: 0 42px 0 16px;
   font: 400 14px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: var(--db-ink);
   background: #fff;
@@ -156,22 +166,38 @@ body { min-height: 100vh; }
   outline: none;
   border-color: #b3b3b3;
 }
-.axon-mic, .axon-strip-send {
-  height: 40px;
-  border: 1px solid #d7d7d7;
-  background: #fff;
-  border-radius: 999px;
-  cursor: pointer;
-  color: var(--db-ink);
+.axon-strip-field .axon-mic {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--db-muted);
 }
-.axon-mic { width: 40px; display: grid; place-items: center; }
-.axon-mic:disabled { opacity: 0.45; cursor: default; }
+.axon-mic { cursor: pointer; }
 .axon-strip-send {
-  padding: 0 16px;
-  font: 600 13px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
   background: var(--db-red);
-  border-color: var(--db-red);
   color: #fff;
+}
+.axon-strip-send:disabled { opacity: 0.5; cursor: default; }
+
+.merch-main { flex: 1; min-width: 0; }
+.merch-heading {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* CART */
