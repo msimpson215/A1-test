@@ -7,7 +7,7 @@ import RequestedItemMiniCard from "./RequestedItemMiniCard";
 
 type Props = {
   visible: boolean;
-  mode: "staples" | "cheddars" | null;
+  mode: "milk" | "bread" | "staples" | "cheddars" | null;
   heading: string;
   products: DemoProduct[];
   alsoRequested: DemoProduct[];
@@ -42,7 +42,7 @@ export default function AxonMerchandiseStage({
         >
           <div className="merch-main">
             {heading ? <h2 className="merch-heading">{heading}</h2> : null}
-            <div className={`merch-grid merch-grid-${mode || "staples"}`}>
+            <div className={`merch-grid merch-grid-${mode === "cheddars" ? "cheddars" : "staples"}`}>
               {products.map((p, i) => (
                 <motion.div
                   key={p.id}

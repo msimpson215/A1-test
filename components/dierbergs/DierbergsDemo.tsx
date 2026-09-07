@@ -33,7 +33,7 @@ import FlyingCartItem from "./FlyingCartItem";
 import type { OrbMood } from "./AxonOrb";
 
 export type DemoPhase = "idle" | "active" | "adding";
-export type MerchView = null | "staples" | "cheddars";
+export type MerchView = null | "milk" | "bread" | "staples" | "cheddars";
 
 // Left on deliberately: this demo is driven on machines we cannot attach a
 // debugger to, so the console is the only trace of where a run stopped.
@@ -44,8 +44,7 @@ function log(...parts: unknown[]) {
 const BUILD = process.env.NEXT_PUBLIC_BUILD_STAMP || "dev";
 
 const WELCOME = "Welcome to Dierbergs. How can I help you today?";
-const SUBLINE =
-  "Conversational AI, not a chatbot — ask for anything in the store and the shelves come to you.";
+const SUBLINE = "Conversational AI, not a chatbot. Try saying: I need milk.";
 
 export default function DierbergsDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
@@ -75,7 +74,11 @@ export default function DierbergsDemo() {
   const axonOn = phase !== "idle";
   const cartIds = cart.map((p) => p.id);
   const cartTotalCents = cart.reduce((sum, p) => sum + p.priceCents, 0);
-  const merchProducts = view === "cheddars" ? cheddarProducts : staplesProducts;
+  const merchProducts =
+    view === "milk" ? [milk]
+    : view === "bread" ? [bread]
+    : view === "cheddars" ? cheddarProducts
+    : staplesProducts;
   // Milk and bread stay reachable as reminders once the grid pivots to cheddar.
   const alsoRequested = view === "cheddars" ? [milk, bread] : [];
 
@@ -152,51 +155,78 @@ export default function DierbergsDemo() {
       await new Promise((r) => setTimeout(r, 260));
 
       switch (intent) {
-        case "REQUEST_STAPLES":
-          setView("staples");
-          setMerchHeading("Here are a few good matches.");
-          await say("Sure. Here are a few good matches.", "Ask me to narrow it down, or say what to add.");
+        case "SHOW_MILK":
+          setView("milk");
+          setMerchHeading("Here's the milk.");
+          await say("Here's our milk.", "Say \u201Cadd it to my cart\u201D when you want it.");
           break;
 
-        case "REQUEST_CHEDDARS":
+        case "SHOW_BREAD":
+          setView("bread");
+          setMerchHeading("Here's the bread.");
+          await say("Here's our bread.", "Say \u201Cadd it to my cart\u201D when you want it.");
+          break;
+
+        case "SHOW_STAPLES":
+          setView("staples");
+          setMerchHeading("Here are a few good matches.");
+          await say("Sure. Here are a few good matches.", "Tell me which one to add.");
+          break;
+
+        case "SHOW_CHEDDARS":
           setView("cheddars");
           setMerchHeading("Here are four cheddar options.");
           await say("Here are four cheddar options.", "Milk and bread are still on your list.");
           break;
 
         case "ADD_CHEESE":
-          if (!view) setView("staples");
+          if (!view) setView("cheddars");
           await addProduct(borden);
           break;
 
         case "ADD_MILK":
-          if (!view) setView("staples");
+          if (!view) setView("milk");
           await addProduct(milk);
           break;
 
         case "ADD_BREAD":
-          if (!view) setView("staples");
+          if (!view) setView("bread");
           await addProduct(bread);
+          break;
+
+        // "add it to my cart" with nothing named: only actionable when one
+        // product is on the shelf, otherwise it is a guess.
+        case "ADD_CURRENT":
+          if (merchProducts.length === 1 && view) {
+            await addProduct(merchProducts[0]);
+          } else if (view) {
+            await say("Which one would you like?", "Name it and I'll add it.");
+          } else {
+            await say("Tell me what you're after first.", "Try: I need milk.");
+          }
           break;
 
         case "CAPABILITIES":
           await say(
-            "I'm a conversational shopper built into Dierbergs.",
-            "Ask for groceries the way you'd ask a person — the aisles rearrange around you."
+            "I'm a conversational shopper built into Dierbergs, not a chatbot.",
+            "Ask for a grocery the way you'd ask a person. Try: I need milk."
           );
           break;
 
         default:
           await say(
             "I didn't catch a grocery in that.",
-            "Try: I need milk, bread and cheese."
+            "Try: I need milk."
           );
       }
 
+      // Clear only once the answer is out, so the shopper sees what was heard
+      // while it is being handled, and a second request starts from empty.
+      setQuery("");
       setBusy(false);
       log("done", intent);
     },
-    [addProduct, say, view]
+    [addProduct, merchProducts, say, view]
   );
 
   // Held in a ref so a state change mid-sentence cannot tear down and restart
