@@ -83,11 +83,21 @@ check("page is taller than viewport (scrolls)", pageH > 900, `height ${pageH}`);
 /* Nav entry sits inside the nav row, immediately after Flowers & Gifts. */
 const pill = await page.$eval(".shopper-nav-pill", (el) => {
   const r = el.getBoundingClientRect();
-  return { text: el.innerText.trim(), left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top) };
+  return { text: el.innerText.trim(), left: Math.round(r.left), top: Math.round(r.top), height: Math.round(r.height) };
 });
 check("nav entry reads 'Your Shopper'", pill.text === "Your Shopper", pill.text);
-check("nav entry follows Flowers & Gifts", pill.left > 476 && pill.left < 560, `left ${pill.left}`);
-check("nav entry sits in the nav row", pill.top < 40, `top ${pill.top}`);
+// Measured off the storefront capture: links end at x 476, the gap between one
+// link and the next is 16-17px, and their text is optically centred on y 24.
+check(
+  "nav entry keeps the gap the other links use",
+  pill.left - 476 >= 15 && pill.left - 476 <= 18,
+  `${pill.left - 476}px after Flowers & Gifts`
+);
+check(
+  "nav entry sits on the same line as the other links",
+  Math.abs((pill.top + pill.height / 2) - 24) <= 1,
+  `centre y ${pill.top + pill.height / 2}`
+);
 check("no chatbot bubble", (await page.$(".bubble, .chatbot, .chat-window")) === null);
 check("cart starts empty", (await cart()) === "0 items $0.00", await cart());
 check("no interaction strip before activation", (await page.$(".axon-strip")) === null);
@@ -149,11 +159,9 @@ await type("I would like the milk now.");
 await new Promise((r) => setTimeout(r, 3000));
 check("second item accumulates to 2 items $8.30", (await cart()) === "2 items $8.30", await cart());
 
-/* Same conversation again, spoken rather than typed. */
+/* Same conversation again, spoken, and with no microphone press at all. */
 await page.click(".reset-demo");
 await new Promise((r) => setTimeout(r, 400));
-await page.click(".shopper-nav-pill");
-await new Promise((r) => setTimeout(r, 800));
 await page.evaluate(() => {
   window.__script = [
     "I need milk bread and cheese",
@@ -162,15 +170,17 @@ await page.evaluate(() => {
     "I would like the milk now"
   ];
 });
-await page.click(".axon-mic");
-// The stand-in recogniser answers in 200ms, far faster than a person speaking,
-// so catch the listening state on the way past rather than after a fixed wait.
+await page.click(".shopper-nav-pill");
+// It has to start listening off the back of the greeting. Waiting on a
+// microphone press reads as being greeted and then ignored.
 let sawListening = false;
-for (let i = 0; i < 12 && !sawListening; i += 1) {
-  sawListening = await page.$eval(".axon-mic", (el) => el.className.includes("is-listening"));
-  if (!sawListening) await new Promise((r) => setTimeout(r, 15));
+for (let i = 0; i < 120 && !sawListening; i += 1) {
+  if (await page.$(".axon-mic")) {
+    sawListening = await page.$eval(".axon-mic", (el) => el.className.includes("is-listening"));
+  }
+  if (!sawListening) await new Promise((r) => setTimeout(r, 50));
 }
-check("microphone shows a listening state", sawListening);
+check("listens on its own after the greeting, with no mic press", sawListening);
 for (let i = 0; i < 50; i += 1) {
   await new Promise((r) => setTimeout(r, 400));
   if ((await page.evaluate(() => window.__script.length)) === 0) break;
@@ -178,7 +188,7 @@ for (let i = 0; i < 50; i += 1) {
 await new Promise((r) => setTimeout(r, 4000));
 check("hands-free voice run reaches 2 items $8.30", (await cart()) === "2 items $8.30", await cart());
 check(
-  "voice run needed only the one microphone press",
+  "voice run needed no microphone press at all",
   (await page.evaluate(() => window.__spoken.length)) >= 6,
   `${await page.evaluate(() => window.__spoken.length)} spoken lines`
 );

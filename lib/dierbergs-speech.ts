@@ -20,50 +20,66 @@ export function speechRecognitionAvailable(): boolean {
 const PREFERRED_VOICES = [
   "Google US English",
   "Microsoft Aria Online (Natural) - English (United States)",
+  "Microsoft Ava Online (Natural) - English (United States)",
+  "Microsoft Emma Online (Natural) - English (United States)",
   "Microsoft Jenny Online (Natural) - English (United States)",
   "Microsoft Michelle Online (Natural) - English (United States)",
+  "Microsoft Andrew Online (Natural) - English (United States)",
+  "Microsoft Brian Online (Natural) - English (United States)",
   "Samantha",
   "Ava (Premium)",
   "Ava",
   "Allison",
-  "Susan",
-  "Microsoft Zira - English (United States)"
+  "Susan"
 ];
-
-let cachedVoice: SpeechSynthesisVoice | null = null;
 
 function scoreVoice(v: SpeechSynthesisVoice): number {
   const index = PREFERRED_VOICES.indexOf(v.name);
   if (index !== -1) return 1000 - index;
   if (!v.lang.toLowerCase().startsWith("en")) return -1000;
   let score = 0;
-  // Network-backed voices are the neural ones; local voices are the robotic ones.
+  // Network-backed neural voices are the human-sounding ones; the local
+  // built-ins are the flat robotic ones this demo must avoid.
+  if (/online \(natural\)|neural/i.test(v.name)) score += 120;
   if (!v.localService) score += 60;
-  if (/natural|neural|premium|enhanced/i.test(v.name)) score += 40;
+  if (/natural|premium|enhanced/i.test(v.name)) score += 40;
   if (/google/i.test(v.name)) score += 30;
   if (/en[-_]us/i.test(v.lang)) score += 20;
-  if (/espeak|compact|robot/i.test(v.name)) score -= 200;
+  if (/espeak|compact|desktop|robot/i.test(v.name)) score -= 200;
   return score;
 }
 
 export function bestVoice(): SpeechSynthesisVoice | null {
   if (typeof window === "undefined" || !window.speechSynthesis) return null;
-  if (cachedVoice) return cachedVoice;
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return null;
-  const ranked = [...voices].sort((a, b) => scoreVoice(b) - scoreVoice(a));
-  cachedVoice = ranked[0] ?? null;
-  return cachedVoice;
+  // Re-ranked every time rather than cached: browsers populate the list
+  // progressively, and an early pick strands us on whatever loaded first.
+  return [...voices].sort((a, b) => scoreVoice(b) - scoreVoice(a))[0] ?? null;
 }
 
-// getVoices() is empty until Chrome loads the list asynchronously.
+// getVoices() is empty until the browser loads the list asynchronously, and
+// speaking before then falls back to the default robotic voice.
+function voicesReady(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return resolve();
+    if (window.speechSynthesis.getVoices().length) return resolve();
+
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(timer);
+      resolve();
+    };
+    const timer = window.setTimeout(finish, 1000);
+    window.speechSynthesis.onvoiceschanged = finish;
+  });
+}
+
 export function primeVoices(): void {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
-  bestVoice();
-  window.speechSynthesis.onvoiceschanged = () => {
-    cachedVoice = null;
-    bestVoice();
-  };
+  void voicesReady();
 }
 
 // Resolving the in-flight utterance here matters: browsers routinely skip
@@ -71,7 +87,12 @@ export function primeVoices(): void {
 // otherwise stay blocked for seconds after the shopper interrupts.
 let finishActiveUtterance: (() => void) | null = null;
 
+// Bumped on cancel so an utterance still waiting on the voice list is dropped
+// rather than starting to talk after the shopper has moved on.
+let speechEpoch = 0;
+
 export function cancelSpeech(): void {
+  speechEpoch += 1;
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   try {
     window.speechSynthesis.cancel();
@@ -113,7 +134,11 @@ export function describeSpeechError(kind: string): { line: string; hint: string 
 }
 
 // Never rejects and never hangs: a failed voice must not stall the conversation.
-export function speak(text: string): Promise<void> {
+export async function speak(text: string): Promise<void> {
+  const startedAt = speechEpoch;
+  await voicesReady();
+  if (speechEpoch !== startedAt) return;
+
   return new Promise((resolve) => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
       resolve();
@@ -131,6 +156,7 @@ export function speak(text: string): Promise<void> {
       utter.voice = voice;
       utter.lang = voice.lang;
     }
+    console.info("[Your Shopper] speaking with", voice?.name ?? "browser default");
     utter.rate = 0.98;
     utter.pitch = 1.02;
     utter.volume = 1;

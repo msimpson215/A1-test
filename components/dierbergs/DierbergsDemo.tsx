@@ -258,12 +258,28 @@ export default function DierbergsDemo() {
       `${WELCOME} I'm a conversational shopper, so just tell me what you need.`
     );
     setBusy(false);
+    // Start listening without being asked. Waiting on a microphone press reads
+    // as the shopper greeting you and then ignoring you.
+    if (voiceAvailable) {
+      log("auto-listening after greeting");
+      setVoiceMode(true);
+    }
   }
 
   function toggleListen() {
     if (!voiceAvailable) return;
     cancelSpeech();
     setVoiceMode((on) => !on);
+  }
+
+  // Typing takes over from the microphone, so an open mic cannot inject room
+  // noise into what is being written.
+  function onQueryTyped(value: string) {
+    if (voiceMode) {
+      cancelSpeech();
+      setVoiceMode(false);
+    }
+    setQuery(value);
   }
 
   function reset() {
@@ -321,7 +337,7 @@ export default function DierbergsDemo() {
                   listening={listening}
                   voiceAvailable={voiceAvailable}
                   inputRef={inputRef}
-                  onQueryChange={setQuery}
+                  onQueryChange={onQueryTyped}
                   onSubmit={handleUtterance}
                   onToggleListen={toggleListen}
                   disabled={phase === "adding"}
