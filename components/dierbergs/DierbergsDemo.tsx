@@ -14,6 +14,7 @@ import {
 import { asset } from "@/lib/asset-base";
 import { parseIntent } from "@/lib/dierbergs-demo-intents";
 import {
+  browserName,
   cancelSpeech,
   describeSpeechError,
   primeVoices,
@@ -27,6 +28,7 @@ import AxonNavControl from "./AxonNavControl";
 import AxonInteractionStrip from "./AxonInteractionStrip";
 import AxonMerchandiseStage from "./AxonMerchandiseStage";
 import DierbergsCartOverlay from "./DierbergsCartOverlay";
+import DemoDiagnostics from "./DemoDiagnostics";
 import FlyingCartItem from "./FlyingCartItem";
 import type { OrbMood } from "./AxonOrb";
 
@@ -38,6 +40,8 @@ export type MerchView = null | "staples" | "cheddars";
 function log(...parts: unknown[]) {
   if (typeof console !== "undefined") console.info("[Your Shopper]", ...parts);
 }
+
+const BUILD = process.env.NEXT_PUBLIC_BUILD_STAMP || "dev";
 
 const WELCOME = "Welcome to Dierbergs. How can I help you today?";
 const SUBLINE =
@@ -58,6 +62,8 @@ export default function DierbergsDemo() {
   const [pulse, setPulse] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [flight, setFlight] = useState<{ src: string; from: DOMRect; to: DOMRect } | null>(null);
+  const [lastHeard, setLastHeard] = useState("");
+  const [lastError, setLastError] = useState("");
 
   const cartRef = useRef<HTMLDivElement>(null);
   const imgRefs = useRef<Record<string, HTMLImageElement | null>>({});
@@ -139,6 +145,7 @@ export default function DierbergsDemo() {
     async (text: string) => {
       const intent = parseIntent(text);
       log("heard", JSON.stringify(text), "->", intent);
+      setLastHeard(`${text} (${intent})`);
       setQuery(text);
       setBusy(true);
       setMood("thinking");
@@ -225,6 +232,7 @@ export default function DierbergsDemo() {
         // Voice failing must never look like the shopper stopped working.
         const { line, hint: help } = describeSpeechError(kind);
         log("recognition error", kind);
+        setLastError(kind);
         setPrompt(line);
         setHint(help);
         inputRef.current?.focus();
@@ -262,7 +270,12 @@ export default function DierbergsDemo() {
     // as the shopper greeting you and then ignoring you.
     if (voiceAvailable) {
       log("auto-listening after greeting");
+      if (browserName() !== "Chrome") {
+        setHint(`Listening. Voice is unreliable in ${browserName()} — if nothing happens, type below or use Chrome.`);
+      }
       setVoiceMode(true);
+    } else {
+      setHint("This browser has no speech recognition. Type what you need below.");
     }
   }
 
@@ -301,6 +314,8 @@ export default function DierbergsDemo() {
     setPulse(false);
     setSelectedId(null);
     setFlight(null);
+    setLastHeard("");
+    setLastError("");
   }
 
   const { axonStrip, stripFiller, merchandiseStage, cartPatch } = dierbergsLayout;
@@ -387,6 +402,13 @@ export default function DierbergsDemo() {
       <button type="button" className="reset-demo" onClick={reset}>
         Reset Demo
       </button>
+
+      <DemoDiagnostics
+        build={BUILD}
+        state={listening ? "listening" : busy ? "thinking or speaking" : phase}
+        lastHeard={lastHeard}
+        lastError={lastError}
+      />
     </div>
   );
 }

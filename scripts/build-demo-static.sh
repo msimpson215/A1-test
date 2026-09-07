@@ -9,6 +9,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 export DEMO_EXPORT=1
+export NEXT_PUBLIC_BUILD_STAMP="$(date -u "+%Y-%m-%d %H:%M UTC")"
 export NEXT_PUBLIC_ASSET_BASE="${NEXT_PUBLIC_ASSET_BASE:-}"
 
 rm -rf out demo-static

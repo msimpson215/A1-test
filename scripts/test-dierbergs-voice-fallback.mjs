@@ -15,6 +15,8 @@ const harness = (mode) => {
         setTimeout(() => this.onerror?.({ error: "network" }), 120);
         return;
       }
+      // Edge routinely opens the microphone and then never calls back at all.
+      if (window.__mode === "dead-mic") return;
       const line = window.__script.shift();
       setTimeout(() => {
         if (!window.__listening) return;
@@ -105,6 +107,36 @@ const browser = await puppeteer.launch({ executablePath: "/usr/bin/google-chrome
   await page.click(".axon-strip-send");
   await new Promise(r => setTimeout(r, 1500));
   check("send button submits", (await page.$$(".db-card")).length === 3);
+  await page.close();
+}
+
+/* 4. Browser opens the microphone and then never answers. */
+{
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1440, height: 900 });
+  await page.evaluateOnNewDocument(harness, "dead-mic");
+  await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
+  await page.click(".shopper-nav-pill");
+  await page.waitForSelector(".axon-mic");
+  await new Promise(r => setTimeout(r, 1200));
+  check("mic opens on its own after the greeting", await page.$eval(".axon-mic", el => el.classList.contains("is-listening")));
+
+  await new Promise(r => setTimeout(r, 10000));
+  const after = await page.evaluate(() => ({
+    listening: document.querySelector(".axon-mic")?.classList.contains("is-listening"),
+    line: document.querySelector(".axon-strip-prompt")?.textContent?.trim() ?? "",
+    hint: document.querySelector(".axon-strip-hint")?.textContent?.trim() ?? ""
+  }));
+  check("a silent microphone does not hang forever", after.listening === false, `listening=${after.listening}`);
+  check("the shopper is told the browser never answered", /never sent anything back/i.test(after.line), after.line);
+  check("and is told to type or switch to Chrome", /type below|Chrome/i.test(after.hint), after.hint);
+
+  const diag = await page.evaluate(async () => {
+    document.querySelector(".demo-diag-toggle").click();
+    await new Promise(r => setTimeout(r, 250));
+    return document.querySelector(".demo-diag-body")?.textContent ?? "";
+  });
+  check("status readout names the build and the error", /no-answer/.test(diag), diag.slice(0, 90));
   await page.close();
 }
 

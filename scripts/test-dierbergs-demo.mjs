@@ -86,17 +86,22 @@ const pill = await page.$eval(".shopper-nav-pill", (el) => {
   return { text: el.innerText.trim(), left: Math.round(r.left), top: Math.round(r.top), height: Math.round(r.height) };
 });
 check("nav entry reads 'Your Shopper'", pill.text === "Your Shopper", pill.text);
-// Measured off the storefront capture: links end at x 476, the gap between one
-// link and the next is 16-17px, and their text is optically centred on y 24.
+// Measured off the storefront capture: links end at x 476 and sit 17-18px
+// apart, and Dierbergs' own "Weekly Ad" pill is 23px tall at y 14-36.
 check(
   "nav entry keeps the gap the other links use",
-  pill.left - 476 >= 15 && pill.left - 476 <= 18,
+  pill.left - 476 >= 15 && pill.left - 476 <= 19,
   `${pill.left - 476}px after Flowers & Gifts`
 );
 check(
-  "nav entry sits on the same line as the other links",
-  Math.abs((pill.top + pill.height / 2) - 24) <= 1,
-  `centre y ${pill.top + pill.height / 2}`
+  "nav entry starts at the same y as the Weekly Ad pill",
+  pill.top === 14,
+  `top ${pill.top}`
+);
+check(
+  "nav entry is the same height as the Weekly Ad pill",
+  Math.abs(pill.height - 23) <= 1,
+  `${pill.height}px tall`
 );
 check("no chatbot bubble", (await page.$(".bubble, .chatbot, .chat-window")) === null);
 check("cart starts empty", (await cart()) === "0 items $0.00", await cart());

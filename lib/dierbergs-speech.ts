@@ -15,6 +15,33 @@ export function speechRecognitionAvailable(): boolean {
   return RecognitionCtor() !== null;
 }
 
+export function browserName(): string {
+  if (typeof navigator === "undefined") return "unknown";
+  const ua = navigator.userAgent;
+  if (/Edg\//.test(ua)) return "Edge";
+  if (/OPR\//.test(ua)) return "Opera";
+  if (/Firefox\//.test(ua)) return "Firefox";
+  if (/Chrome\//.test(ua)) return "Chrome";
+  if (/Safari\//.test(ua)) return "Safari";
+  return "unknown";
+}
+
+// Edge exposes the Web Speech API but its recognition service routinely never
+// answers, so the microphone sits open and nothing ever comes back.
+export function voiceIsReliable(): boolean {
+  return browserName() === "Chrome";
+}
+
+export function voiceReport() {
+  const voices = typeof window !== "undefined" && window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  return {
+    browser: browserName(),
+    recognition: speechRecognitionAvailable(),
+    voice: bestVoice()?.name ?? "browser default",
+    voiceCount: voices.length
+  };
+}
+
 // Chrome's default pick is usually the flat eSpeak-style voice. These are the
 // natural-sounding voices shipped with Chrome, macOS and Windows, best first.
 const PREFERRED_VOICES = [
@@ -123,6 +150,11 @@ export function describeSpeechError(kind: string): { line: string; hint: string 
         line: "Voice recognition didn't connect in this browser.",
         hint: "Microsoft Edge often blocks it. Type below, or open the demo in Chrome for voice."
       };
+    case "no-answer":
+      return {
+        line: "The microphone opened but your browser never sent anything back.",
+        hint: "That is usually Microsoft Edge. Type below, or open the demo in Chrome for voice."
+      };
     case "aborted":
       return { line: "Voice stopped.", hint: "Press the microphone to start again, or type below." };
     default:
@@ -202,8 +234,25 @@ export function startListening(cb: ListenCallbacks): SpeechRecognition | null {
   rec.maxAlternatives = 1;
 
   let delivered = false;
+  let heardSomething = false;
+
+  // Some browsers open the microphone and then never call back at all: no
+  // result, no error, no end. Without this the orb listens forever.
+  const watchdog = window.setTimeout(() => {
+    if (delivered || heardSomething) return;
+    try {
+      rec.abort();
+    } catch {
+      /* already gone */
+    }
+    cb.onError?.("no-answer");
+  }, 9000);
+
+  const clearWatchdog = () => window.clearTimeout(watchdog);
 
   rec.onresult = (event: SpeechRecognitionEvent) => {
+    heardSomething = true;
+    clearWatchdog();
     let interim = "";
     for (let i = event.resultIndex; i < event.results.length; i += 1) {
       const result = event.results[i];
@@ -220,16 +269,19 @@ export function startListening(cb: ListenCallbacks): SpeechRecognition | null {
   };
 
   rec.onerror = (event: SpeechRecognitionErrorEvent) => {
+    clearWatchdog();
     cb.onError?.(event.error || "unknown");
   };
 
   rec.onend = () => {
+    clearWatchdog();
     if (!delivered) cb.onEnd?.();
   };
 
   try {
     rec.start();
   } catch {
+    clearWatchdog();
     cb.onError?.("start-failed");
     return null;
   }

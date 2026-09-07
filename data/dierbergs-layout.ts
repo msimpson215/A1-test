@@ -8,7 +8,9 @@
 //   a full-width page gutter sits at y 711-770, below the last merchandise row
 export const dierbergsLayout = {
   pageWidth: 1440,
-  shopperNav: { left: 493, top: 9, width: 154, height: 30 },
+  // Measured off the capture: Dierbergs' own "Weekly Ad" pill is 23px tall at
+  // y 14-36, and nav links sit 17-18px apart. The shopper pill matches both.
+  shopperNav: { left: 494, top: 14, width: 132, height: 23 },
   axonStrip: { left: 0, top: 105, width: 1440, height: 88 },
   // Hides the half-covered category icon row while the strip is open.
   stripFiller: { left: 222, top: 193, width: 1178, height: 33 },
