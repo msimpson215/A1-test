@@ -1,6 +1,6 @@
 import puppeteer from "puppeteer-core";
 
-const URL = "http://localhost:3001/dierbergs-demo";
+const URL = process.argv[2] || "http://localhost:3001/dierbergs-demo";
 const results = [];
 const check = (name, pass, detail = "") => {
   results.push({ name, pass, detail });
