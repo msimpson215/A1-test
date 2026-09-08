@@ -566,6 +566,7 @@ export default function DierbergsDemo() {
                   onSubmit={handleUtterance}
                   onToggleListen={toggleListen}
                   disabled={phase === "adding"}
+                  live={liveOn}
                 />
               </motion.div>
               <motion.div

@@ -16,6 +16,8 @@ type Props = {
   onSubmit: (text: string) => void;
   onToggleListen: () => void;
   disabled?: boolean;
+  /** A live voice line is open to the model. */
+  live?: boolean;
 };
 
 export default function AxonInteractionStrip({
@@ -29,10 +31,16 @@ export default function AxonInteractionStrip({
   onQueryChange,
   onSubmit,
   onToggleListen,
-  disabled
+  disabled,
+  live
 }: Props) {
   return (
-    <div className="axon-strip" data-busy={disabled ? "true" : "false"} data-mood={mood}>
+    <div
+      className="axon-strip"
+      data-busy={disabled ? "true" : "false"}
+      data-mood={mood}
+      data-live={live ? "true" : "false"}
+    >
       <div className="axon-strip-orb">
         <AxonOrb size={30} mood={mood} />
       </div>
