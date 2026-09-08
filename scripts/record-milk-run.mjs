@@ -27,8 +27,18 @@ const page = await browser.newPage();
 await page.setViewport({ width: 1440, height: 900 });
 
 // No audio device here, so speech would fall back and stretch the run out.
-// The picture is the point.
+// The picture is the point. The recogniser is stubbed rather than left absent
+// because a headless Chrome with no microphone puts a browser warning on the
+// strip that a shopper with a microphone would never see.
 await page.evaluateOnNewDocument(() => {
+  window.__spoken = [];
+  class R {
+    start() { setTimeout(() => this.onend?.(new Event("end")), 200); }
+    stop() {}
+    abort() {}
+  }
+  window.webkitSpeechRecognition = R;
+  window.SpeechRecognition = R;
   const realFetch = window.fetch.bind(window);
   window.fetch = (input, init) => {
     const url = typeof input === "string" ? input : input?.url || "";
@@ -38,7 +48,10 @@ await page.evaluateOnNewDocument(() => {
   const synth = {
     getVoices: () => [{ name: "Google US English", lang: "en-US", localService: false }],
     cancel() {},
-    speak(u) { setTimeout(() => u.onend?.(), Math.min(1200, 300 + u.text.length * 18)); },
+    speak(u) {
+      window.__spoken.push(u.text);
+      setTimeout(() => u.onend?.(), Math.min(1200, 300 + u.text.length * 18));
+    },
     onvoiceschanged: null
   };
   Object.defineProperty(window, "speechSynthesis", { configurable: true, get: () => synth });
@@ -61,22 +74,51 @@ cdp.on("Page.screencastFrame", async ({ data, sessionId, metadata }) => {
 });
 await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });
 
+// Waits for the turn to finish rather than guessing at it. A fixed pause is
+// long enough until the model takes a beat longer, and then the next line is
+// typed into a box the app is about to clear, and the step silently vanishes.
 const type = async (text) => {
   await page.click(".axon-strip-input");
   await page.type(".axon-strip-input", text, { delay: 40 });
   await wait(300);
   await page.keyboard.press("Enter");
+  // The answer being spoken is the reliable signal that the turn is over;
+  // the busy flag alone flickers false before the work has started.
+  for (let i = 0; i < 150; i += 1) {
+    await wait(100);
+    const done = await page.evaluate(
+      () => window.__spoken.length > 0 &&
+        document.querySelector(".axon-strip")?.dataset.busy !== "true"
+    );
+    if (done) return;
+  }
 };
+
+// The trip as spoken, one line per turn. Overridable so a single aisle can be
+// filmed on its own without editing this.
+const SCRIPT = process.env.DEMO_SCRIPT
+  ? JSON.parse(process.env.DEMO_SCRIPT)
+  : [
+      "I need milk",
+      "put the whole milk in the cart",
+      "what cheeses do you have",
+      "the Cabot, put it in the cart",
+      "I need eggs",
+      "nope, not the 18. I need a dozen eggs",
+      "the Eggland's",
+      "put it in the cart"
+    ];
 
 await wait(900);
 await page.click(".shopper-nav-pill");
 await wait(2400);
-await type(process.env.DEMO_ASK || "I need milk");
-await wait(2600);
-await type(process.env.DEMO_NARROW || "whole milk, a gallon");
-await wait(2400);
-await type("add it to my cart");
-await wait(3000);
+for (const line of SCRIPT) {
+  await page.evaluate(() => { window.__spoken = []; });
+  await type(line);
+  // The flight outlasts the turn, and a viewer needs a moment to read.
+  await wait(1600);
+}
+await wait(1200);
 
 await cdp.send("Page.stopScreencast");
 await browser.close();
