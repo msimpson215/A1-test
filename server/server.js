@@ -326,6 +326,8 @@ Rules:
 - Use "chat" only when they are not asking about groceries at all. If they
   named a grocery, something goes on the shelf.
 - Never add something they did not ask for.
+- A bare "the cheese" means the cheese they asked for earlier in the trip, if
+  there is exactly one of those. Otherwise ask which.
 - If they rule something out ("not the 18 count"), respect that.
 - If they ask for an aisle you do not stock, say so plainly and name a couple
   you do have. Do not pretend.
@@ -383,7 +385,8 @@ app.post('/api/understand', async (req, res) => {
             content:
               `Aisles and products:\n${JSON.stringify(aisles)}\n\n` +
               `Currently on the shelf: ${JSON.stringify(showing)}\n` +
-              `Already in the cart: ${JSON.stringify(cart)}`
+              `Already in the cart: ${JSON.stringify(cart)}\n` +
+              `Asked for earlier in this trip: ${JSON.stringify(req.body.asked || [])}`
           },
           ...history.slice(-6),
           { role: 'user', content: said }

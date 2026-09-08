@@ -25,6 +25,8 @@ export type Turn = {
 export type TurnContext = {
   showing: DemoProduct[];
   cart: DemoProduct[];
+  /** Everything asked for so far, which is what makes "the cheese" mean one thing. */
+  onList: DemoProduct[];
   /** The aisle already on the shelf, which is what makes "the jumbo ones" mean something. */
   current: ShelfId | null;
 };
@@ -80,6 +82,7 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
         aisles: AISLE_PAYLOAD,
         showing: context.showing.map((p) => p.id),
         cart: context.cart.map((p) => p.id),
+        asked: context.onList.map((p) => p.id),
         history
       })
     }).finally(() => clearTimeout(timer));
@@ -134,13 +137,40 @@ function locally(said: string, context: TurnContext): Turn {
       const shelf = shelfById(req.shelf);
       if (!shelf) break;
       const picked = narrowShelf(shelf, req.text);
-      const one = picked.length === 1 ? picked[0] : null;
+
+      // "The cheese" with four cheddars showing means the one they already
+      // asked for. Only unambiguous because there is exactly one of them.
+      const already = context.onList.filter((p) => p.category === shelf.id);
+      const one = picked.length === 1 ? picked[0] : already.length === 1 ? already[0] : null;
+
+      if (req.intent === "ADD" && one) {
+        return {
+          action: "add",
+          // Leave the shelf be when the choice came from the list rather than
+          // the words: they are looking at four cheddars and buying one.
+          aisle: picked.length === 1 ? shelf.id : null,
+          products: [one],
+          say: "",
+          hint: "",
+          source: "local"
+        };
+      }
+
+      const single = picked.length === 1 ? picked[0] : null;
       return {
-        action: req.intent === "ADD" && one ? "add" : "show",
+        action: "show",
         aisle: shelf.id,
         products: picked,
-        say: one ? `${one.shortName}, ${one.price}.` : shelf.ask,
-        hint: one ? "Say \u201Cadd it to my cart\u201D when you want it." : shelf.askHint,
+        say: single
+          ? `${single.shortName}, ${single.price}.`
+          : req.intent === "ADD"
+            ? `Happy to. ${shelf.ask}`
+            : shelf.ask,
+        hint: single
+          ? "Say \u201Cadd it to my cart\u201D when you want it."
+          : req.intent === "ADD"
+            ? "Name one and I'll drop it in."
+            : shelf.askHint,
         source: "local"
       };
     }

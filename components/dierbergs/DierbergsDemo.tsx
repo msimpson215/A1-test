@@ -216,6 +216,7 @@ export default function DierbergsDemo() {
       const turn = await understand(text, {
         showing: merchProducts,
         cart,
+        onList: onTheList,
         current: view === "staples" ? null : view
       });
       log("heard", JSON.stringify(text), "->", turn.action, turn.aisle ?? "", `(${turn.source})`);
@@ -251,7 +252,7 @@ export default function DierbergsDemo() {
       exitBusy();
       log("done", turn.action);
     },
-    [addProduct, cart, enterBusy, exitBusy, merchProducts, say, view]
+    [addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, say, view]
   );
 
   // Held in a ref so a state change mid-sentence cannot tear down and restart

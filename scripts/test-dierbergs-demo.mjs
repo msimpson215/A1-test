@@ -70,6 +70,7 @@ const page = await browser.newPage();
 await page.setViewport({ width: 1440, height: 900 });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
+if (process.env.TRACE) page.on("console", (m) => console.log("   [app]", m.text()));
 await page.evaluateOnNewDocument(fakeSpeech);
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
 
