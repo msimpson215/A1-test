@@ -379,8 +379,23 @@ export default function DierbergsDemo() {
       log("live failed", message);
       setLastError(message);
       setMood("resting");
-      setPrompt("I couldn't open the microphone.");
-      setHint("Type below and I'll pick it up from there.");
+      /*
+       * Name the actual reason. An exhausted OpenAI balance and a dead
+       * microphone both end up here, and telling someone to check their
+       * headset when the account is out of credit sends them looking in
+       * completely the wrong place.
+       */
+      const outOfCredit = /insufficient_quota|credit_balance|billing|quota/i.test(message);
+      setPrompt(
+        outOfCredit
+          ? "My voice line is out of credit on the OpenAI account."
+          : "I couldn't open the microphone."
+      );
+      setHint(
+        outOfCredit
+          ? "Add credit at platform.openai.com to switch it back on. Typing still works."
+          : "Type below and I'll pick it up from there."
+      );
       inputRef.current?.focus();
     }
   }, []);

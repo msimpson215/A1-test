@@ -93,10 +93,13 @@ const restart = async () => {
  * one costs. Only this table changes when the catalogue grows.
  */
 const aisles = [
-  { ask: "I need milk",   narrow: "whole milk",          expect: /Whole Milk/i,        price: "$4.44" },
-  { ask: "I need eggs",   narrow: "the jumbo ones",      expect: /Jumbo Eggs/i,        price: "$2.04" },
-  { ask: "I need bread",  narrow: "the Wonder bread",    expect: /Wonder/i,            price: "$3.68" },
-  { ask: "I need cheddar", narrow: "the Cabot",          expect: /Cabot/i,             price: "$4.80" }
+  { ask: "I need milk",   narrow: "whole milk",              expect: /Whole Milk/i, price: "$4.44" },
+  { ask: "I need eggs",   narrow: "the jumbo ones",          expect: /Jumbo Eggs/i, price: "$2.04" },
+  // A brand alone no longer picks one product out: Wonder bake three of these
+  // breads and Cabot make both a cheddar and a Swiss. Naming a brand narrows
+  // to that brand and the shopper says which, which is the behaviour we want.
+  { ask: "I need bread",  narrow: "the Wonder classic white", expect: /Wonder/i,    price: "$3.68" },
+  { ask: "I need cheddar", narrow: "the Cabot cheddar",       expect: /Cabot/i,     price: "$4.80" }
 ];
 
 for (const aisle of aisles) {

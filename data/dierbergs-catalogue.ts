@@ -8,8 +8,6 @@ import {
   breadProducts,
   cheddarProducts,
   eggProducts,
-  milkGallons,
-  milkHalfGallons,
   milkProducts,
   type DemoProduct
 } from "./dierbergs-demo-products";
@@ -70,7 +68,23 @@ export const shelves: Shelf[] = [
     ask: "We carry four. Whole, two percent, one percent and skim. Which would you like?",
     askHint: "Name a kind \u2014 or ask for a half gallon.",
     products: milkCell,
-    opening: (text) => (mentionsHalfGallon(text) ? milkHalfGallons : milkGallons)
+    /*
+     * The store's own milk is the same four cartons in two jug sizes, and
+     * putting all eight up at once is not a choice, it is a wall. So the
+     * shelf shows one jug size at a time, and a plain "whole milk" answers
+     * with the store's own carton rather than every whole milk in the cell.
+     *
+     * The rest of the cell — the lactose free, the organics, the brands — is
+     * reached by asking for it: when something off the wall answers the
+     * question better than the wall can, the whole aisle opens up.
+     */
+    opening: (text, all) => {
+      const size = mentionsHalfGallon(text) ? "half gallon" : "gallon";
+      const inSize = all.filter((p) => !p.volume || p.volume === size);
+      const wall = inSize.filter((p) => p.volume);
+      const beyond = inSize.filter((p) => !p.volume);
+      return bestScore(beyond, text) > bestScore(wall, text) ? inSize : wall;
+    }
   },
   {
     id: "eggs",
@@ -157,11 +171,9 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
    */
   let best = 0;
   const scored = pool.map((product) => {
-    const score = wordsFor(product)
-      .filter((k) => containsPhrase(text, k))
-      .reduce((sum, k) => sum + k.length, 0);
-    best = Math.max(best, score);
-    return { product, score };
+    const value = score(product, text);
+    best = Math.max(best, value);
+    return { product, score: value };
   });
   const survivors =
     best === 0 ? pool : scored.filter((s) => s.score === best).map((s) => s.product);
@@ -173,6 +185,17 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
    * opens on the first four rather than all thirty-one.
    */
   return survivors.slice(0, 4);
+}
+
+/** How much of what was said this one product accounts for. */
+function score(product: DemoProduct, text: string): number {
+  return wordsFor(product)
+    .filter((k) => containsPhrase(text, k))
+    .reduce((sum, k) => sum + k.length, 0);
+}
+
+function bestScore(list: DemoProduct[], text: string): number {
+  return list.reduce((top, p) => Math.max(top, score(p, text)), 0);
 }
 
 /** True when the whole phrase appears, so "large" does not match "x-large". */
