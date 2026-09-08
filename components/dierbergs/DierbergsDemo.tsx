@@ -43,11 +43,14 @@ export type MerchView = null | "milk" | "bread" | "staples" | "cheddars";
 // A microphone that reopens a beat early can catch the tail of the shopper's
 // own confirmation. Anything that is mostly words we just said is not a request.
 function echoesSelf(heard: string, spoken: string[]): boolean {
-  const words = heard.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
-  if (words.length < 2) return false;
+  const split = (t: string) => t.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
+  const words = split(heard);
+  // Short replies like "whole milk" are what a shopper actually says, so only
+  // a long utterance can be dismissed as the shopper hearing itself.
+  if (words.length < 4) return false;
   return spoken.some((line) => {
-    const said = line.toLowerCase();
-    const overlap = words.filter((w) => said.includes(w)).length;
+    const said = new Set(split(line));
+    const overlap = words.filter((w) => said.has(w)).length;
     return overlap / words.length >= 0.8;
   });
 }
@@ -58,9 +61,9 @@ function log(...parts: unknown[]) {
 
 const BUILD = process.env.NEXT_PUBLIC_BUILD_STAMP || "dev";
 
-const WELCOME = "Welcome to Dierbergs. What would you like to shop for today?";
+const WELCOME = "Welcome to Dierbergs. What can I get for you today?";
 const SUBLINE =
-  "I'm a conversational AI personal assistant, not a chatbot. Try \u201CI need milk,\u201D or ask how this works.";
+  "Your conversational personal AI, here to help you shop. Try \u201CI need milk,\u201D or ask how this works.";
 // Rotated so a run of additions does not sound like a recording.
 const FOLLOW_UPS = [
   "What else can I get you?",
@@ -69,7 +72,7 @@ const FOLLOW_UPS = [
 ];
 
 const SPOKEN_WELCOME =
-  "Welcome to Dierbergs. I'm your conversational AI personal assistant, not a chatbot. What would you like to shop for today?";
+  "Welcome to Dierbergs. I'm your conversational personal AI, here to help you shop. What can I get for you today?";
 
 export default function DierbergsDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
@@ -368,6 +371,7 @@ export default function DierbergsDemo() {
         setListening(false);
         if (echoesSelf(text, spokenRecently.current)) {
           log("ignored own voice", JSON.stringify(text));
+          setLastHeard(`${text} (ignored: own voice)`);
           return;
         }
         void utteranceHandler.current(text);

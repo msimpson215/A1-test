@@ -84,8 +84,8 @@ await wait(900);
 const greeting = await page.evaluate(() => window.__spoken.join(" "));
 check("greeting is spoken", greeting.length > 0);
 check(
-  "greeting says what it is and offers to shop",
-  /personal assistant/i.test(greeting) && /not a chatbot/i.test(greeting) && /shop for today/i.test(greeting),
+  "greeting is positive about what it is, with no negatives",
+  /conversational personal AI/i.test(greeting) && /help you shop/i.test(greeting) && !/chatbot/i.test(greeting),
   greeting
 );
 

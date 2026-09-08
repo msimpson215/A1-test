@@ -116,8 +116,8 @@ check(
   /Welcome to Dierbergs/.test(await page.$eval(".axon-strip-prompt", (el) => el.textContent || ""))
 );
 check(
-  "explains it is conversational AI, not a chatbot",
-  /conversational ai personal assistant, not a chatbot/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent || ""))
+  "describes itself in the positive, never as a negative",
+  /conversational personal ai, here to help you shop/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent || ""))
 );
 check("orb carries no face or text", (await page.$eval(".axon-orb", (el) => el.textContent.trim())) === "");
 check(
