@@ -25,6 +25,7 @@ import {
   startListening,
   stopListening
 } from "@/lib/dierbergs-speech";
+import { prefetchNeural } from "@/lib/dierbergs-neural-voice";
 import DierbergsStaticBackground from "./DierbergsStaticBackground";
 import AxonNavControl from "./AxonNavControl";
 import AxonInteractionStrip from "./AxonInteractionStrip";
@@ -112,6 +113,9 @@ export default function DierbergsDemo() {
 
   useEffect(() => {
     primeVoices();
+    // The greeting is the first thing anyone hears, so it must not wait on a
+    // network round trip. The rest is fetched as the conversation reaches it.
+    void prefetchNeural([SPOKEN_WELCOME]);
     log("ready", { voiceRecognition: speechRecognitionAvailable(), userAgent: navigator.userAgent });
   }, []);
 

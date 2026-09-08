@@ -493,6 +493,49 @@ body { min-height: 100vh; }
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   max-width: 460px;
 }
-.demo-diag-body > div { display: flex; gap: 8px; }
-.demo-diag-body dt { flex: none; width: 78px; color: #a0a0a0; }
-.demo-diag-body dd { margin: 0; color: #444; word-break: break-word; }
+.demo-diag-list { margin: 0; }
+.demo-diag-list > div { display: flex; gap: 8px; }
+.demo-diag-list dt { flex: none; width: 78px; color: #a0a0a0; }
+.demo-diag-list dd { margin: 0; color: #444; word-break: break-word; }
+
+.demo-diag-voice {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--db-line);
+}
+.demo-diag-voice label {
+  display: block;
+  color: #a0a0a0;
+  margin-bottom: 5px;
+}
+.demo-diag-voice input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 1px solid var(--db-line);
+  border-radius: 5px;
+  font: inherit;
+  color: #333;
+}
+.demo-diag-voice-row { display: flex; gap: 6px; margin-top: 6px; }
+.demo-diag-voice select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--db-line);
+  border-radius: 5px;
+  font: inherit;
+  color: #333;
+  background: #fff;
+}
+.demo-diag-voice button {
+  flex: none;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--db-red);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.demo-diag-voice button:hover { filter: brightness(1.08); }
+.demo-diag-note { margin: 7px 0 0; color: #a8a8a8; line-height: 1.45; }

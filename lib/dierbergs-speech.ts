@@ -1,3 +1,5 @@
+import { neuralAvailable, speakNeural, stopNeural } from "./dierbergs-neural-voice";
+
 export type SpeechHandle = {
   recognition: SpeechRecognition | null;
 };
@@ -39,7 +41,8 @@ export function voiceReport() {
     recognition: speechRecognitionAvailable(),
     voice: bestVoice()?.name ?? "browser default",
     voiceCount: voices.length,
-    runnersUp: voiceCandidates(3).slice(1)
+    runnersUp: voiceCandidates(3).slice(1),
+    neural: neuralAvailable()
   };
 }
 
@@ -146,6 +149,7 @@ let speechEpoch = 0;
 
 export function cancelSpeech(): void {
   speechEpoch += 1;
+  stopNeural();
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   try {
     window.speechSynthesis.cancel();
@@ -194,6 +198,15 @@ export function describeSpeechError(kind: string): { line: string; hint: string 
 // Never rejects and never hangs: a failed voice must not stall the conversation.
 export async function speak(text: string): Promise<void> {
   const startedAt = speechEpoch;
+
+  // A real neural voice when one is configured, the browser's own as backup.
+  if (neuralAvailable()) {
+    const spoke = await speakNeural(text).catch(() => false);
+    if (speechEpoch !== startedAt) return;
+    if (spoke) return;
+    console.info("[Your Shopper] neural voice unavailable, using the browser voice");
+  }
+
   await voicesReady();
   if (speechEpoch !== startedAt) return;
 

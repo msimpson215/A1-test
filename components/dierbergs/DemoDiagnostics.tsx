@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { voiceReport } from "@/lib/dierbergs-speech";
+import { speak, voiceReport } from "@/lib/dierbergs-speech";
+import {
+  NEURAL_VOICES,
+  getNeuralVoice,
+  getVoiceKey,
+  neuralLastError,
+  neuralUsage,
+  setNeuralVoice,
+  setVoiceKey,
+  type NeuralVoice
+} from "@/lib/dierbergs-neural-voice";
 
 type Props = {
   build: string;
@@ -11,11 +21,19 @@ type Props = {
 };
 
 // A readout rather than a feature: this demo is driven on machines we cannot
-// attach a debugger to, and one screenshot of this line says which build is
+// attach a debugger to, and one screenshot of this panel says which build is
 // loaded, which browser, and what the voice actually did.
 export default function DemoDiagnostics({ build, state, lastHeard, lastError }: Props) {
   const [open, setOpen] = useState(false);
   const [report, setReport] = useState<ReturnType<typeof voiceReport> | null>(null);
+  const [key, setKey] = useState("");
+  const [voice, setVoice] = useState<NeuralVoice>(NEURAL_VOICES[0]);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setKey(getVoiceKey());
+    setVoice(getNeuralVoice());
+  }, []);
 
   useEffect(() => {
     const tick = () => setReport(voiceReport());
@@ -24,22 +42,68 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError }: 
     return () => window.clearInterval(id);
   }, []);
 
+  function save() {
+    setVoiceKey(key);
+    setNeuralVoice(voice);
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1800);
+    void speak("Hello. I'm your Dierbergs personal shopper, and this is how I sound.");
+  }
+
   return (
     <div className="demo-diag">
       <button type="button" className="demo-diag-toggle" onClick={() => setOpen((v) => !v)}>
         {open ? "hide status" : "status"}
       </button>
       {open && report ? (
-        <dl className="demo-diag-body">
-          <div><dt>build</dt><dd>{build}</dd></div>
-          <div><dt>browser</dt><dd>{report.browser}</dd></div>
-          <div><dt>voice in</dt><dd>{report.recognition ? "available" : "not supported"}</dd></div>
-          <div><dt>voice out</dt><dd>{report.voice} ({report.voiceCount} installed)</dd></div>
-          <div><dt>also had</dt><dd>{report.runnersUp.join(", ") || "nothing else"}</dd></div>
-          <div><dt>state</dt><dd>{state}</dd></div>
-          <div><dt>last heard</dt><dd>{lastHeard || "—"}</dd></div>
-          <div><dt>last error</dt><dd>{lastError || "—"}</dd></div>
-        </dl>
+        <div className="demo-diag-body">
+          <dl className="demo-diag-list">
+            <div><dt>build</dt><dd>{build}</dd></div>
+            <div><dt>browser</dt><dd>{report.browser}</dd></div>
+            <div><dt>voice in</dt><dd>{report.recognition ? "available" : "not supported"}</dd></div>
+            <div>
+              <dt>voice out</dt>
+              <dd>
+                {report.neural
+                  ? `OpenAI ${getNeuralVoice()} (neural)`
+                  : `${report.voice} — browser (${report.voiceCount} installed)`}
+              </dd>
+            </div>
+            {report.neural ? (
+              <div><dt>spoken</dt><dd>{neuralUsage().toLocaleString()} chars this session</dd></div>
+            ) : (
+              <div><dt>also had</dt><dd>{report.runnersUp.join(", ") || "nothing else"}</dd></div>
+            )}
+            <div><dt>state</dt><dd>{state}</dd></div>
+            <div><dt>last heard</dt><dd>{lastHeard || "—"}</dd></div>
+            <div><dt>last error</dt><dd>{lastError || neuralLastError() || "—"}</dd></div>
+          </dl>
+
+          <div className="demo-diag-voice">
+            <label htmlFor="tts-key">Natural voice — OpenAI key</label>
+            <input
+              id="tts-key"
+              type="password"
+              value={key}
+              placeholder="sk-..."
+              autoComplete="off"
+              spellCheck={false}
+              onChange={(e) => setKey(e.target.value)}
+            />
+            <div className="demo-diag-voice-row">
+              <select value={voice} onChange={(e) => setVoice(e.target.value as NeuralVoice)}>
+                {NEURAL_VOICES.map((v) => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+              <button type="button" onClick={save}>{saved ? "Saved" : "Save & test"}</button>
+            </div>
+            <p className="demo-diag-note">
+              Stays in this browser only. Never committed, never sent anywhere but OpenAI.
+              Leave empty to use the built-in browser voice.
+            </p>
+          </div>
+        </div>
       ) : null}
     </div>
   );
