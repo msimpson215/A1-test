@@ -308,6 +308,12 @@ app.post('/api/tts', async (req, res) => {
 const CHAT_FAMILIES = [/^gpt-5[.-]/, /^gpt-5$/, /^gpt-4\.1/, /^gpt-4o/];
 const NOT_CHAT = /(audio|realtime|tts|transcribe|embedding|moderation|image|dall-e|whisper|search|instruct)/;
 
+/** The version in a model name, so gpt-5.2 sorts above gpt-5.1. */
+function versionOf(id) {
+  const m = /^[a-z-]*?-(\d+)(?:\.(\d+))?/.exec(id);
+  return m ? Number(m[1]) * 100 + Number(m[2] || 0) : 0;
+}
+
 let chatModelPromise = null;
 
 async function pickChatModel(apiKey) {
@@ -322,9 +328,12 @@ async function pickChatModel(apiKey) {
       if (!r.ok) throw new Error(`models ${r.status}`);
       const ids = (await r.json()).data.map((m) => m.id).filter((id) => !NOT_CHAT.test(id));
       for (const family of CHAT_FAMILIES) {
-        // Within a family the plain name beats the dated snapshots and the
-        // cut-down minis, which is what "the best one available" means here.
-        const hits = ids.filter((id) => family.test(id)).sort((a, b) => a.length - b.length);
+        // Within a family the highest version wins, and among equals the plain
+        // name beats the dated snapshots and the cut-down minis. Sorting by
+        // name alone put gpt-5.1 ahead of gpt-5.2, which is not "the best one".
+        const hits = ids
+          .filter((id) => family.test(id))
+          .sort((a, b) => versionOf(b) - versionOf(a) || a.length - b.length);
         const full = hits.find((id) => !/mini|nano/.test(id)) || hits[0];
         if (full) return full;
       }
