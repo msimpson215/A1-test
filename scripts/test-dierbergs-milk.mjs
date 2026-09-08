@@ -84,6 +84,12 @@ const type = async (q) => {
 };
 
 /* 1. Dierbergs, untouched, with an empty cart. */
+const stripBox = () =>
+  page.$eval(".axon-strip", (el) => {
+    const r = el.getBoundingClientRect();
+    return `${Math.round(r.top)}x${Math.round(r.height)}`;
+  });
+const stripBoxes = [];
 check("cart starts empty", (await cart()) === "0 items $0.00", await cart());
 check("no shelf showing before anyone asks", (await page.$(".axon-merch")) === null);
 
@@ -123,6 +129,7 @@ await type("I need milk.");
 await wait(1800);
 const wall = await cards();
 check("the milk wall appears", wall.length === 4, `${wall.length} cards`);
+stripBoxes.push(await stripBox());
 check(
   "all four kinds are there",
   ["Whole", "2%", "1%", "Skim"].every((k) => wall.some((n) => n.includes(k))),
@@ -151,6 +158,7 @@ await page.keyboard.press("Enter");
 await wait(1800);
 const narrowed = await cards();
 check("the shelf narrows to one", narrowed.length === 1, narrowed.join(" | "));
+stripBoxes.push(await stripBox());
 check("and it is the 2%", /2%/.test(narrowed[0] ?? ""), narrowed[0] ?? "none");
 
 /* 7. Now adding flies the jug to the cart, and only then does the cart move. */
@@ -173,6 +181,7 @@ clearInterval(watch);
 check("the jug visibly flies to the cart", sawFlyer);
 check("the cart waits until the jug lands", cartDuringFlight === "0 items $0.00", String(cartDuringFlight));
 check("cart reads 1 item $4.24", (await cart()) === "1 item $4.24", await cart());
+stripBoxes.push(await stripBox());
 check("the card shows it is in the cart", (await page.$(".db-add.is-added")) !== null);
 
 /* 8. The confirmation invites the next request instead of trailing off. */
@@ -189,6 +198,7 @@ await page.keyboard.press("Enter");
 await wait(1900);
 const cheddars = await cards();
 check("four cheddars come up", cheddars.length === 4, `${cheddars.length} cards`);
+stripBoxes.push(await stripBox());
 check(
   "Borden is among them",
   cheddars.some((n) => /borden/i.test(n)),
@@ -240,6 +250,14 @@ check(
 );
 check("no microphone press was needed", true);
 
+// The hint line under the prompt comes and goes as the conversation moves on.
+// If the copy column is allowed to resize with it, the strip breathes on every
+// reply and the page twitches under the shopper's cursor.
+check(
+  "the strip never changes size or moves",
+  new Set(stripBoxes).size === 1,
+  stripBoxes.join(" -> ")
+);
 check("no page errors", errors.length === 0, errors.join(" | "));
 
 await browser.close();

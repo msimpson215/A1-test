@@ -151,6 +151,13 @@ body { min-height: 100vh; }
 .axon-strip-copy {
   width: 360px;
   flex: none;
+  /* Hold a constant height across every state. The hint line comes and goes as
+     the conversation moves along, and letting the column resize made the whole
+     strip breathe by a few pixels on each reply. */
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .axon-strip-prompt {
   margin: 0;
