@@ -1,25 +1,28 @@
+import {
+  shelfById,
+  shelfRespondsTo,
+  shelvesNamedIn,
+  type ShelfId
+} from "@/data/dierbergs-catalogue";
+
 export type DemoIntent =
-  | "SHOW_MILK"
-  | "SHOW_BREAD"
-  | "SHOW_CHEDDARS"
-  | "SHOW_STAPLES"
-  | "ADD_MILK"
-  | "ADD_BREAD"
-  | "ADD_CHEESE"
+  /** Put an aisle on the shelf, or narrow the one already there. */
+  | "SHOW"
+  /** Put a specific product in the cart. */
+  | "ADD"
+  /** "Add it" with nothing named: only actionable when one thing is showing. */
   | "ADD_CURRENT"
+  | "SHOW_STAPLES"
   | "HOW_IT_WORKS"
   | "SEVERAL_ITEMS"
   | "UNKNOWN";
 
-export type MilkVariety = "whole" | "2%" | "1%" | "skim";
-export type MilkVolume = "gallon" | "half gallon";
-
 export type ParsedRequest = {
   intent: DemoIntent;
-  /** Set when the shopper named a kind of milk, e.g. "two percent". */
-  variety: MilkVariety | null;
-  /** Set when the shopper named a jug size. */
-  volume: MilkVolume | null;
+  /** The aisle this is about, named outright or carried over from the shelf. */
+  shelf: ShelfId | null;
+  /** The words to narrow that aisle by. */
+  text: string;
 };
 
 export function normalizeUtterance(raw: string): string {
@@ -29,6 +32,9 @@ export function normalizeUtterance(raw: string): string {
     // Apostrophes close up rather than split, so "I'll" reads as one word.
     .replace(/['\u2019]/g, "")
     .replace(/[^\w\s.%$]/g, " ")
+    // Keep the dot in "$3.91" but drop the one ending a sentence, which would
+    // otherwise stop "two percent." matching the phrase "two percent".
+    .replace(/(?<!\d)\.(?!\d)/g, " ")
     .replace(/\s+/g, " ");
 }
 
@@ -45,74 +51,46 @@ function wantsToAdd(t: string): boolean {
   return ADD_VERB.test(t) || TAKE_PHRASE.test(t) || CART_WORD.test(t) || CONFIRM.test(t);
 }
 
-function readVariety(t: string): MilkVariety | null {
-  if (/\b(whole|vitamin d|full fat|red cap)\b/.test(t)) return "whole";
-  if (/\b(2 ?%|2 percent|two percent|reduced fat)\b/.test(t)) return "2%";
-  if (/\b(1 ?%|1 percent|one percent|low ?fat|lowfat)\b/.test(t)) return "1%";
-  if (/\b(skim|fat ?free|nonfat|non fat|blue cap)\b/.test(t)) return "skim";
-  return null;
-}
+const HOW =
+  /\b(what is this|whats this|how does this work|how do i use|what can you do|who are you|what are you|help|instructions|explain)\b/;
 
-function readVolume(t: string): MilkVolume | null {
-  if (/\b(half gallon|half a gallon|halfgallon|64 ?oz|small(er)?)\b/.test(t)) return "half gallon";
-  if (/\b(gallon|128 ?oz|big|large|bigger|full size)\b/.test(t)) return "gallon";
-  return null;
-}
+const OPENING_A_LIST =
+  /\b(a few|some|several|couple|handful|bunch)\b.{0,12}\b(items|things|groceries|stuff|products)\b/;
+const GOING_SHOPPING = /\b(do some shopping|go shopping|start shopping|my shopping|shopping list|make a list)\b/;
 
-export function parseRequest(raw: string): ParsedRequest {
-  const t = normalizeUtterance(raw);
-  const variety = readVariety(t);
-  const volume = readVolume(t);
-  const intent = readIntent(t, variety, volume);
-  return { intent, variety, volume };
-}
+/**
+ * Works out what to do with an utterance.
+ *
+ * `current` is the aisle already on the shelf. It is what lets "two percent"
+ * or "the jumbo ones" mean something on their own: an utterance that names no
+ * aisle but answers to the one in front of the shopper is narrowing it.
+ */
+export function parseRequest(raw: string, current: ShelfId | null = null): ParsedRequest {
+  const text = normalizeUtterance(raw);
 
-function readIntent(t: string, variety: MilkVariety | null, volume: MilkVolume | null): DemoIntent {
-  if (
-    /\b(what is this|whats this|how does this work|how do i use|what can you do|who are you|what are you|are you a chatbot|help|instructions|explain)\b/.test(
-      t
-    )
-  ) {
-    return "HOW_IT_WORKS";
+  if (HOW.test(text)) return { intent: "HOW_IT_WORKS", shelf: null, text };
+  if (OPENING_A_LIST.test(text) || GOING_SHOPPING.test(text)) {
+    return { intent: "SEVERAL_ITEMS", shelf: null, text };
   }
 
-  // "I need a few things" is the shopper opening a list, not naming a product.
-  if (/\b(a few|some|several|couple|handful|bunch)\b.{0,12}\b(items|things|groceries|stuff|products)\b/.test(t)) {
-    return "SEVERAL_ITEMS";
-  }
-  if (/\b(do some shopping|go shopping|start shopping|my shopping|shopping list|make a list)\b/.test(t)) {
-    return "SEVERAL_ITEMS";
+  const named = shelvesNamedIn(text);
+  if (named.length > 1) return { intent: "SHOW_STAPLES", shelf: null, text };
+  if (/\b(staples|groceries|basics)\b/.test(text)) {
+    return { intent: "SHOW_STAPLES", shelf: null, text };
   }
 
-  const hasMilk = /\bmilk\b/.test(t) || (variety !== null && !/\bcheese|cheddar|bread\b/.test(t));
-  const hasBread = /\bbread\b/.test(t);
-  const hasCheese = /\b(cheese|cheddar|borden|sargento|cabot|land o lakes)\b/.test(t);
-  const named = [hasMilk, hasBread, hasCheese].filter(Boolean).length;
-
-  // Naming one specific cheddar is always a choice, never a browse.
-  if (/\b(borden|3.91|391|cheapest|extra sharp)\b/.test(t)) return "ADD_CHEESE";
-
-  if (wantsToAdd(t) && named <= 1) {
-    if (hasMilk) return "ADD_MILK";
-    if (hasBread) return "ADD_BREAD";
-    if (hasCheese) return "ADD_CHEESE";
-    return "ADD_CURRENT";
+  if (named.length === 1) {
+    return { intent: wantsToAdd(text) ? "ADD" : "SHOW", shelf: named[0].id, text };
   }
 
-  if (named > 1) return "SHOW_STAPLES";
-  if (/\b(staples|groceries|basics)\b/.test(t)) return "SHOW_STAPLES";
+  // No aisle named. If what they said picks something out of the aisle already
+  // showing, they are still talking about that aisle.
+  const shelf = shelfById(current);
+  if (shelf && shelfRespondsTo(shelf, text)) {
+    return { intent: wantsToAdd(text) ? "ADD" : "SHOW", shelf: shelf.id, text };
+  }
 
-  if (hasCheese) return "SHOW_CHEDDARS";
-  if (hasMilk) return "SHOW_MILK";
-  if (hasBread) return "SHOW_BREAD";
+  if (wantsToAdd(text)) return { intent: "ADD_CURRENT", shelf: current, text };
 
-  // "Do you have a smaller one?" while the milk wall is up.
-  if (volume !== null) return "SHOW_MILK";
-
-  return "UNKNOWN";
-}
-
-/** Kept for callers that only care which branch to take. */
-export function parseIntent(raw: string): DemoIntent {
-  return parseRequest(raw).intent;
+  return { intent: "UNKNOWN", shelf: null, text };
 }

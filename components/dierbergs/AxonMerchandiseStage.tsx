@@ -4,10 +4,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { DemoProduct } from "@/data/dierbergs-demo-products";
 import DierbergsProductCard from "./DierbergsProductCard";
 import RequestedItemMiniCard from "./RequestedItemMiniCard";
+import type { MerchView } from "./DierbergsDemo";
 
 type Props = {
   visible: boolean;
-  mode: "milk" | "bread" | "staples" | "cheddars" | null;
+  mode: MerchView;
   heading: string;
   products: DemoProduct[];
   alsoRequested: DemoProduct[];
@@ -28,7 +29,7 @@ export default function AxonMerchandiseStage({
   onProductImage,
   onAdd
 }: Props) {
-  const showAside = mode === "cheddars" && alsoRequested.length > 0;
+  const showAside = alsoRequested.length > 0;
 
   return (
     <AnimatePresence>

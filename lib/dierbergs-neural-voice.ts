@@ -1,3 +1,4 @@
+import { forSpeaking } from "./dierbergs-pronounce";
 /**
  * Optional neural speech for the demo.
  *
@@ -173,7 +174,8 @@ async function synthesise(text: string): Promise<string | null> {
 /** Fetch audio ahead of time so the first line of a demo is not a dead pause. */
 export async function prefetchNeural(lines: string[]): Promise<void> {
   if (!neuralAvailable()) return;
-  await Promise.all(lines.map((line) => synthesise(line).catch(() => null)));
+  // Warm the same text playback will ask for, or the cache never gets a hit.
+  await Promise.all(lines.map((line) => synthesise(forSpeaking(line)).catch(() => null)));
 }
 
 let current: HTMLAudioElement | null = null;

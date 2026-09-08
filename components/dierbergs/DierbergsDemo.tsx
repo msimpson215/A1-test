@@ -3,18 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
-import {
-  bread,
-  borden,
-  cheddarProducts,
-  milk,
-  milkGallons,
-  milkHalfGallons,
-  staplesProducts,
-  type DemoProduct
-} from "@/data/dierbergs-demo-products";
+import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
+import { narrowShelf, shelfById, shelves, type ShelfId } from "@/data/dierbergs-catalogue";
 import { asset } from "@/lib/asset-base";
-import { parseRequest, type MilkVariety, type MilkVolume } from "@/lib/dierbergs-demo-intents";
+import { parseRequest } from "@/lib/dierbergs-demo-intents";
 import {
   browserName,
   cancelSpeech,
@@ -36,7 +28,7 @@ import FlyingCartItem from "./FlyingCartItem";
 import type { OrbMood } from "./AxonOrb";
 
 export type DemoPhase = "idle" | "active" | "adding";
-export type MerchView = null | "milk" | "bread" | "staples" | "cheddars";
+export type MerchView = null | ShelfId | "staples";
 
 // Left on deliberately: this demo is driven on machines we cannot attach a
 // debugger to, so the console is the only trace of where a run stopped.
@@ -55,6 +47,11 @@ function echoesSelf(heard: string, spoken: string[]): boolean {
   });
 }
 
+function dedupe(list: DemoProduct[]): DemoProduct[] {
+  const seen = new Set<string>();
+  return list.filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)));
+}
+
 function log(...parts: unknown[]) {
   if (typeof console !== "undefined") console.info("[Your Shopper]", ...parts);
 }
@@ -70,6 +67,12 @@ const FOLLOW_UPS = [
   "Anything else today?",
   "What else is on the list?"
 ];
+
+// Built from the catalogue, so standing up a new aisle offers it here too
+// rather than leaving the fallback quietly out of date.
+const AISLE_NAMES = shelves.map((s) => s.label);
+const AISLE_LIST = `${AISLE_NAMES.slice(0, -1).join(", ")} or ${AISLE_NAMES.at(-1)}`;
+const AISLE_HINT = `Try ${AISLE_LIST} \u2014 just say the word.`;
 
 const SPOKEN_WELCOME =
   "Welcome to Dierbergs. I'm your AI shopper. I know the whole store, and I can get you anything you need. What can I help you with today?";
@@ -88,8 +91,13 @@ export default function DierbergsDemo() {
   const [cart, setCart] = useState<DemoProduct[]>([]);
   const [pulse, setPulse] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [milkVolume, setMilkVolume] = useState<MilkVolume>("gallon");
-  const [milkVariety, setMilkVariety] = useState<MilkVariety | null>(null);
+  // What is on the shelf right now. `shelfItems` is the narrowed-down set, so
+  // a follow-up like "the jumbo ones" has something to refer back to.
+  const [shelfItems, setShelfItems] = useState<DemoProduct[]>([]);
+  // What the shopper has asked for so far. This is what lets "the cheese" mean
+  // something when four cheddars are on screen: it is the one already on their
+  // list, not a guess between the four.
+  const [requested, setRequested] = useState<DemoProduct[]>([]);
   const [flight, setFlight] = useState<{ src: string; from: DOMRect; to: DOMRect } | null>(null);
   const [lastHeard, setLastHeard] = useState("");
   const [lastError, setLastError] = useState("");
@@ -104,15 +112,11 @@ export default function DierbergsDemo() {
   const axonOn = phase !== "idle";
   const cartIds = cart.map((p) => p.id);
   const cartTotalCents = cart.reduce((sum, p) => sum + p.priceCents, 0);
-  const milkPool = milkVolume === "half gallon" ? milkHalfGallons : milkGallons;
-  const milkShelf = milkVariety ? milkPool.filter((p) => p.variety === milkVariety) : milkPool;
-  const merchProducts =
-    view === "milk" ? milkShelf
-    : view === "bread" ? [bread]
-    : view === "cheddars" ? cheddarProducts
-    : staplesProducts;
-  // Milk and bread stay reachable as reminders once the grid pivots to cheddar.
-  const alsoRequested = view === "cheddars" ? [milk, bread] : [];
+  const merchProducts = view === "staples" ? staplesProducts : shelfItems;
+  // Everything on the go from other aisles stays visible as a reminder while
+  // the grid is showing one aisle.
+  const onTheList = dedupe([...cart, ...requested]);
+  const alsoRequested = view && view !== "staples" ? onTheList.filter((p) => p.category !== view) : [];
 
   useEffect(() => {
     primeVoices();
@@ -209,108 +213,64 @@ export default function DierbergsDemo() {
     setSelectedId(null);
   }, [cart, say]);
 
-  const shelfFor = useCallback((variety: MilkVariety | null, volume: MilkVolume) => {
-    const pool = volume === "half gallon" ? milkHalfGallons : milkGallons;
-    return variety ? pool.filter((p) => p.variety === variety) : pool;
-  }, []);
-
   const handleUtterance = useCallback(
     async (text: string) => {
-      const req = parseRequest(text);
-      const intent = req.intent;
-      log("heard", JSON.stringify(text), "->", intent, req.variety ?? "", req.volume ?? "");
-      setLastHeard(`${text} (${intent})`);
+      const current = view === "staples" ? null : view;
+      const req = parseRequest(text, current);
+      log("heard", JSON.stringify(text), "->", req.intent, req.shelf ?? "");
+      setLastHeard(`${text} (${req.intent}${req.shelf ? " " + req.shelf : ""})`);
       setQuery(text);
       enterBusy();
       setMood("thinking");
       await new Promise((r) => setTimeout(r, 260));
 
-      switch (intent) {
-        case "SHOW_MILK": {
-          const volume = req.volume ?? milkVolume;
-          const variety = req.variety ?? null;
-          const shelf = shelfFor(variety, volume);
-          setMilkVolume(volume);
-          setMilkVariety(variety);
-          setView("milk");
-          if (shelf.length === 1) {
-            const only = shelf[0];
+      switch (req.intent) {
+        // One path for every aisle. Which products come back is decided by the
+        // catalogue, so a new aisle needs no case of its own here.
+        case "SHOW":
+        case "ADD": {
+          const shelf = shelfById(req.shelf);
+          if (!shelf) break;
+          const picked = narrowShelf(shelf, req.text);
+          setView(shelf.id);
+          setShelfItems(picked);
+
+          if (picked.length === 1) {
+            const only = picked[0];
             setMerchHeading(`${only.name}.`);
-            await say(
-              `${only.shortName}, ${only.price}.`,
-              "Say \u201Cadd it to my cart\u201D when you want it."
-            );
+            if (req.intent === "ADD") {
+              await addProduct(only);
+            } else {
+              await say(
+                `${only.shortName}, ${only.price}.`,
+                "Say \u201Cadd it to my cart\u201D when you want it."
+              );
+            }
           } else {
-            setMerchHeading(volume === "gallon" ? "Our milk, by the gallon." : "Our milk, by the half gallon.");
-            await say(
-              "We carry four. Whole, two percent, one percent and skim. Which would you like?",
-              volume === "gallon"
-                ? "Name a kind \u2014 or ask for a half gallon."
-                : "Name a kind \u2014 or ask for a gallon."
-            );
+            setMerchHeading(shelf.heading);
+            const already = onTheList.filter((p) => p.category === shelf.id);
+            if (req.intent === "ADD" && already.length === 1) {
+              // "The cheese" when four are showing means the one they already
+              // asked for. Only unambiguous because there is exactly one.
+              await addProduct(already[0]);
+            } else if (req.intent === "ADD") {
+              // They asked to buy without saying which. Put the shelf up and
+              // ask rather than guessing on their behalf.
+              await say(`Happy to. ${shelf.ask}`, "Name one and I'll drop it in.");
+            } else {
+              await say(shelf.ask, shelf.askHint);
+            }
           }
           break;
         }
 
-        case "SHOW_BREAD":
-          setView("bread");
-          setMerchHeading("Here's the bread.");
-          await say("Here's our bread.", "Say \u201Cadd it to my cart\u201D when you want it.");
-          break;
-
         case "SHOW_STAPLES":
+          setRequested(staplesProducts);
           setView("staples");
           setMerchHeading("Here are a few good matches.");
           await say("Sure. Here are a few good matches.", "Tell me which one to add.");
           break;
 
-        case "SHOW_CHEDDARS":
-          setView("cheddars");
-          setMerchHeading("Here are four cheddar options.");
-          await say("Here are four cheddar options.", "Milk and bread are still on your list.");
-          break;
-
-        case "ADD_CHEESE":
-          if (!view) setView("cheddars");
-          await addProduct(borden);
-          break;
-
-        case "ADD_MILK": {
-          const volume = req.volume ?? milkVolume;
-          const variety = req.variety ?? milkVariety;
-          // A milk already on screen on its own is the one they mean, whether it
-          // is on the shelf or sitting in the Also Requested column.
-          const onShelf = [...merchProducts, ...alsoRequested].filter((p) => p.category === "milk");
-          if (!variety && !req.volume && onShelf.length === 1) {
-            await addProduct(onShelf[0]);
-            break;
-          }
-          const shelf = shelfFor(variety, volume);
-          setMilkVolume(volume);
-          setView("milk");
-          if (shelf.length === 1) {
-            setMilkVariety(shelf[0].variety ?? null);
-            await addProduct(shelf[0]);
-          } else {
-            // They asked for milk without saying which. Put the wall up and ask
-            // rather than guessing on their behalf.
-            setMilkVariety(null);
-            setMerchHeading(volume === "gallon" ? "Our milk, by the gallon." : "Our milk, by the half gallon.");
-            await say(
-              "Happy to. Which one \u2014 whole, two percent, one percent or skim?",
-              "Name a kind and I'll drop it in."
-            );
-          }
-          break;
-        }
-
-        case "ADD_BREAD":
-          if (!view) setView("bread");
-          await addProduct(bread);
-          break;
-
-        // "add it to my cart" with nothing named: only actionable when one
-        // product is on the shelf, otherwise it is a guess.
         case "ADD_CURRENT":
           if (merchProducts.length === 1 && view) {
             await addProduct(merchProducts[0]);
@@ -338,8 +298,9 @@ export default function DierbergsDemo() {
 
         default:
           await say(
-            "Let me point you somewhere useful.",
-            "I can bring up milk, bread or cheddar right now \u2014 just say the word."
+            `I can bring up ${AISLE_LIST} right now.`,
+            "Tell me which and I'll put it on the shelf.",
+            `I can bring up ${AISLE_LIST} right now. Which would you like?`
           );
       }
 
@@ -347,9 +308,9 @@ export default function DierbergsDemo() {
       // while it is being handled, and a second request starts from empty.
       setQuery("");
       exitBusy();
-      log("done", intent);
+      log("done", req.intent);
     },
-    [addProduct, alsoRequested, enterBusy, exitBusy, merchProducts, milkVariety, milkVolume, say, shelfFor, view]
+    [addProduct, enterBusy, exitBusy, merchProducts, onTheList, say, view]
   );
 
   // Held in a ref so a state change mid-sentence cannot tear down and restart
@@ -468,8 +429,8 @@ export default function DierbergsDemo() {
     setPulse(false);
     setSelectedId(null);
     setFlight(null);
-    setMilkVolume("gallon");
-    setMilkVariety(null);
+    setShelfItems([]);
+    setRequested([]);
     setLastHeard("");
     setLastError("");
   }

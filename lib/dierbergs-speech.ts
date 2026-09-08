@@ -1,4 +1,5 @@
 import { getVoiceKey, neuralAvailable, proxyInUse, speakNeural, stopNeural } from "./dierbergs-neural-voice";
+import { forSpeaking } from "./dierbergs-pronounce";
 
 export type SpeechHandle = {
   recognition: SpeechRecognition | null;
@@ -197,8 +198,9 @@ export function describeSpeechError(kind: string): { line: string; hint: string 
 }
 
 // Never rejects and never hangs: a failed voice must not stall the conversation.
-export async function speak(text: string): Promise<void> {
+export async function speak(input: string): Promise<void> {
   const startedAt = speechEpoch;
+  const text = forSpeaking(input);
 
   // A real neural voice when one is configured, the browser's own as backup.
   if (neuralAvailable()) {

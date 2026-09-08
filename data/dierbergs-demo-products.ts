@@ -7,15 +7,47 @@ export type DemoProduct = {
   size: string;
   price: string;
   priceCents: number;
-  category: "milk" | "bread" | "cheddar";
+  category: "milk" | "eggs" | "bread" | "cheddar";
   image: string;
   aisle: string;
+  /**
+   * The words that single this product out from the rest of its aisle. This is
+   * the whole of the narrowing logic: say enough of a product's keywords and it
+   * is the one you meant. Adding a product means writing its keywords, not
+   * writing code.
+   */
+  keywords: string[];
+  /**
+   * Dierbergs' own item number, once there is a catalogue to take it from.
+   * Nothing reads this yet; it is here so the demo records can be swapped for
+   * real ones without changing their shape.
+   */
+  sku?: string;
   /** Milk only: how much fat, and how big the jug is. */
   variety?: "whole" | "2%" | "1%" | "skim";
   volume?: "gallon" | "half gallon";
 };
 
-// The real Dierbergs own-brand milk wall, prices as listed on the storefront.
+/*
+ * Names, sizes, prices and packshots are taken from the live Dierbergs
+ * storefront. `scripts/fetch-dierbergs-products.mjs <term>` re-reads them.
+ */
+
+// --- Milk ------------------------------------------------------------------
+// The Dierbergs own-brand milk wall: four fat levels in two jug sizes.
+
+const VARIETY_WORDS: Record<NonNullable<DemoProduct["variety"]>, string[]> = {
+  whole: ["whole", "vitamin d", "full fat", "red cap"],
+  "2%": ["2%", "2 percent", "two percent", "reduced fat"],
+  "1%": ["1%", "1 percent", "one percent", "lowfat", "low fat"],
+  skim: ["skim", "fat free", "nonfat", "non fat", "blue cap"]
+};
+
+const VOLUME_WORDS: Record<NonNullable<DemoProduct["volume"]>, string[]> = {
+  gallon: ["gallon", "128 oz", "big", "large"],
+  "half gallon": ["half gallon", "half a gallon", "64 oz", "small", "smaller"]
+};
+
 function milkProduct(
   id: string,
   variety: NonNullable<DemoProduct["variety"]>,
@@ -35,6 +67,7 @@ function milkProduct(
     category: "milk",
     image: asset(`/dierbergs/products/${file}.png`),
     aisle: "Aisle 12 - A",
+    keywords: [...VARIETY_WORDS[variety], ...VOLUME_WORDS[volume]],
     variety,
     volume
   };
@@ -57,6 +90,64 @@ export const milkProducts = [...milkGallons, ...milkHalfGallons];
 /** The one milk used when a request does not name a variety. */
 export const milk = milkOneGallon;
 
+// --- Eggs ------------------------------------------------------------------
+
+export const eggsLarge: DemoProduct = {
+  id: "dierbergs-eggs-large",
+  name: "Dierbergs Grade A Large Eggs - 12 ct",
+  shortName: "Dierbergs Large Eggs",
+  size: "12 ct",
+  price: "$1.79",
+  priceCents: 179,
+  category: "eggs",
+  image: asset("/dierbergs/products/eggs-dierbergs-large.png"),
+  aisle: "Aisle 12 - A",
+  keywords: ["large", "dierbergs", "regular", "grade a"]
+};
+
+export const eggsExtraLarge: DemoProduct = {
+  id: "dierbergs-eggs-xl",
+  name: "Dierbergs Grade A Extra Large Eggs - 12 ct",
+  shortName: "Dierbergs Extra Large Eggs",
+  size: "12 ct",
+  price: "$1.94",
+  priceCents: 194,
+  category: "eggs",
+  image: asset("/dierbergs/products/eggs-dierbergs-xl.png"),
+  aisle: "Aisle 12 - A",
+  keywords: ["extra large", "xl", "dierbergs", "grade a"]
+};
+
+export const eggsJumbo: DemoProduct = {
+  id: "dierbergs-eggs-jumbo",
+  name: "Dierbergs Grade A Jumbo Eggs - 12 ct",
+  shortName: "Dierbergs Jumbo Eggs",
+  size: "12 ct",
+  price: "$2.04",
+  priceCents: 204,
+  category: "eggs",
+  image: asset("/dierbergs/products/eggs-dierbergs-jumbo.png"),
+  aisle: "Aisle 12 - A",
+  keywords: ["jumbo", "biggest", "dierbergs", "grade a"]
+};
+
+export const eggsEgglands: DemoProduct = {
+  id: "egglands-best-large",
+  name: "Eggland's Best Classic Large White Eggs, 12 count",
+  shortName: "Eggland's Best Large Eggs",
+  size: "12 ct",
+  price: "$5.48",
+  priceCents: 548,
+  category: "eggs",
+  image: asset("/dierbergs/products/eggs-egglands-large.png"),
+  aisle: "Aisle 12 - A",
+  keywords: ["egglands", "egglands best", "classic", "white", "name brand"]
+};
+
+export const eggProducts = [eggsLarge, eggsExtraLarge, eggsJumbo, eggsEgglands];
+
+// --- Bread -----------------------------------------------------------------
+
 export const bread: DemoProduct = {
   id: "bunny-white-bread",
   name: "Bunny Bread Original Soft-Twist White Enriched Bread",
@@ -66,8 +157,52 @@ export const bread: DemoProduct = {
   priceCents: 209,
   category: "bread",
   image: asset("/dierbergs/products/bread-bunny.png"),
-  aisle: "Aisle 9 - C"
+  aisle: "Aisle 9 - C",
+  keywords: ["bunny", "original", "soft twist", "cheapest"]
 };
+
+export const breadEssential: DemoProduct = {
+  id: "essential-everyday-white",
+  name: "Essential Everyday White Enriched Bread - 20 oz",
+  shortName: "Essential Everyday White",
+  size: "20 oz",
+  price: "$2.56",
+  priceCents: 256,
+  category: "bread",
+  image: asset("/dierbergs/products/bread-essential.png"),
+  aisle: "Aisle 9 - C",
+  keywords: ["essential", "everyday", "essential everyday", "store brand"]
+};
+
+export const breadWonder: DemoProduct = {
+  id: "wonder-classic-white",
+  name: "Wonder Bread Classic White Sandwich Bread",
+  shortName: "Wonder Classic White",
+  size: "20 oz",
+  price: "$3.68",
+  priceCents: 368,
+  category: "bread",
+  image: asset("/dierbergs/products/bread-wonder.png"),
+  aisle: "Aisle 9 - C",
+  keywords: ["wonder", "classic", "sandwich"]
+};
+
+export const breadNaturesOwn: DemoProduct = {
+  id: "natures-own-thick",
+  name: "Nature's Own White Bread, Thick Sliced",
+  shortName: "Nature's Own Thick Sliced",
+  size: "22 oz",
+  price: "$5.25",
+  priceCents: 525,
+  category: "bread",
+  image: asset("/dierbergs/products/bread-natures-own.png"),
+  aisle: "Aisle 9 - C",
+  keywords: ["natures own", "nature", "thick", "thick sliced", "texas toast"]
+};
+
+export const breadProducts = [bread, breadEssential, breadWonder, breadNaturesOwn];
+
+// --- Cheddar ---------------------------------------------------------------
 
 export const borden: DemoProduct = {
   id: "borden-extra-sharp",
@@ -78,7 +213,8 @@ export const borden: DemoProduct = {
   priceCents: 391,
   category: "cheddar",
   image: asset("/dierbergs/products/cheese-borden.png"),
-  aisle: "Aisle 12 - B"
+  aisle: "Aisle 12 - B",
+  keywords: ["borden", "shredded", "finely shredded", "extra sharp", "cheapest", "3.91"]
 };
 
 export const sargento: DemoProduct = {
@@ -90,7 +226,8 @@ export const sargento: DemoProduct = {
   priceCents: 436,
   category: "cheddar",
   image: asset("/dierbergs/products/cheese-sargento.png"),
-  aisle: "Aisle 12 - B"
+  aisle: "Aisle 12 - B",
+  keywords: ["sargento", "sliced", "slices", "ultra thin", "4.36"]
 };
 
 export const landOLakes: DemoProduct = {
@@ -102,7 +239,8 @@ export const landOLakes: DemoProduct = {
   priceCents: 469,
   category: "cheddar",
   image: asset("/dierbergs/products/cheese-landolakes.png"),
-  aisle: "Aisle 12 - B"
+  aisle: "Aisle 12 - B",
+  keywords: ["land o lakes", "land o", "white cheddar", "white", "4.69"]
 };
 
 export const cabot: DemoProduct = {
@@ -114,9 +252,11 @@ export const cabot: DemoProduct = {
   priceCents: 480,
   category: "cheddar",
   image: asset("/dierbergs/products/cheese-cabot.png"),
-  aisle: "Aisle 12 - B"
+  aisle: "Aisle 12 - B",
+  keywords: ["cabot", "block", "4.80"]
 };
 
-export const staplesProducts = [milk, bread, borden];
 export const cheddarProducts = [borden, sargento, landOLakes, cabot];
+
+export const staplesProducts = [milk, bread, borden];
 export const alsoRequestedProducts = [milk, bread];

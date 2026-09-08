@@ -105,6 +105,19 @@ check(
   greeting
 );
 
+// Every engine reads the store's name as "Dye-bergs". It is respelled on the
+// way to the voice only, so the screen still says Dierbergs.
+check(
+  "the store's name is respelled for the voice",
+  /deerbergs/i.test(greeting) && !/dierbergs/i.test(greeting),
+  greeting.slice(0, 40)
+);
+check(
+  "but the screen still reads Dierbergs",
+  /Dierbergs/.test(await page.$eval(".axon-strip-prompt", (el) => el.textContent)),
+  await page.$eval(".axon-strip-prompt", (el) => el.textContent)
+);
+
 /* 2b. Opening with "I need a few items" keeps the conversation going. */
 await type("I need to get a few items.");
 await wait(1500);
