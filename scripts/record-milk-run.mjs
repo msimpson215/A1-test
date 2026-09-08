@@ -71,9 +71,9 @@ const type = async (text) => {
 await wait(900);
 await page.click(".shopper-nav-pill");
 await wait(2400);
-await type("I need milk");
+await type(process.env.DEMO_ASK || "I need milk");
 await wait(2600);
-await type("whole milk, a gallon");
+await type(process.env.DEMO_NARROW || "whole milk, a gallon");
 await wait(2400);
 await type("add it to my cart");
 await wait(3000);
