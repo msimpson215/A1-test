@@ -356,8 +356,12 @@ customer's screen and in their cart. Decide what should happen next.
 Rules:
 - Only ever choose products from the list you are given, by their exact id.
 - "show" puts products on the shelf. "add" puts ONE product in the cart.
-- Never put more than four products on the shelf. If an aisle holds more,
-  show the four a shopper would expect to see first.
+- A bare aisle request ("I need bread", "I need milk") must show one of each
+  kind, up to eight, not the first four in the list. Bread must include rye
+  and bagels. Milk must include lactose-free, organic and chocolate, not only
+  the store-brand gallons. Cheese must include Swiss, provolone and mozzarella,
+  not four cheddars.
+- Once they name a kind, show at most four of that kind.
 - Only "add" when one product is clearly the one they mean. If more than one
   still fits, "show" exactly those and ask which — never more than they need
   to choose between.

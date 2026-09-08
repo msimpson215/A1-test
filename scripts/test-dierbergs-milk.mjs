@@ -150,11 +150,16 @@ check("explaining did not open a shelf", (await page.$(".axon-merch")) === null)
 await type("I need milk.");
 await wait(1800);
 const wall = await cards();
-check("the milk wall appears", wall.length === 4, `${wall.length} cards`);
+check("the milk cooler appears", wall.length >= 4, `${wall.length} cards`);
 stripBoxes.push(await stripBox());
 check(
-  "all four kinds are there",
-  ["Whole", "2%", "1%", "Skim"].every((k) => wall.some((n) => n.includes(k))),
+  "the store-brand gallons are still there",
+  ["Whole", "2%"].every((k) => wall.some((n) => n.includes(k))),
+  wall.join(" | ")
+);
+check(
+  "and so is something that is not the old four",
+  wall.some((n) => /chocolate|lactaid|lactose|horizon|fairlife|organic|prairie/i.test(n)),
   wall.join(" | ")
 );
 check("asking did not buy anything", (await cart()) === "0 items $0.00", await cart());

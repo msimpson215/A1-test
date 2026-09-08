@@ -100,15 +100,19 @@ async function ask(text, settle = 1600) {
   return cards();
 }
 
-/** Every card on the shelf matches, and there are at most four of them. */
+/** Every card on the shelf matches, and there are at most eight of them. */
 function shelfIsAll(pattern, shown) {
-  return shown.length > 0 && shown.length <= 4 && shown.every((n) => pattern.test(n));
+  return shown.length > 0 && shown.length <= 8 && shown.every((n) => pattern.test(n));
 }
 
 console.log("\n--- BREAD CELL ---\n");
 
 let shown = await ask("Show me bread.");
-check("show me bread puts bread up", shown.length > 0 && shown.length <= 4, shown.join(" | "));
+check("show me bread puts bread up", shown.length >= 5, shown.join(" | "));
+check("bread opening includes wheat", shown.some((n) => /wheat/i.test(n)), shown.join(" | "));
+check("bread opening includes sourdough", shown.some((n) => /sourdough/i.test(n)), shown.join(" | "));
+check("bread opening includes rye", shown.some((n) => /rye|pumpernickel/i.test(n)), shown.join(" | "));
+check("bread opening includes bagels", shown.some((n) => /bagel/i.test(n)), shown.join(" | "));
 
 shown = await ask("Do you have wheat bread?");
 check("wheat bread returns only wheat", shelfIsAll(/wheat/i, shown), shown.join(" | "));
@@ -126,7 +130,7 @@ shown = await ask("Do you have gluten free bread?");
 check("gluten free returns only badged products", shelfIsAll(/gluten free|canyon|udi/i, shown), shown.join(" | "));
 
 shown = await ask("Do you have whole grain?");
-check("whole grain is a kind of its own", shown.length > 0 && shown.length <= 4, shown.join(" | "));
+check("whole grain is a kind of its own", shown.length > 0 && shown.length <= 8, shown.join(" | "));
 
 shown = await ask("Which white bread is cheapest?");
 check(
@@ -138,7 +142,10 @@ check(
 console.log("\n--- MILK CELL ---\n");
 
 shown = await ask("I need milk.");
-check("milk opens on the four fat levels", shown.length === 4, shown.join(" | "));
+check("milk opens on more than the old four gallons", shown.length > 4, shown.join(" | "));
+check("milk opening includes lactose-free", shown.some((n) => /lactaid|lactose|prairie farms/i.test(n)), shown.join(" | "));
+check("milk opening includes organic", shown.some((n) => /horizon|organic valley|kalona|organic/i.test(n)), shown.join(" | "));
+check("milk opening includes chocolate", shown.some((n) => /chocolate/i.test(n)), shown.join(" | "));
 
 shown = await ask("Do you have lactose free?");
 check("lactose free milk is stocked", shelfIsAll(/lactaid|lactose/i, shown), shown.join(" | "));
@@ -155,7 +162,12 @@ check("that one adds the carton on the shelf", (await cart()).startsWith("1 item
 console.log("\n--- EGG CELL ---\n");
 
 shown = await ask("I need eggs.");
-check("eggs come up", shown.length > 0 && shown.length <= 4, shown.join(" | "));
+check("eggs come up as a spread", shown.length >= 4, shown.join(" | "));
+check(
+  "eggs opening includes an 18-count",
+  shown.some((n) => /18/.test(n)) || (await sizes()).some((s) => /18/.test(s)),
+  shown.join(" | ")
+);
 
 shown = await ask("Do you have an 18 count?");
 // The count is on the carton, not always in the name: one of these is simply
@@ -177,6 +189,11 @@ shown = await ask("Are there organic eggs?");
 check("organic eggs are stocked", shelfIsAll(/organic/i, shown), shown.join(" | "));
 
 console.log("\n--- CHEESE CELL ---\n");
+
+shown = await ask("I need cheese.");
+check("cheese opening includes swiss", shown.some((n) => /swiss/i.test(n)), shown.join(" | "));
+check("cheese opening includes provolone", shown.some((n) => /provolone/i.test(n)), shown.join(" | "));
+check("cheese opening includes mozzarella", shown.some((n) => /mozzarella/i.test(n)), shown.join(" | "));
 
 shown = await ask("What cheddar cheeses do you have?");
 check("cheddar returns cheddar", shelfIsAll(/cheddar/i, shown), shown.join(" | "));

@@ -51,7 +51,12 @@ customer is looking at, and add_to_cart to put something in their cart.
 
 - Anything they ask about groceries should change the shelf. Do not describe
   products they cannot see: show them.
-- Show at most four at a time, the four they would expect.
+- A bare aisle request ("I need bread", "I need milk") must show one of each
+  kind, up to eight, not the first four in the list. Bread must include rye
+  and bagels. Milk must include lactose-free, organic and chocolate, not only
+  the store-brand gallons. Cheese must include Swiss, provolone and mozzarella,
+  not four cheddars.
+- Once they name a kind, show at most four of that kind.
 - Only add_to_cart when one product is clearly the one they mean. If more than
   one still fits, show exactly those and ask which.
 - Never add something they did not ask for.
@@ -98,7 +103,7 @@ const TOOLS = [
         product_ids: {
           type: "array",
           items: { type: "string" },
-          description: "up to four product ids from the catalogue"
+          description: "product ids from the catalogue. On a bare aisle request, one of each kind (up to eight). After they name a kind, at most four of that kind."
         }
       },
       required: ["aisle", "product_ids"]

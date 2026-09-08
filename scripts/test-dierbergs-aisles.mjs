@@ -108,7 +108,7 @@ for (const aisle of aisles) {
   await type(aisle.ask);
   await wait(1500);
   const shelf = await cards();
-  check(`"${aisle.ask}" fills the shelf`, shelf.length === 4, `${shelf.length} cards: ${shelf.join(" | ")}`);
+  check(`"${aisle.ask}" fills the shelf`, shelf.length >= 4 && shelf.length <= 8, `${shelf.length} cards: ${shelf.join(" | ")}`);
   check(`"${aisle.ask}" asks which one`, /which would you like/i.test(await spoken()));
   check(`"${aisle.ask}" buys nothing on its own`, (await cart()) === "0 items $0.00", await cart());
 
@@ -136,7 +136,7 @@ for (const phrase of ["what other milks do you have", "what cheeses do you have"
   await type(phrase);
   await wait(1500);
   const shelf = await cards();
-  check(`plural: "${phrase}"`, shelf.length === 4, `${shelf.length} cards`);
+  check(`plural: "${phrase}"`, shelf.length >= 4 && shelf.length <= 8, `${shelf.length} cards`);
 }
 
 /* Superlatives, which are the same question for every aisle. */

@@ -307,12 +307,30 @@ body { min-height: 100vh; }
 }
 .merch-grid {
   flex: 1;
+  min-height: 0;
   display: grid;
   gap: 14px;
   align-content: center;
+  overflow: auto;
 }
 .merch-grid-staples { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .merch-grid-cheddars { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.merch-grid-spread {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+.merch-grid-spread .db-card { padding: 8px 8px 10px; }
+.merch-grid-spread .db-card-media { height: 108px; margin-bottom: 6px; }
+.merch-grid-spread .db-price { font-size: 16px; }
+.merch-grid-spread .db-name {
+  font-size: 12px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.merch-grid-spread .db-card-foot { padding-top: 6px; }
 
 .also-requested {
   width: 252px;

@@ -32,11 +32,17 @@ export type Shelf = {
   askHint: string;
   products: DemoProduct[];
   /**
-   * Which products to show before the shopper has narrowed anything. Milk is
-   * the only aisle that needs this: it stocks the same four cartons in two jug
-   * sizes, and putting all eight up at once is not a choice, it is a wall.
+   * Which products to score against after the shopper has named a kind.
+   * Milk uses this so "two percent" lands on the store-brand gallon rather
+   * than every 2% carton in the cooler. A bare "I need milk" ignores it and
+   * opens on the spread instead — otherwise the shelf is the same four
+   * gallons it has always been.
    */
   opening?: (text: string, all: DemoProduct[]) => DemoProduct[];
+  /** What counts as a different kind on an un-narrowed open. */
+  kindOf?: (product: DemoProduct) => string;
+  /** Preferred order of those kinds, so rye and bagels are not left off. */
+  spread?: string[];
 };
 
 export type ShelfId = "milk" | "eggs" | "bread" | "cheese";
@@ -65,9 +71,11 @@ export const shelves: Shelf[] = [
     label: "milk",
     words: ["milk"],
     heading: "Our milk.",
-    ask: "We carry four. Whole, two percent, one percent and skim. Which would you like?",
-    askHint: "Name a kind \u2014 or ask for a half gallon.",
+    ask: "Whole, two percent, lactose-free, organic or chocolate. Which would you like?",
+    askHint: "Name a kind, a brand or a size.",
     products: milkCell,
+    kindOf: milkKind,
+    spread: ["whole", "2%", "chocolate", "lactose-free", "organic", "filtered", "a2", "1%"],
     /*
      * The store's own milk is the same four cartons in two jug sizes, and
      * putting all eight up at once is not a choice, it is a wall. So the
@@ -91,9 +99,11 @@ export const shelves: Shelf[] = [
     label: "eggs",
     words: ["egg"],
     heading: "Our eggs.",
-    ask: "Large, extra large or jumbo, by the dozen or eighteen. Which would you like?",
+    ask: "Dozen or eighteen, large through jumbo, organic or cage-free. Which would you like?",
     askHint: "Name a size, a count or a brand and I'll pull it up.",
-    products: eggCell
+    products: eggCell,
+    kindOf: eggKind,
+    spread: ["large", "extra large", "jumbo", "18", "organic", "cage-free", "hard cooked"]
   },
   {
     id: "bread",
@@ -102,7 +112,8 @@ export const shelves: Shelf[] = [
     heading: "Our bread.",
     ask: "White, wheat, sourdough, rye or bagels. Which would you like?",
     askHint: "Name a kind or a brand \u2014 or ask for the cheapest.",
-    products: breadCell
+    products: breadCell,
+    spread: ["white", "wheat", "sourdough", "rye", "bagel", "whole grain"]
   },
   {
     id: "cheese",
@@ -111,7 +122,8 @@ export const shelves: Shelf[] = [
     heading: "Our cheese.",
     ask: "Cheddar, Swiss, provolone or mozzarella. Which would you like?",
     askHint: "Name a kind, a brand or how it is cut.",
-    products: cheeseCell
+    products: cheeseCell,
+    spread: ["cheddar", "swiss", "provolone", "mozzarella"]
   }
 ];
 
@@ -175,16 +187,64 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
     best = Math.max(best, value);
     return { product, score: value };
   });
-  const survivors =
-    best === 0 ? pool : scored.filter((s) => s.score === best).map((s) => s.product);
-
   /*
-   * A cell holds everything the store stocks in a category, which is more
-   * than anyone wants to look at. Four is what fits the shelf and what a
-   * person can choose between out loud, so an un-narrowed "show me bread"
-   * opens on the first four rather than all thirty-one.
+   * Nothing in the request names a product, so this is the aisle opening.
+   * Use the whole cell, not milk's four-gallon wall: "I need bread" has to
+   * put rye and bagels on the shelf, and "I need milk" has to put more than
+   * the four Dierbergs gallons the demo has always shown.
    */
-  return survivors.slice(0, 4);
+  if (best === 0) return oneOfEachKind(shelf);
+
+  return scored
+    .filter((s) => s.score === best)
+    .map((s) => s.product)
+    .slice(0, 4);
+}
+
+const SPREAD_CAP = 8;
+
+/** One product per kind, in the aisle's preferred order, up to a full shelf. */
+function oneOfEachKind(shelf: Shelf): DemoProduct[] {
+  const kindOf = shelf.kindOf ?? ((p) => p.subcategory ?? p.id);
+  const firstOf = new Map<string, DemoProduct>();
+  for (const product of shelf.products) {
+    const kind = kindOf(product);
+    if (!firstOf.has(kind)) firstOf.set(kind, product);
+  }
+  const picked: DemoProduct[] = [];
+  for (const kind of shelf.spread ?? []) {
+    const product = firstOf.get(kind);
+    if (product) picked.push(product);
+  }
+  for (const product of firstOf.values()) {
+    if (!picked.includes(product)) picked.push(product);
+  }
+  return picked.slice(0, SPREAD_CAP);
+}
+
+function hasType(product: DemoProduct, phrase: string): boolean {
+  return (product.type ?? []).some((t) => t.includes(phrase));
+}
+
+/** Milk kinds the shopper names, not the four fat levels on the store wall. */
+function milkKind(product: DemoProduct): string {
+  if (product.subcategory === "chocolate") return "chocolate";
+  if (hasType(product, "ultra filtered")) return "filtered";
+  if (hasType(product, "lactose free")) return "lactose-free";
+  if ((product.dietary ?? []).includes("organic")) return "organic";
+  if (hasType(product, "a2 protein")) return "a2";
+  return product.subcategory ?? product.id;
+}
+
+/** Eggs: size, count and how they were raised, or the shelf hides the 18s. */
+function eggKind(product: DemoProduct): string {
+  if (product.subcategory === "hard cooked") return "hard cooked";
+  if (product.count === 18) return "18";
+  if (hasType(product, "organic") || (product.dietary ?? []).includes("organic")) {
+    return "organic";
+  }
+  if (hasType(product, "cage free")) return "cage-free";
+  return product.subcategory ?? product.id;
 }
 
 /** How much of what was said this one product accounts for. */
