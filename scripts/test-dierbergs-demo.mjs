@@ -10,6 +10,12 @@ const check = (name, pass, detail = "") => {
 // Stands in for Chrome's speech engine so the spoken path is exercised too.
 const fakeSpeech = () => {
   window.__spoken = [];
+  // No microphone, so the live voice line cannot open. That is the point:
+  // this suite covers the typed path a machine without one falls back to.
+  Object.defineProperty(navigator, "mediaDevices", {
+    configurable: true,
+    get: () => ({ getUserMedia: () => Promise.reject(new Error("no microphone here")) })
+  });
   window.__script = [];
   class FakeRecognition {
     start() {

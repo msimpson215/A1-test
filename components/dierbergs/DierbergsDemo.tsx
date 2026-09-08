@@ -6,7 +6,12 @@ import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
 import { shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
 import { asset } from "@/lib/asset-base";
-import { forgetConversation, understand } from "@/lib/dierbergs-understand";
+import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
+import {
+  connectShopper,
+  realtimeSupported,
+  type ShopperSession
+} from "@/lib/dierbergs-realtime";
 import {
   browserName,
   cancelSpeech,
@@ -101,6 +106,7 @@ export default function DierbergsDemo() {
   const recRef = useRef<SpeechRecognition | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const pendingAdd = useRef<DemoProduct | null>(null);
+  const landed = useRef<(() => void) | null>(null);
   const voiceAvailable = speechRecognitionAvailable();
 
   const axonOn = phase !== "idle";
@@ -135,12 +141,19 @@ export default function DierbergsDemo() {
 
   const spokenRecently = useRef<string[]>([]);
 
+  // Set while a live voice line is open. The model is doing the talking then,
+  // so anything we would have said is put on the strip and left unspoken.
+  const live = useRef<ShopperSession | null>(null);
+  const [liveOn, setLiveOn] = useState(false);
+
   const say = useCallback(
     async (line: string, sub?: string, spoken?: string) => {
-      const words = spoken ?? line;
-      enterBusy();
       setPrompt(line);
       if (sub !== undefined) setHint(sub);
+      if (live.current) return;
+
+      const words = spoken ?? line;
+      enterBusy();
       setMood("speaking");
       spokenRecently.current = [words, ...spokenRecently.current].slice(0, 4);
       try {
@@ -180,6 +193,11 @@ export default function DierbergsDemo() {
         from: img.getBoundingClientRect(),
         to: cartEl.getBoundingClientRect()
       });
+      // Resolves when the package lands, so a caller can wait for the cart to
+      // be true before saying anything about it.
+      await new Promise<void>((resolve) => {
+        landed.current = resolve;
+      });
     },
     [cartIds, say]
   );
@@ -205,10 +223,21 @@ export default function DierbergsDemo() {
       `Got it. ${product.shortName} is in your cart. ${followUp}`
     );
     setSelectedId(null);
+    landed.current?.();
+    landed.current = null;
   }, [cart, say]);
 
   const handleUtterance = useCallback(
     async (text: string) => {
+      // With the line open, typing goes to the same mind that is listening,
+      // so switching between talking and typing does not lose the thread.
+      if (live.current) {
+        setLastHeard(text);
+        live.current.send(text);
+        setQuery("");
+        return;
+      }
+
       setQuery(text);
       enterBusy();
       setMood("thinking");
@@ -254,6 +283,104 @@ export default function DierbergsDemo() {
     },
     [addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, say, view]
   );
+
+  /*
+   * The store, handed to the live voice model as two things it can do. These
+   * are the same shelf and the same cart the typed path drives, so a shopper
+   * can start talking and finish typing without anything resetting.
+   */
+  const showProducts = useCallback((aisle: string, ids: string[]): string => {
+    const picked = ids.map((id) => productById(id)).filter((p): p is DemoProduct => Boolean(p));
+    if (!picked.length) return "no such products; check the ids against the shelves";
+
+    setView((aisle as ShelfId) || picked[0].category);
+    setShelfItems(picked);
+    setRequested((was) => dedupe([...was, ...picked]));
+    setMerchHeading(
+      picked.length === 1 ? `${picked[0].name}.` : shelfById(aisle as ShelfId)?.heading ?? "Here you are."
+    );
+    return `showing ${picked.map((p) => p.name).join(", ")}`;
+  }, []);
+
+  const addToCart = useCallback(
+    async (id: string): Promise<string> => {
+      const product = productById(id);
+      if (!product) return "no such product";
+      if (cartIds.includes(product.id)) return `${product.name} is already in the cart`;
+      // Make sure it is on screen: the package has to fly out of a card.
+      if (!imgRefs.current[product.id]) {
+        setView(product.category as ShelfId);
+        setShelfItems([product]);
+        setMerchHeading(`${product.name}.`);
+        await new Promise((r) => setTimeout(r, 420));
+      }
+      await addProduct(product);
+      const next = [...cart, product];
+      const total = next.reduce((sum, p) => sum + p.priceCents, 0);
+      return `${product.name} is in the cart. ${next.length} ${
+        next.length === 1 ? "item" : "items"
+      }, $${(total / 100).toFixed(2)}.`;
+    },
+    [addProduct, cart, cartIds]
+  );
+
+  const tools = useRef({ showProducts, addToCart });
+  useEffect(() => {
+    tools.current = { showProducts, addToCart };
+  }, [showProducts, addToCart]);
+
+  const goLive = useCallback(async () => {
+    if (live.current) {
+      live.current.close();
+      live.current = null;
+      setLiveOn(false);
+      setMood("resting");
+      return;
+    }
+    setLastError("");
+    setMood("thinking");
+    setPrompt("Connecting\u2026");
+    setHint("One moment.");
+    try {
+      const session = await connectShopper(
+        {
+          showProducts: (aisle, ids) => tools.current.showProducts(aisle, ids),
+          addToCart: (id) => tools.current.addToCart(id)
+        },
+        {
+          onState: (state) => {
+            setMood(
+              state === "listening" ? "listening" : state === "speaking" ? "speaking" : state === "thinking" ? "thinking" : "resting"
+            );
+            setListening(state === "listening");
+          },
+          onHeard: (text) => {
+            log("heard (live)", text);
+            setLastHeard(text);
+          },
+          onSaid: (text) => {
+            setPrompt(text);
+            setHint("Just talk \u2014 I'm listening.");
+          },
+          onError: (message) => {
+            log("live error", message);
+            setLastError(message);
+          }
+        }
+      );
+      live.current = session;
+      setLiveOn(true);
+      setVoiceMode(false);
+    } catch (error) {
+      const message = String((error as Error)?.message || error);
+      log("live failed", message);
+      setLastError(message);
+      setMood("resting");
+      setPrompt("I couldn't open the microphone.");
+      setHint("Type below and I'll pick it up from there.");
+      inputRef.current?.focus();
+    }
+  }, []);
 
   // Held in a ref so a state change mid-sentence cannot tear down and restart
   // the recogniser, which would swallow whatever the shopper was saying.
@@ -318,6 +445,19 @@ export default function DierbergsDemo() {
   async function activate() {
     if (phase !== "idle") return;
     setPhase("active");
+
+    // A live voice line is the real thing: the model hears the shopper and
+    // answers in its own voice, so it can be interrupted and it does not wait
+    // on transcription. It greets them itself, so nothing is said here.
+    if (realtimeSupported()) {
+      setPrompt(WELCOME);
+      setHint(SUBLINE);
+      await goLive();
+      if (live.current) return;
+      // The microphone was refused or the line would not open. Carry on with
+      // the typed path rather than leaving them looking at a dead strip.
+    }
+
     // One utterance, not two: cancelling a queued second line is unreliable, and
     // a shopper who interrupts the greeting must be listened to immediately.
     await say(WELCOME, SUBLINE, SPOKEN_WELCOME);
@@ -335,15 +475,21 @@ export default function DierbergsDemo() {
   }
 
   function toggleListen() {
+    if (realtimeSupported()) {
+      cancelSpeech();
+      void goLive();
+      return;
+    }
     if (!voiceAvailable) return;
     cancelSpeech();
     setVoiceMode((on) => !on);
   }
 
   // Typing takes over from the microphone, so an open mic cannot inject room
-  // noise into what is being written.
+  // noise into what is being written. A live line stays open: it is one
+  // conversation whether the words are spoken or typed.
   function onQueryTyped(value: string) {
-    if (voiceMode) {
+    if (voiceMode && !live.current) {
       cancelSpeech();
       setVoiceMode(false);
     }
@@ -353,6 +499,10 @@ export default function DierbergsDemo() {
   function reset() {
     cancelSpeech();
     forgetConversation();
+    live.current?.close();
+    live.current = null;
+    setLiveOn(false);
+    landed.current = null;
     stopListening(recRef.current);
     recRef.current = null;
     pendingAdd.current = null;
@@ -409,8 +559,8 @@ export default function DierbergsDemo() {
                   hint={hint}
                   mood={mood}
                   query={query}
-                  listening={listening}
-                  voiceAvailable={voiceAvailable}
+                  listening={listening || liveOn}
+                  voiceAvailable={voiceAvailable || realtimeSupported()}
                   inputRef={inputRef}
                   onQueryChange={onQueryTyped}
                   onSubmit={handleUtterance}

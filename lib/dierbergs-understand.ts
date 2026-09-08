@@ -61,6 +61,11 @@ export function forgetConversation(): void {
   history.length = 0;
 }
 
+/** Everything the store stocks, by the id the model chooses it with. */
+export function productById(id: string): DemoProduct | undefined {
+  return everyProduct.get(id);
+}
+
 /**
  * Works out what the shopper wants.
  *

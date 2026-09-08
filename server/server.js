@@ -51,6 +51,34 @@ function deskRealtimeModel() {
   return process.env.JOE_REALTIME_MODEL || 'gpt-realtime-2.1';
 }
 
+function shopperRealtimeModel() {
+  return process.env.SHOPPER_REALTIME_MODEL || 'gpt-realtime-2.1';
+}
+
+// The shopper's instructions, catalogue and tools arrive over the data channel
+// once it opens, because the catalogue lives with the demo. All this has to
+// do is open the line on the best model with a voice worth listening to.
+function shopperSessionConfig() {
+  return JSON.stringify({
+    type: 'realtime',
+    model: shopperRealtimeModel(),
+    output_modalities: ['audio'],
+    audio: {
+      input: {
+        transcription: { model: 'gpt-4o-mini-transcribe' },
+        turn_detection: {
+          type: 'semantic_vad',
+          create_response: true,
+          // A shopper changing their mind mid-sentence has to be able to cut
+          // the assistant off, the way they would a person.
+          interrupt_response: true
+        }
+      },
+      output: { voice: 'coral' }
+    }
+  });
+}
+
 function realtimeSessionConfig(desk) {
   const session = {
     type: 'realtime',
@@ -100,15 +128,16 @@ async function proxyVoxtalk3Session(sdp, res) {
   res.type('application/sdp').send(body);
 }
 
-async function createRealtimeSession(sdp, res, desk) {
+async function createRealtimeSession(sdp, res, desk, shopper) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
+    if (shopper) return res.status(503).json({ error: 'no key configured' });
     return proxyVoxtalk3Session(sdp, res);
   }
 
   const fd = new FormData();
   fd.set('sdp', sdp);
-  fd.set('session', realtimeSessionConfig(desk));
+  fd.set('session', shopper ? shopperSessionConfig() : realtimeSessionConfig(desk));
 
   const response = await fetch('https://api.openai.com/v1/realtime/calls', {
     method: 'POST',
@@ -129,7 +158,7 @@ async function createRealtimeSession(sdp, res, desk) {
 
 app.post('/session', express.text({ type: ['application/sdp', 'text/plain'] }), async (req, res) => {
   try {
-    await createRealtimeSession(req.body, res, req.query.desk === '1');
+    await createRealtimeSession(req.body, res, req.query.desk === '1', req.query.shopper === '1');
   } catch (error) {
     console.error('Session error:', error);
     res.status(500).json({ error: 'API Failure' });

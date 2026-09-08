@@ -7,6 +7,12 @@ const harness = (mode) => {
   window.__spoken = [];
   window.__script = [];
   window.__mode = mode;
+  // No microphone, so the live voice line cannot open. That is the point:
+  // these suites cover the typed path a machine without one falls back to.
+  Object.defineProperty(navigator, "mediaDevices", {
+    configurable: true,
+    get: () => ({ getUserMedia: () => Promise.reject(new Error("no microphone here")) })
+  });
   class R {
     start() {
       window.__listening = true;
