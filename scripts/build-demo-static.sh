@@ -12,7 +12,9 @@ export DEMO_EXPORT=1
 export NEXT_PUBLIC_BUILD_STAMP="$(date -u "+%Y-%m-%d %H:%M UTC")"
 export NEXT_PUBLIC_ASSET_BASE="${NEXT_PUBLIC_ASSET_BASE:-}"
 
-rm -rf out demo-static
+# The previous run leaves its output in public/, and Next refuses to build with
+# a _next folder in there, so clear it before building rather than after.
+rm -rf out demo-static public/dierbergs-demo public/_next
 npx next build
 
 mkdir -p demo-static
@@ -25,7 +27,6 @@ cp out/dierbergs-demo/index.html demo-static/index.html
 # Same build, dropped into public/ so the Express server serves it at
 # /dierbergs-demo. Hosted there it can reach /api/tts on its own origin, so the
 # neural voice uses the server's key and nothing needs configuring.
-rm -rf public/dierbergs-demo public/_next
 cp -r out/dierbergs-demo public/dierbergs-demo
 cp -r out/_next public/_next
 

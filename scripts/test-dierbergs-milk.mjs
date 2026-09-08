@@ -41,6 +41,16 @@ const fakeSpeech = () => {
     speak(u) { window.__spoken.push(u.text); setTimeout(() => u.onend?.(), 50); },
     onvoiceschanged: null
   };
+  // These suites exercise the conversation, not the voice pipe. Cut the neural
+  // request so the run is deterministic and costs nothing to repeat.
+  const realFetch = window.fetch.bind(window);
+  window.fetch = (input, init) => {
+    const url = typeof input === "string" ? input : input?.url || "";
+    if (url.includes("/api/tts") || url.includes("api.openai.com")) {
+      return Promise.reject(new TypeError("neural voice disabled for this test"));
+    }
+    return realFetch(input, init);
+  };
   Object.defineProperty(window, "speechSynthesis", { configurable: true, get: () => synth });
   Object.defineProperty(window, "SpeechSynthesisUtterance", {
     configurable: true,

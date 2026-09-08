@@ -37,6 +37,16 @@ const harness = (mode) => {
     speak(u) { window.__spoken.push(u.text); window.__last = u; const d = window.__mode === 'slow-speech' ? 4000 : 80; setTimeout(() => { if (!window.__cancelled) u.onend?.(); }, d); },
     onvoiceschanged: null
   };
+  // These suites exercise the conversation, not the voice pipe. Cut the neural
+  // request so the run is deterministic and costs nothing to repeat.
+  const realFetch = window.fetch.bind(window);
+  window.fetch = (input, init) => {
+    const url = typeof input === "string" ? input : input?.url || "";
+    if (url.includes("/api/tts") || url.includes("api.openai.com")) {
+      return Promise.reject(new TypeError("neural voice disabled for this test"));
+    }
+    return realFetch(input, init);
+  };
   Object.defineProperty(window, "speechSynthesis", { configurable: true, get: () => synth });
   Object.defineProperty(window, "SpeechSynthesisUtterance", {
     configurable: true, writable: true,

@@ -200,24 +200,60 @@ export async function speakNeural(text: string): Promise<boolean> {
 
   return new Promise<boolean>((resolve) => {
     let settled = false;
+    let started = false;
+    let stall = 0;
+    let guard = 0;
+
     const done = (spoke: boolean) => {
       if (settled) return;
       settled = true;
+      window.clearTimeout(stall);
+      window.clearTimeout(guard);
       if (current === audio) current = null;
       resolve(spoke);
     };
 
     const audio = new Audio(url);
     current = audio;
+
     audio.onended = () => done(true);
     audio.onerror = () => done(false);
     // A paused element means the caller cancelled; that still counts as spoken
     // so the fallback voice does not start up over the top of it.
     audio.onpause = () => done(true);
 
-    const started = audio.play();
-    if (started && typeof started.catch === "function") {
-      started.catch(() => {
+    // Nothing here can be trusted to fire. A device with no audio output, a
+    // blocked autoplay policy or a decode stall will all sit silent forever,
+    // and a speech call that never resolves freezes the whole conversation.
+    audio.onplaying = () => {
+      started = true;
+      window.clearTimeout(stall);
+    };
+
+    stall = window.setTimeout(() => {
+      if (started || audio.currentTime > 0) return;
+      lastError = "audio never started playing";
+      try {
+        audio.pause();
+      } catch {
+        /* nothing to stop */
+      }
+      done(false);
+    }, 1800);
+
+    const estimate = 2000 + text.length * 80;
+    const arm = (ms: number) => {
+      window.clearTimeout(guard);
+      guard = window.setTimeout(() => done(true), ms);
+    };
+    arm(estimate);
+    audio.onloadedmetadata = () => {
+      if (Number.isFinite(audio.duration) && audio.duration > 0) arm(audio.duration * 1000 + 900);
+    };
+
+    const playing = audio.play();
+    if (playing && typeof playing.catch === "function") {
+      playing.catch(() => {
         lastError = "browser blocked audio playback";
         done(false);
       });

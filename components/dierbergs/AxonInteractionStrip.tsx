@@ -32,7 +32,7 @@ export default function AxonInteractionStrip({
   disabled
 }: Props) {
   return (
-    <div className="axon-strip">
+    <div className="axon-strip" data-busy={disabled ? "true" : "false"} data-mood={mood}>
       <div className="axon-strip-orb">
         <AxonOrb size={30} mood={mood} />
       </div>

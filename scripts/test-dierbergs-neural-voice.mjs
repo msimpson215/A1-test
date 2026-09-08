@@ -279,6 +279,73 @@ if (SERVER_URL) {
   await page.close();
 }
 
+// 9. The audio device is silent: play() resolves but the clip never ends. This
+//    used to freeze the greeting forever and take the whole conversation with
+//    it, because nothing ever resolved the speech promise.
+{
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1440, height: 900 });
+  await page.evaluateOnNewDocument(() => {
+    window.__spoken = [];
+    window.__deadClips = 0;
+    class DeadAudio {
+      constructor() {
+        this.currentTime = 0;
+        this.paused = true;
+        this.duration = NaN;
+        window.__deadClips += 1;
+      }
+      play() {
+        // Resolves like a healthy element, then never makes a sound and never
+        // fires a single event. This is what a machine with no audio out does.
+        return Promise.resolve();
+      }
+      pause() {}
+    }
+    window.Audio = DeadAudio;
+    const realFetch = window.fetch.bind(window);
+    window.fetch = async (input, init) => {
+      const url = typeof input === "string" ? input : input?.url || "";
+      if (url.includes("/api/tts")) {
+        return new Response(new Blob([new Uint8Array([255, 243])], { type: "audio/mpeg" }), { status: 200 });
+      }
+      return realFetch(input, init);
+    };
+    const voices = [{ name: "Google US English", lang: "en-US", localService: false }];
+    const synth = {
+      getVoices: () => voices,
+      cancel() {},
+      speak(u) { window.__spoken.push(u.text); setTimeout(() => u.onend?.(), 30); },
+      onvoiceschanged: null
+    };
+    Object.defineProperty(window, "speechSynthesis", { configurable: true, get: () => synth });
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      configurable: true, writable: true,
+      value: class { constructor(t) { this.text = t; this.onend = null; this.onerror = null; } }
+    });
+  });
+  await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
+  await page.click(".shopper-nav-pill");
+  await wait(4500);
+
+  const dead = await page.evaluate(() => ({
+    clips: window.__deadClips,
+    spoken: window.__spoken,
+    busy: document.querySelector(".axon-strip")?.getAttribute("data-busy")
+  }));
+  check("a silent audio device is detected", dead.clips > 0, `${dead.clips} clips attempted`);
+  check("the greeting still gets spoken, by the browser", dead.spoken.length > 0, `${dead.spoken.length} browser lines`);
+  check("and the conversation is not left frozen", dead.busy !== "true", `busy=${dead.busy}`);
+
+  // The real proof: it can still take a request afterwards.
+  await page.type(".axon-strip-input", "I need milk");
+  await page.keyboard.press("Enter");
+  await wait(2500);
+  const cards = await page.$$eval(".db-card", (n) => n.length);
+  check("and still answers the next request", cards > 0, `${cards} cards`);
+  await page.close();
+}
+
 await browser.close();
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} checks passed`);
