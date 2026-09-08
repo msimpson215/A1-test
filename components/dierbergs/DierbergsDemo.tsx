@@ -148,9 +148,12 @@ export default function DierbergsDemo() {
 
   const say = useCallback(
     async (line: string, sub?: string, spoken?: string) => {
-      setPrompt(line);
       if (sub !== undefined) setHint(sub);
+      // On a live line the model is mid-sentence about this already. Writing
+      // our version of it too puts two confirmations on screen a beat apart.
       if (live.current) return;
+
+      setPrompt(line);
 
       const words = spoken ?? line;
       enterBusy();

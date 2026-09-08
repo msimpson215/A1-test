@@ -101,7 +101,14 @@ const browser = await puppeteer.launch({ executablePath: "/usr/bin/google-chrome
   await new Promise(r => setTimeout(r, 900));
   const prompt = await page.$eval(".axon-strip-prompt", e => e.textContent);
   const hint = await page.$eval(".axon-strip-hint", e => e.textContent);
-  check("recognition failure is stated on screen", /didn't connect|isn't working/i.test(prompt), prompt);
+  // With no microphone the live line cannot open either, so the message is
+  // about the microphone rather than about recognition. Both are true and
+  // both are dead ends for voice; what matters is that it says so.
+  check(
+    "voice failure is stated on screen",
+    /didn't connect|isn't working|couldn't open the microphone/i.test(prompt),
+    prompt
+  );
   check("failure tells the shopper what to do", /type below/i.test(hint), hint);
   check("mic no longer stuck in listening", !(await page.$eval(".axon-mic", e => e.className.includes("is-listening"))));
   check("input is focused for typing", await page.evaluate(() => document.activeElement?.className?.includes("axon-strip-input")));
