@@ -42,8 +42,11 @@ const harness = (mode) => {
   const realFetch = window.fetch.bind(window);
   window.fetch = (input, init) => {
     const url = typeof input === "string" ? input : input?.url || "";
-    if (url.includes("/api/tts") || url.includes("api.openai.com")) {
-      return Promise.reject(new TypeError("neural voice disabled for this test"));
+    // The model is the real brain; these suites deliberately cut it off so
+    // they test the parser that has to carry the demo when the network does
+    // not, and so they stay deterministic and free.
+    if (url.includes("/api/tts") || url.includes("/api/understand") || url.includes("api.openai.com")) {
+      return Promise.reject(new TypeError("network brain disabled for this test"));
     }
     return realFetch(input, init);
   };
