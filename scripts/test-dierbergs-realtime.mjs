@@ -40,6 +40,18 @@ const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 if (process.env.TRACE) page.on("console", (m) => console.log("   [app]", m.text()));
 
+await page.evaluateOnNewDocument(() => {
+  // Chrome's fake capture device emits a test tone, and the model's voice
+  // detection rightly hears that as someone talking, so it interrupts itself
+  // to say it did not catch anything. A silent track opens the line without
+  // putting noise down it. The words go in over the data channel instead.
+  navigator.mediaDevices.getUserMedia = async () => {
+    const ctx = new AudioContext();
+    const out = ctx.createMediaStreamDestination();
+    return out.stream;
+  };
+});
+
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
 
 const cards = () => page.$$eval(".db-card .db-name", (els) => els.map((e) => e.textContent.trim()));

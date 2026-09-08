@@ -31,6 +31,18 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 await page.setViewport({ width: 1440, height: 900 });
+await page.evaluateOnNewDocument(() => {
+  // Chrome's fake capture device emits a test tone, and the model's voice
+  // detection rightly hears that as someone talking, so it interrupts itself
+  // to say it did not catch anything. A silent track opens the line without
+  // putting noise down it. The words go in over the data channel instead.
+  navigator.mediaDevices.getUserMedia = async () => {
+    const ctx = new AudioContext();
+    const out = ctx.createMediaStreamDestination();
+    return out.stream;
+  };
+});
+
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 90000 });
 await wait(600);
 
