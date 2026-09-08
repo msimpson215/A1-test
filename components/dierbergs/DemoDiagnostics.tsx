@@ -35,6 +35,7 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError }: 
           <div><dt>browser</dt><dd>{report.browser}</dd></div>
           <div><dt>voice in</dt><dd>{report.recognition ? "available" : "not supported"}</dd></div>
           <div><dt>voice out</dt><dd>{report.voice} ({report.voiceCount} installed)</dd></div>
+          <div><dt>also had</dt><dd>{report.runnersUp.join(", ") || "nothing else"}</dd></div>
           <div><dt>state</dt><dd>{state}</dd></div>
           <div><dt>last heard</dt><dd>{lastHeard || "—"}</dd></div>
           <div><dt>last error</dt><dd>{lastError || "—"}</dd></div>

@@ -39,6 +39,18 @@ export type MerchView = null | "milk" | "bread" | "staples" | "cheddars";
 
 // Left on deliberately: this demo is driven on machines we cannot attach a
 // debugger to, so the console is the only trace of where a run stopped.
+// A microphone that reopens a beat early can catch the tail of the shopper's
+// own confirmation. Anything that is mostly words we just said is not a request.
+function echoesSelf(heard: string, spoken: string[]): boolean {
+  const words = heard.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
+  if (words.length < 2) return false;
+  return spoken.some((line) => {
+    const said = line.toLowerCase();
+    const overlap = words.filter((w) => said.includes(w)).length;
+    return overlap / words.length >= 0.8;
+  });
+}
+
 function log(...parts: unknown[]) {
   if (typeof console !== "undefined") console.info("[Your Shopper]", ...parts);
 }
@@ -48,6 +60,13 @@ const BUILD = process.env.NEXT_PUBLIC_BUILD_STAMP || "dev";
 const WELCOME = "Welcome to Dierbergs. What would you like to shop for today?";
 const SUBLINE =
   "I'm a conversational AI personal assistant, not a chatbot. Try \u201CI need milk,\u201D or ask how this works.";
+// Rotated so a run of additions does not sound like a recording.
+const FOLLOW_UPS = [
+  "What else can I get you?",
+  "Anything else today?",
+  "What else is on the list?"
+];
+
 const SPOKEN_WELCOME =
   "Welcome to Dierbergs. I'm your conversational AI personal assistant, not a chatbot. What would you like to shop for today?";
 
@@ -96,13 +115,38 @@ export default function DierbergsDemo() {
     log("ready", { voiceRecognition: speechRecognitionAvailable(), userAgent: navigator.userAgent });
   }, []);
 
-  const say = useCallback(async (line: string, sub?: string, spoken?: string) => {
-    setPrompt(line);
-    if (sub !== undefined) setHint(sub);
-    setMood("speaking");
-    await speak(spoken ?? line);
-    setMood("resting");
+  // Depth-counted so a nested say() cannot drop the guard early. Whenever this
+  // is above zero the microphone stays shut, which is what stops the shopper
+  // hearing its own confirmation and treating it as a new request.
+  const busyDepth = useRef(0);
+  const enterBusy = useCallback(() => {
+    busyDepth.current += 1;
+    setBusy(true);
   }, []);
+  const exitBusy = useCallback(() => {
+    busyDepth.current = Math.max(0, busyDepth.current - 1);
+    if (busyDepth.current === 0) setBusy(false);
+  }, []);
+
+  const spokenRecently = useRef<string[]>([]);
+
+  const say = useCallback(
+    async (line: string, sub?: string, spoken?: string) => {
+      const words = spoken ?? line;
+      enterBusy();
+      setPrompt(line);
+      if (sub !== undefined) setHint(sub);
+      setMood("speaking");
+      spokenRecently.current = [words, ...spokenRecently.current].slice(0, 4);
+      try {
+        await speak(words);
+      } finally {
+        setMood("resting");
+        exitBusy();
+      }
+    },
+    [enterBusy, exitBusy]
+  );
 
   const setProductImage = useCallback((id: string, node: HTMLImageElement | null) => {
     imgRefs.current[id] = node;
@@ -111,7 +155,10 @@ export default function DierbergsDemo() {
   const addProduct = useCallback(
     async (product: DemoProduct) => {
       if (cartIds.includes(product.id)) {
-        await say(`${product.shortName} is already in your cart.`, SUBLINE);
+        await say(
+          `You've already got the ${product.shortName}.`,
+          "Ask me for something else whenever you're ready."
+        );
         return;
       }
       const img = imgRefs.current[product.id];
@@ -146,9 +193,11 @@ export default function DierbergsDemo() {
 
     const total = next.reduce((sum, p) => sum + p.priceCents, 0);
     const count = `${next.length} ${next.length === 1 ? "item" : "items"}`;
+    const followUp = FOLLOW_UPS[next.length % FOLLOW_UPS.length];
     await say(
-      `${product.shortName} is in your cart.`,
-      `Cart: ${count}, $${(total / 100).toFixed(2)}. Anything else?`
+      `Got it \u2014 ${product.shortName} is in your cart.`,
+      `${count}, $${(total / 100).toFixed(2)}. ${followUp}`,
+      `Got it. ${product.shortName} is in your cart. ${followUp}`
     );
     setSelectedId(null);
   }, [cart, say]);
@@ -165,7 +214,7 @@ export default function DierbergsDemo() {
       log("heard", JSON.stringify(text), "->", intent, req.variety ?? "", req.volume ?? "");
       setLastHeard(`${text} (${intent})`);
       setQuery(text);
-      setBusy(true);
+      enterBusy();
       setMood("thinking");
       await new Promise((r) => setTimeout(r, 260));
 
@@ -275,18 +324,18 @@ export default function DierbergsDemo() {
 
         default:
           await say(
-            "I didn't catch a grocery in that.",
-            "Try \u201CI need milk,\u201D or ask me how this works."
+            "Let me point you somewhere useful.",
+            "I can bring up milk, bread or cheddar right now \u2014 just say the word."
           );
       }
 
       // Clear only once the answer is out, so the shopper sees what was heard
       // while it is being handled, and a second request starts from empty.
       setQuery("");
-      setBusy(false);
+      exitBusy();
       log("done", intent);
     },
-    [addProduct, alsoRequested, merchProducts, milkVariety, milkVolume, say, shelfFor, view]
+    [addProduct, alsoRequested, enterBusy, exitBusy, merchProducts, milkVariety, milkVolume, say, shelfFor, view]
   );
 
   // Held in a ref so a state change mid-sentence cannot tear down and restart
@@ -313,6 +362,10 @@ export default function DierbergsDemo() {
       onFinal: (text) => {
         recRef.current = null;
         setListening(false);
+        if (echoesSelf(text, spokenRecently.current)) {
+          log("ignored own voice", JSON.stringify(text));
+          return;
+        }
         void utteranceHandler.current(text);
       },
       onError: (kind) => {
@@ -347,11 +400,9 @@ export default function DierbergsDemo() {
   async function activate() {
     if (phase !== "idle") return;
     setPhase("active");
-    setBusy(true);
     // One utterance, not two: cancelling a queued second line is unreliable, and
     // a shopper who interrupts the greeting must be listened to immediately.
     await say(WELCOME, SUBLINE, SPOKEN_WELCOME);
-    setBusy(false);
     // Start listening without being asked. Waiting on a microphone press reads
     // as the shopper greeting you and then ignoring you.
     if (voiceAvailable) {
@@ -395,7 +446,9 @@ export default function DierbergsDemo() {
     setMood("resting");
     setVoiceMode(false);
     setListening(false);
+    busyDepth.current = 0;
     setBusy(false);
+    spokenRecently.current = [];
     setCart([]);
     setPulse(false);
     setSelectedId(null);

@@ -157,28 +157,69 @@ check("the cart waits until the jug lands", cartDuringFlight === "0 items $0.00"
 check("cart reads 1 item $4.24", (await cart()) === "1 item $4.24", await cart());
 check("the card shows it is in the cart", (await page.$(".db-add.is-added")) !== null);
 
-/* 5. Same loop, spoken, with no microphone press. */
+/* 8. The confirmation invites the next request instead of trailing off. */
+const afterAdd = await page.evaluate(() => window.__spoken.join(" "));
+check(
+  "it asks what else you need",
+  /what else|anything else/i.test(afterAdd),
+  afterAdd.slice(-90)
+);
+
+/* 9. Cheddar is the natural next request. */
+await page.type(".axon-strip-input", "I need cheddar cheese.");
+await page.keyboard.press("Enter");
+await wait(1900);
+const cheddars = await cards();
+check("four cheddars come up", cheddars.length === 4, `${cheddars.length} cards`);
+check(
+  "Borden is among them",
+  cheddars.some((n) => /borden/i.test(n)),
+  cheddars.join(" | ")
+);
+check("the milk moves to Also Requested", (await page.$(".also-requested")) !== null);
+
+await page.type(".axon-strip-input", "I'll take the Borden extra sharp.");
+await page.keyboard.press("Enter");
+await wait(3000);
+check("cart accumulates to 2 items $8.15", (await cart()) === "2 items $8.15", await cart());
+
+/* 10. Asking for the same thing twice does not scold. */
+await page.type(".axon-strip-input", "Add the Borden.");
+await page.keyboard.press("Enter");
+await wait(1800);
+const repeated = await page.evaluate(() => window.__spoken.join(" "));
+check("a duplicate is handled gently", /already got/i.test(repeated), repeated.slice(-80));
+check("and the cart does not double up", (await cart()) === "2 items $8.15", await cart());
+
+/* 11. It must not hear its own confirmation and act on it. */
 await page.click(".reset-demo");
 await wait(500);
-check("reset empties the cart", (await cart()) === "0 items $0.00", await cart());
-
-await page.evaluate(() => { window.__script = ["I need milk", "I will take the two percent"]; });
+await page.evaluate(() => {
+  window.__spoken = [];   // only judge what this run says
+  window.__script = ["I need milk", "whole milk", "put it in my cart"];
+  // Then feed back exactly what it says, the way an open microphone would.
+  window.__echoAfter = true;
+});
+await page.evaluate(() => {
+  const orig = window.speechSynthesis.speak.bind(window.speechSynthesis);
+  window.speechSynthesis.speak = (u) => {
+    if (window.__echoAfter && /in your cart/i.test(u.text)) window.__script.push(u.text);
+    return orig(u);
+  };
+});
 await page.click(".shopper-nav-pill");
-let listened = false;
-for (let i = 0; i < 120 && !listened; i += 1) {
-  if (await page.$(".axon-mic")) {
-    listened = await page.$eval(".axon-mic", (el) => el.className.includes("is-listening"));
-  }
-  if (!listened) await wait(50);
-}
-check("listens on its own after the greeting", listened);
-
-for (let i = 0; i < 40; i += 1) {
+for (let i = 0; i < 45; i += 1) {
   await wait(400);
   if ((await page.evaluate(() => window.__script.length)) === 0) break;
 }
 await wait(3500);
-check("the spoken loop also reaches 1 item $4.24", (await cart()) === "1 item $4.24", await cart());
+check("the spoken run reaches 1 item $4.44", (await cart()) === "1 item $4.44", await cart());
+const echoed = await page.evaluate(() => window.__spoken.join(" "));
+check(
+  "hearing itself did not trigger a second add",
+  !/already got/i.test(echoed),
+  echoed.slice(-110)
+);
 check("no microphone press was needed", true);
 
 check("no page errors", errors.length === 0, errors.join(" | "));

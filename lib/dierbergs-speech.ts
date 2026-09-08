@@ -38,42 +38,68 @@ export function voiceReport() {
     browser: browserName(),
     recognition: speechRecognitionAvailable(),
     voice: bestVoice()?.name ?? "browser default",
-    voiceCount: voices.length
+    voiceCount: voices.length,
+    runnersUp: voiceCandidates(3).slice(1)
   };
 }
 
-// Chrome's default pick is usually the flat eSpeak-style voice. These are the
-// natural-sounding voices shipped with Chrome, macOS and Windows, best first.
+// Voice quality is the single biggest tell that this is a demo rather than a
+// product, and the browser gives us no quality signal — only names. These are
+// the names worth having, best first, across Chrome, Edge, macOS and Windows.
 const PREFERRED_VOICES = [
-  "Google US English",
-  "Microsoft Aria Online (Natural) - English (United States)",
+  // Edge's networked neural voices are the closest thing a browser has to
+  // modern assistant speech, and they cost nothing.
   "Microsoft Ava Online (Natural) - English (United States)",
   "Microsoft Emma Online (Natural) - English (United States)",
+  "Microsoft Aria Online (Natural) - English (United States)",
   "Microsoft Jenny Online (Natural) - English (United States)",
-  "Microsoft Michelle Online (Natural) - English (United States)",
   "Microsoft Andrew Online (Natural) - English (United States)",
   "Microsoft Brian Online (Natural) - English (United States)",
-  "Samantha",
+  "Microsoft Michelle Online (Natural) - English (United States)",
+  // Chrome's own networked voice: dated, but far better than any local SAPI one.
+  "Google US English",
+  // macOS.
+  "Samantha (Enhanced)",
   "Ava (Premium)",
+  "Zoe (Premium)",
+  "Allison (Enhanced)",
+  "Samantha",
   "Ava",
-  "Allison",
-  "Susan"
+  "Allison"
 ];
 
+/** True for the flat, clipped voices that make this sound like 2004. */
+function isRobotic(name: string): boolean {
+  return /espeak|compact|desktop|festival|pico|robot|david|mark|zira|hazel|sapi/i.test(name);
+}
+
 function scoreVoice(v: SpeechSynthesisVoice): number {
-  const index = PREFERRED_VOICES.indexOf(v.name);
-  if (index !== -1) return 1000 - index;
-  if (!v.lang.toLowerCase().startsWith("en")) return -1000;
+  const lang = v.lang.toLowerCase();
+  if (!lang.startsWith("en")) return -1000;
+
+  const exact = PREFERRED_VOICES.indexOf(v.name);
+  if (exact !== -1) return 10000 - exact;
+
   let score = 0;
-  // Network-backed neural voices are the human-sounding ones; the local
-  // built-ins are the flat robotic ones this demo must avoid.
-  if (/online \(natural\)|neural/i.test(v.name)) score += 120;
-  if (!v.localService) score += 60;
-  if (/natural|premium|enhanced/i.test(v.name)) score += 40;
-  if (/google/i.test(v.name)) score += 30;
-  if (/en[-_]us/i.test(v.lang)) score += 20;
-  if (/espeak|compact|desktop|robot/i.test(v.name)) score -= 200;
+  // Networked neural voices are the human-sounding ones. Everything local and
+  // unbranded is a synthesiser from a previous era.
+  if (/online \(natural\)|neural/i.test(v.name)) score += 600;
+  if (/\b(natural|premium|enhanced)\b/i.test(v.name)) score += 250;
+  if (!v.localService) score += 200;
+  if (/google/i.test(v.name)) score += 150;
+  if (/siri/i.test(v.name)) score += 150;
+  if (lang.startsWith("en-us")) score += 40;
+  if (isRobotic(v.name)) score -= 900;
   return score;
+}
+
+/** What else was on offer, so a bad-sounding demo machine can be diagnosed. */
+export function voiceCandidates(limit = 3): string[] {
+  if (typeof window === "undefined" || !window.speechSynthesis) return [];
+  return [...window.speechSynthesis.getVoices()]
+    .sort((a, b) => scoreVoice(b) - scoreVoice(a))
+    .slice(0, limit)
+    .map((v) => v.name);
 }
 
 export function bestVoice(): SpeechSynthesisVoice | null {
@@ -188,9 +214,12 @@ export async function speak(text: string): Promise<void> {
       utter.voice = voice;
       utter.lang = voice.lang;
     }
-    console.info("[Your Shopper] speaking with", voice?.name ?? "browser default");
-    utter.rate = 0.98;
-    utter.pitch = 1.02;
+    const natural = !!voice && (/online \(natural\)|neural|premium|enhanced/i.test(voice.name) || !voice.localService);
+    console.info("[Your Shopper] speaking with", voice?.name ?? "browser default", natural ? "(natural)" : "(basic)");
+    // Neural voices already phrase well and sound stilted if slowed. The older
+    // ones run hot and clipped, so easing off the pace buys some warmth.
+    utter.rate = natural ? 1.0 : 0.92;
+    utter.pitch = natural ? 1.0 : 1.04;
     utter.volume = 1;
 
     let settled = false;
