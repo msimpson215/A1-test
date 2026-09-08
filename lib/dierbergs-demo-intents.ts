@@ -8,6 +8,7 @@ export type DemoIntent =
   | "ADD_CHEESE"
   | "ADD_CURRENT"
   | "HOW_IT_WORKS"
+  | "SEVERAL_ITEMS"
   | "UNKNOWN";
 
 export type MilkVariety = "whole" | "2%" | "1%" | "skim";
@@ -73,6 +74,14 @@ function readIntent(t: string, variety: MilkVariety | null, volume: MilkVolume |
     )
   ) {
     return "HOW_IT_WORKS";
+  }
+
+  // "I need a few things" is the shopper opening a list, not naming a product.
+  if (/\b(a few|some|several|couple|handful|bunch)\b.{0,12}\b(items|things|groceries|stuff|products)\b/.test(t)) {
+    return "SEVERAL_ITEMS";
+  }
+  if (/\b(do some shopping|go shopping|start shopping|my shopping|shopping list|make a list)\b/.test(t)) {
+    return "SEVERAL_ITEMS";
   }
 
   const hasMilk = /\bmilk\b/.test(t) || (variety !== null && !/\bcheese|cheddar|bread\b/.test(t));

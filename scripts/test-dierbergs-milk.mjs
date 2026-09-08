@@ -85,8 +85,16 @@ const greeting = await page.evaluate(() => window.__spoken.join(" "));
 check("greeting is spoken", greeting.length > 0);
 check(
   "greeting is positive about what it is, with no negatives",
-  /conversational personal AI/i.test(greeting) && /help you shop/i.test(greeting) && !/chatbot/i.test(greeting),
+  /ai shopper/i.test(greeting) && /whole store/i.test(greeting) && !/chatbot/i.test(greeting),
   greeting
+);
+
+/* 2b. Opening with "I need a few items" keeps the conversation going. */
+await type("I need to get a few items.");
+await wait(1500);
+check(
+  "an opening request is answered, not stalled",
+  /what would you like to get first/i.test(await page.evaluate(() => window.__spoken.join(" ")))
 );
 
 /* 3. "How does this work?" explains itself. */

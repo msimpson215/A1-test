@@ -117,7 +117,7 @@ check(
 );
 check(
   "describes itself in the positive, never as a negative",
-  /conversational personal ai, here to help you shop/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent || ""))
+  /whole store and can get you anything/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent || ""))
 );
 check("orb carries no face or text", (await page.$eval(".axon-orb", (el) => el.textContent.trim())) === "");
 check(
