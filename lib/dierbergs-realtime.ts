@@ -158,6 +158,25 @@ export async function connectShopper(
     if (dc.readyState === "open") dc.send(JSON.stringify(payload));
   };
 
+  /*
+   * The API allows one response at a time. Three things want to start one —
+   * the greeting, a typed line, and the answer to a tool call — and the
+   * server starts its own whenever it hears the shopper stop talking. Asking
+   * while one is running is an error, and the request is simply dropped,
+   * which is how a tool call ends with the shelf changed and nothing said.
+   */
+  let responding = false;
+  let queued = false;
+
+  const requestResponse = () => {
+    if (responding) {
+      queued = true;
+      return;
+    }
+    responding = true;
+    send({ type: "response.create" });
+  };
+
   dc.addEventListener("open", () => {
     send({
       type: "session.update",
@@ -169,7 +188,7 @@ export async function connectShopper(
       }
     });
     // Nothing has been said yet, so ask for the opening line explicitly.
-    send({ type: "response.create" });
+    requestResponse();
   });
 
   dc.addEventListener("message", (event) => {
@@ -194,10 +213,20 @@ export async function connectShopper(
       return;
     }
     if (type === "response.created") {
+      responding = true;
       handlers.onState("speaking");
       return;
     }
-    if (type === "output_audio_buffer.stopped" || type === "response.done") {
+    if (type === "response.done") {
+      responding = false;
+      handlers.onState("listening");
+      if (queued) {
+        queued = false;
+        requestResponse();
+      }
+      return;
+    }
+    if (type === "output_audio_buffer.stopped") {
       handlers.onState("listening");
       return;
     }
@@ -245,7 +274,7 @@ export async function connectShopper(
       type: "conversation.item.create",
       item: { type: "function_call_output", call_id: call.call_id, output }
     });
-    send({ type: "response.create" });
+    requestResponse();
   }
 
   pc.addTrack(mic.getTracks()[0], mic);
@@ -281,7 +310,7 @@ export async function connectShopper(
         type: "conversation.item.create",
         item: { type: "message", role: "user", content: [{ type: "input_text", text }] }
       });
-      send({ type: "response.create" });
+      requestResponse();
     },
     close
   };
