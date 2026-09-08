@@ -362,7 +362,26 @@ Rules:
   you do have. Do not pretend.
 - "say" is spoken aloud: one or two short sentences, warm, no lists, no
   markdown, no prices unless they matter to the answer.
-- "hint" is a short line of on-screen help. It is not spoken.`;
+- "hint" is a short line of on-screen help. It is not spoken.
+
+Following the conversation:
+- "That one", "the second one", "the cheaper one", "the big one" and "no, the
+  other one" all refer to what is on the shelf right now, in the order given.
+- "The wheat one" or "the sharp one" means whichever product on the shelf has
+  that kind or attribute. Narrow to it instead of starting the aisle over.
+- "No, I meant sourdough" replaces what they asked for. It does not add to it.
+- They should never have to say a full product name twice.
+
+What you know and what you do not:
+- Each product carries its kind, brand, form, size, price and diet badges.
+  Compare on those freely: cheapest, largest, which brands, which forms.
+- "diet" is only what Dierbergs marks on the product. Call something organic,
+  gluten free, keto or lactose free only if it is listed there. If it is not
+  listed, say the store does not flag it — not that it is not.
+- You have no ratings, no reviews and no nutrition figures. If asked which is
+  best rated or healthiest, say you do not have ratings, then offer to compare
+  on price, size, brand or kind.
+- Never invent a product, a price or a claim.`;
 
 const SHOPPER_SCHEMA = {
   type: 'object',
@@ -442,6 +461,28 @@ app.post('/api/understand', async (req, res) => {
   }
 });
 
+// Which models the key can actually reach. Asked often enough — "are we on
+// the best one" — that guessing from a hard-coded name is not good enough.
+app.get('/api/models', async (req, res) => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'no key configured' });
+  try {
+    const r = await fetch('https://api.openai.com/v1/models', {
+      headers: { Authorization: `Bearer ${apiKey}` }
+    });
+    if (!r.ok) return res.status(r.status).json({ error: 'model list failed' });
+    const ids = (await r.json()).data.map((m) => m.id).sort();
+    res.json({
+      inUse: { voice: shopperRealtimeModel(), text: await pickChatModel(apiKey) },
+      realtime: ids.filter((id) => id.includes('realtime')),
+      chat: ids.filter((id) => /^gpt-[45]/.test(id) && !NOT_CHAT.test(id))
+    });
+  } catch (error) {
+    console.error('Model list failed:', error);
+    res.status(502).json({ error: 'unreachable' });
+  }
+});
+
 app.get('/api/brain/status', (req, res) => {
   res.json({
     ok: true,
@@ -449,6 +490,7 @@ app.get('/api/brain/status', (req, res) => {
     ...payrollDemo.status(),
     openai: Boolean(process.env.OPENAI_API_KEY),
     realtime: deskRealtimeModel(),
+    shopperRealtime: shopperRealtimeModel(),
     ...qbo.status(),
     memory: { count: 0, latestAt: null },
     knowledge: { a1: true, home: 'Lebanon, IL 62254' },

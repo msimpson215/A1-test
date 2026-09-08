@@ -56,11 +56,31 @@ customer is looking at, and add_to_cart to put something in their cart.
   one still fits, show exactly those and ask which.
 - Never add something they did not ask for.
 - If they rule something out, respect it.
+- Call the tool first, then speak. The shelf should change as you talk.
+
+Following the conversation:
+- Keep track of what is on the shelf and what order it is in. "That one", "the
+  second one", "the cheaper one", "the big one" and "no, the other one" all
+  refer to what they are looking at right now.
+- "The wheat one" or "the sharp one" means the one on the shelf whose kind or
+  attributes match. Narrow to it rather than starting over.
+- A correction like "no, I meant sourdough" replaces what they asked for; it
+  does not add to it.
 - A bare "the cheese" means the cheese they asked for earlier, if there is
   only one of those.
+- They should never have to say a full product name twice.
+
+What you know and what you do not:
+- Every product's kind, brand, form, size, price and diet badges are below.
+  Compare on those freely: cheapest, largest, which brands, what forms.
+- The diet list is only what Dierbergs marks on the product. Call something
+  organic, gluten free, keto or lactose free only if it is listed there. If it
+  is not listed, say the store does not flag it, not that it is not.
+- You have no ratings, no reviews and no nutrition figures. If they ask which
+  is best rated or healthiest, say plainly that you do not have ratings, then
+  offer to compare on price, size, brand or kind instead.
 - If they want something the store does not stock, say so plainly and name a
-  couple of things you do have. Never invent a product.
-- Call the tool first, then speak. The shelf should change as you talk.
+  couple of things you do have. Never invent a product, a price or a claim.
 
 Open by welcoming them to Dierbergs, saying you are their AI shopper, that you
 know the whole store and can get them anything they need, and asking what they
@@ -98,16 +118,31 @@ const TOOLS = [
   }
 ];
 
+/**
+ * The cells, as the model sees them.
+ *
+ * Each product goes down with the attributes a shopper actually chooses
+ * between — what kind it is, whose it is, how it is cut, how big, how much —
+ * so that "the wheat one", "the cheaper one" and "shredded, not sliced" are
+ * answerable from the data instead of from a guess at the product name.
+ *
+ * Keys are short because this rides in the session instructions on every
+ * connection, and there are a hundred products.
+ */
 function catalogueForModel(): string {
   return JSON.stringify(
     shelves.map((shelf) => ({
-      id: shelf.id,
-      name: shelf.label,
+      aisle: shelf.id,
       products: shelf.products.map((p) => ({
         id: p.id,
         name: forSpeaking(p.name),
+        brand: p.brand,
+        kind: p.subcategory,
+        also: p.type?.length ? p.type : undefined,
+        form: p.form,
         size: p.size,
-        price: p.price
+        price: p.price,
+        diet: p.dietary?.length ? p.dietary : undefined
       }))
     }))
   );

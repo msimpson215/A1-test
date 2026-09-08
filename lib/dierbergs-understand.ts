@@ -48,8 +48,13 @@ const AISLE_PAYLOAD = shelves.map((shelf) => ({
   products: shelf.products.map((p) => ({
     id: p.id,
     name: p.name,
+    brand: p.brand,
+    kind: p.subcategory,
+    also: p.type?.length ? p.type : undefined,
+    form: p.form,
     size: p.size,
-    price: p.price
+    price: p.price,
+    diet: p.dietary?.length ? p.dietary : undefined
   }))
 }));
 

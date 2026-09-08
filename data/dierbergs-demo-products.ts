@@ -7,7 +7,7 @@ export type DemoProduct = {
   size: string;
   price: string;
   priceCents: number;
-  category: "milk" | "eggs" | "bread" | "cheddar";
+  category: "milk" | "eggs" | "bread" | "cheese";
   image: string;
   aisle: string;
   /**
@@ -19,13 +19,35 @@ export type DemoProduct = {
   keywords: string[];
   /**
    * Dierbergs' own item number, once there is a catalogue to take it from.
-   * Nothing reads this yet; it is here so the demo records can be swapped for
-   * real ones without changing their shape.
+   * Until then the demo's own id doubles as one, so a record can be swapped
+   * for a real one without changing its shape.
    */
   sku?: string;
   /** Milk only: how much fat, and how big the jug is. */
   variety?: "whole" | "2%" | "1%" | "skim";
   volume?: "gallon" | "half gallon";
+
+  /*
+   * What the shopper is actually choosing between inside an aisle. The
+   * conversation turns on these: "the wheat one" is a subcategory, "shredded,
+   * not sliced" is a form, "the Tillamook" is a brand. Given to the model as
+   * structure rather than left for it to read out of a product name.
+   */
+  brand?: string;
+  /** white, sourdough, rye, bagel / whole, 2% / large, jumbo / cheddar, swiss. */
+  subcategory?: string;
+  /** Everything else on the label: "extra sharp", "cage free", "thick sliced". */
+  type?: string[];
+  /** How it is sold: loaf, bagels, gallon, block, shredded, sliced, dozen. */
+  form?: string;
+  /**
+   * Only the badges the storefront puts on the product. An empty list means
+   * the store made no claim, which is not the same as the claim being false,
+   * and the assistant is told to say so that way.
+   */
+  dietary?: string[];
+  /** Eggs: how many are in the carton. */
+  count?: number;
 };
 
 /*
@@ -67,9 +89,15 @@ function milkProduct(
     category: "milk",
     image: asset(`/dierbergs/products/${file}.png`),
     aisle: "Aisle 12 - A",
-    keywords: [...VARIETY_WORDS[variety], ...VOLUME_WORDS[volume]],
+    keywords: [...VARIETY_WORDS[variety], ...VOLUME_WORDS[volume], "dierbergs", "store brand"],
     variety,
-    volume
+    volume,
+    sku: `MILKDB${variety.replace("%", "PCT").toUpperCase()}${volume === "gallon" ? "GAL" : "HALF"}`,
+    brand: "Dierbergs",
+    subcategory: variety,
+    type: ["store brand"],
+    form: volume,
+    dietary: []
   };
 }
 
@@ -102,7 +130,14 @@ export const eggsLarge: DemoProduct = {
   category: "eggs",
   image: asset("/dierbergs/products/eggs-dierbergs-large.png"),
   aisle: "Aisle 12 - A",
-  keywords: ["large", "dierbergs", "regular", "grade a"]
+  keywords: ["large", "dierbergs", "regular", "grade a"],
+  sku: "DBEGGSLG",
+  brand: "Dierbergs",
+  subcategory: "large",
+  type: ["grade a","white"],
+  form: "dozen",
+  dietary: [],
+  count: 12
 };
 
 export const eggsExtraLarge: DemoProduct = {
@@ -115,7 +150,14 @@ export const eggsExtraLarge: DemoProduct = {
   category: "eggs",
   image: asset("/dierbergs/products/eggs-dierbergs-xl.png"),
   aisle: "Aisle 12 - A",
-  keywords: ["extra large", "xl", "dierbergs", "grade a"]
+  keywords: ["extra large", "xl", "dierbergs", "grade a"],
+  sku: "DBEGGSXL",
+  brand: "Dierbergs",
+  subcategory: "extra large",
+  type: ["grade a","white"],
+  form: "dozen",
+  dietary: [],
+  count: 12
 };
 
 export const eggsJumbo: DemoProduct = {
@@ -128,7 +170,14 @@ export const eggsJumbo: DemoProduct = {
   category: "eggs",
   image: asset("/dierbergs/products/eggs-dierbergs-jumbo.png"),
   aisle: "Aisle 12 - A",
-  keywords: ["jumbo", "biggest", "dierbergs", "grade a"]
+  keywords: ["jumbo", "biggest", "dierbergs", "grade a"],
+  sku: "DBEGGSJUMBO",
+  brand: "Dierbergs",
+  subcategory: "jumbo",
+  type: ["grade a","white"],
+  form: "dozen",
+  dietary: [],
+  count: 12
 };
 
 export const eggsEgglands: DemoProduct = {
@@ -141,7 +190,14 @@ export const eggsEgglands: DemoProduct = {
   category: "eggs",
   image: asset("/dierbergs/products/eggs-egglands-large.png"),
   aisle: "Aisle 12 - A",
-  keywords: ["egglands", "egglands best", "classic", "white", "name brand"]
+  keywords: ["egglands", "egglands best", "classic", "white", "name brand"],
+  sku: "EBLARGE12",
+  brand: "Eggland's Best",
+  subcategory: "large",
+  type: ["classic","white"],
+  form: "dozen",
+  dietary: [],
+  count: 12
 };
 
 export const eggProducts = [eggsLarge, eggsExtraLarge, eggsJumbo, eggsEgglands];
@@ -158,7 +214,13 @@ export const bread: DemoProduct = {
   category: "bread",
   image: asset("/dierbergs/products/bread-bunny.png"),
   aisle: "Aisle 9 - C",
-  keywords: ["bunny", "original", "soft twist", "cheapest"]
+  keywords: ["bunny", "original", "soft twist", "cheapest"],
+  sku: "BUNNYWHITE",
+  brand: "Bunny Bread",
+  subcategory: "white",
+  type: ["soft twist","enriched","original"],
+  form: "loaf",
+  dietary: []
 };
 
 export const breadEssential: DemoProduct = {
@@ -171,7 +233,13 @@ export const breadEssential: DemoProduct = {
   category: "bread",
   image: asset("/dierbergs/products/bread-essential.png"),
   aisle: "Aisle 9 - C",
-  keywords: ["essential", "everyday", "essential everyday", "store brand"]
+  keywords: ["essential", "everyday", "essential everyday", "store brand"],
+  sku: "EEWHITE",
+  brand: "Essential Everyday",
+  subcategory: "white",
+  type: ["enriched","store brand"],
+  form: "loaf",
+  dietary: []
 };
 
 export const breadWonder: DemoProduct = {
@@ -184,7 +252,13 @@ export const breadWonder: DemoProduct = {
   category: "bread",
   image: asset("/dierbergs/products/bread-wonder.png"),
   aisle: "Aisle 9 - C",
-  keywords: ["wonder", "classic", "sandwich"]
+  keywords: ["wonder", "classic", "sandwich"],
+  sku: "WONDERWHITE",
+  brand: "Wonder",
+  subcategory: "white",
+  type: ["classic","sandwich","sliced"],
+  form: "loaf",
+  dietary: []
 };
 
 export const breadNaturesOwn: DemoProduct = {
@@ -197,7 +271,13 @@ export const breadNaturesOwn: DemoProduct = {
   category: "bread",
   image: asset("/dierbergs/products/bread-natures-own.png"),
   aisle: "Aisle 9 - C",
-  keywords: ["natures own", "nature", "thick", "thick sliced", "texas toast"]
+  keywords: ["natures own", "nature", "thick", "thick sliced", "texas toast"],
+  sku: "NOTHICK",
+  brand: "Nature's Own",
+  subcategory: "white",
+  type: ["thick sliced"],
+  form: "loaf",
+  dietary: ["low-fat"]
 };
 
 export const breadProducts = [bread, breadEssential, breadWonder, breadNaturesOwn];
@@ -211,10 +291,16 @@ export const borden: DemoProduct = {
   size: "7 oz",
   price: "$3.91",
   priceCents: 391,
-  category: "cheddar",
+  category: "cheese",
   image: asset("/dierbergs/products/cheese-borden.png"),
   aisle: "Aisle 12 - B",
-  keywords: ["borden", "shredded", "finely shredded", "extra sharp", "cheapest", "3.91"]
+  keywords: ["borden", "shredded", "finely shredded", "extra sharp", "cheapest", "3.91"],
+  sku: "BORDENXSHARP",
+  brand: "Borden",
+  subcategory: "cheese",
+  type: ["extra sharp","finely shredded"],
+  form: "shredded",
+  dietary: []
 };
 
 export const sargento: DemoProduct = {
@@ -224,10 +310,16 @@ export const sargento: DemoProduct = {
   size: "6.84 oz",
   price: "$4.36",
   priceCents: 436,
-  category: "cheddar",
+  category: "cheese",
   image: asset("/dierbergs/products/cheese-sargento.png"),
   aisle: "Aisle 12 - B",
-  keywords: ["sargento", "sliced", "slices", "ultra thin", "4.36"]
+  keywords: ["sargento", "sliced", "slices", "ultra thin", "4.36"],
+  sku: "SARGENTOSHARP",
+  brand: "Sargento",
+  subcategory: "cheese",
+  type: ["sharp","ultra thin"],
+  form: "sliced",
+  dietary: []
 };
 
 export const landOLakes: DemoProduct = {
@@ -237,10 +329,16 @@ export const landOLakes: DemoProduct = {
   size: "8 oz",
   price: "$4.69",
   priceCents: 469,
-  category: "cheddar",
+  category: "cheese",
   image: asset("/dierbergs/products/cheese-landolakes.png"),
   aisle: "Aisle 12 - B",
-  keywords: ["land o lakes", "land o", "white cheddar", "white", "4.69"]
+  keywords: ["land o lakes", "land o", "white cheddar", "white", "4.69"],
+  sku: "LOLXSHARP",
+  brand: "Land O Lakes",
+  subcategory: "cheese",
+  type: ["extra sharp","white"],
+  form: "block",
+  dietary: []
 };
 
 export const cabot: DemoProduct = {
@@ -250,10 +348,16 @@ export const cabot: DemoProduct = {
   size: "8 oz",
   price: "$4.80",
   priceCents: 480,
-  category: "cheddar",
+  category: "cheese",
   image: asset("/dierbergs/products/cheese-cabot.png"),
   aisle: "Aisle 12 - B",
-  keywords: ["cabot", "block", "4.80"]
+  keywords: ["cabot", "block", "4.80"],
+  sku: "CABOTXSHARP",
+  brand: "Cabot",
+  subcategory: "cheese",
+  type: ["extra sharp"],
+  form: "block",
+  dietary: []
 };
 
 export const cheddarProducts = [borden, sargento, landOLakes, cabot];

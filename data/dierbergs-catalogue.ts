@@ -1,4 +1,10 @@
 import {
+  breadCellExtras,
+  cheeseCellExtras,
+  eggCellExtras,
+  milkCellExtras
+} from "./dierbergs-cells";
+import {
   breadProducts,
   cheddarProducts,
   eggProducts,
@@ -35,7 +41,25 @@ export type Shelf = {
   opening?: (text: string, all: DemoProduct[]) => DemoProduct[];
 };
 
-export type ShelfId = "milk" | "eggs" | "bread" | "cheddar";
+export type ShelfId = "milk" | "eggs" | "bread" | "cheese";
+
+/*
+ * A cell is the aisle's full depth: the handful of products the demo has
+ * always carried, plus everything else the storefront stocks in that
+ * category. The originals come first so that a request that names nothing in
+ * particular still opens on the familiar ones.
+ */
+const breadCell = [...breadProducts, ...breadCellExtras];
+const milkCell = [...milkProducts, ...milkCellExtras];
+const eggCell = [...eggProducts, ...eggCellExtras];
+const cheeseCell = [...cheddarProducts, ...cheeseCellExtras];
+
+export const cells: Record<ShelfId, DemoProduct[]> = {
+  bread: breadCell,
+  milk: milkCell,
+  eggs: eggCell,
+  cheese: cheeseCell
+};
 
 export const shelves: Shelf[] = [
   {
@@ -45,35 +69,35 @@ export const shelves: Shelf[] = [
     heading: "Our milk.",
     ask: "We carry four. Whole, two percent, one percent and skim. Which would you like?",
     askHint: "Name a kind \u2014 or ask for a half gallon.",
-    products: milkProducts,
+    products: milkCell,
     opening: (text) => (mentionsHalfGallon(text) ? milkHalfGallons : milkGallons)
   },
   {
     id: "eggs",
     label: "eggs",
     words: ["egg"],
-    heading: "Our eggs, by the dozen.",
-    ask: "Large, extra large, jumbo, or Eggland's Best. Which would you like?",
-    askHint: "Name a size or a brand and I'll pull it up.",
-    products: eggProducts
+    heading: "Our eggs.",
+    ask: "Large, extra large or jumbo, by the dozen or eighteen. Which would you like?",
+    askHint: "Name a size, a count or a brand and I'll pull it up.",
+    products: eggCell
   },
   {
     id: "bread",
     label: "bread",
-    words: ["bread", "loaf"],
-    heading: "Our sandwich bread.",
-    ask: "Bunny, Essential Everyday, Wonder or Nature's Own. Which would you like?",
-    askHint: "Name a brand \u2014 or ask for the cheapest.",
-    products: breadProducts
+    words: ["bread", "loaf", "bagel", "sourdough", "rye", "pumpernickel"],
+    heading: "Our bread.",
+    ask: "White, wheat, sourdough, rye or bagels. Which would you like?",
+    askHint: "Name a kind or a brand \u2014 or ask for the cheapest.",
+    products: breadCell
   },
   {
-    id: "cheddar",
-    label: "cheddar",
-    words: ["cheddar", "cheese"],
-    heading: "Our cheddar.",
-    ask: "Borden, Sargento, Land O Lakes or Cabot. Which would you like?",
-    askHint: "Name a brand \u2014 or ask for the cheapest.",
-    products: cheddarProducts
+    id: "cheese",
+    label: "cheese",
+    words: ["cheddar", "cheese", "swiss", "provolone", "mozzarella"],
+    heading: "Our cheese.",
+    ask: "Cheddar, Swiss, provolone or mozzarella. Which would you like?",
+    askHint: "Name a kind, a brand or how it is cut.",
+    products: cheeseCell
   }
 ];
 
@@ -129,8 +153,16 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
     best = Math.max(best, score);
     return { product, score };
   });
-  if (best === 0) return pool;
-  return scored.filter((s) => s.score === best).map((s) => s.product);
+  const survivors =
+    best === 0 ? pool : scored.filter((s) => s.score === best).map((s) => s.product);
+
+  /*
+   * A cell holds everything the store stocks in a category, which is more
+   * than anyone wants to look at. Four is what fits the shelf and what a
+   * person can choose between out loud, so an un-narrowed "show me bread"
+   * opens on the first four rather than all thirty-one.
+   */
+  return survivors.slice(0, 4);
 }
 
 /** True when the whole phrase appears, so "large" does not match "x-large". */
