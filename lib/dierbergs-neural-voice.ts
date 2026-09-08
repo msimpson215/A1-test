@@ -12,8 +12,20 @@
 
 const KEY_STORAGE = "axon.tts.key";
 const VOICE_STORAGE = "axon.tts.voice";
-const ENDPOINT = "https://api.openai.com/v1/audio/speech";
+const OPENAI_ENDPOINT = "https://api.openai.com/v1/audio/speech";
 const MODEL = "gpt-4o-mini-tts";
+
+// Preferred path: this server speaks for us using the key it already holds, so
+// nothing has to be configured in the browser. Set NEXT_PUBLIC_TTS_ENDPOINT at
+// build time to point a statically hosted copy at that server.
+const PROXY_ENDPOINT = process.env.NEXT_PUBLIC_TTS_ENDPOINT || "/api/tts";
+
+// Probed once. Null until we know, then true or false for the session.
+let proxyWorks: boolean | null = null;
+
+export function proxyInUse(): boolean {
+  return proxyWorks === true;
+}
 
 /** Voices with the right character for a friendly store assistant, best first. */
 export const NEURAL_VOICES = ["coral", "sage", "marin", "nova", "shimmer", "alloy", "ballad", "cedar"] as const;
@@ -65,8 +77,12 @@ export function setNeuralVoice(voice: NeuralVoice): void {
   }
 }
 
+/**
+ * True when neural speech is worth attempting: either this server can speak,
+ * or a key was pasted in. Unknown counts as worth attempting exactly once.
+ */
 export function neuralAvailable(): boolean {
-  return getVoiceKey().length > 0;
+  return proxyWorks !== false || getVoiceKey().length > 0;
 }
 
 /** Characters billed this session, so the running cost stays visible. */
@@ -84,17 +100,38 @@ export function neuralLastError(): string {
 // run — so audio is reused rather than re-billed.
 const cache = new Map<string, string>();
 
-async function synthesise(text: string): Promise<string | null> {
-  const voice = getNeuralVoice();
-  const cacheKey = `${voice}::${text}`;
-  const hit = cache.get(cacheKey);
-  if (hit) return hit;
+/** Ask this server to speak. Returns null when it cannot, so we can fall back. */
+async function viaProxy(text: string, voice: NeuralVoice): Promise<Blob | null> {
+  if (proxyWorks === false) return null;
+  try {
+    const res = await fetch(PROXY_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice })
+    });
+    if (!res.ok) {
+      // 404 means no such endpoint, 503 means the server has no key. Either
+      // way there is no point asking again on every line.
+      proxyWorks = false;
+      lastError = res.status === 503 ? "server has no OpenAI key" : `speech server ${res.status}`;
+      return null;
+    }
+    proxyWorks = true;
+    lastError = "";
+    return await res.blob();
+  } catch {
+    proxyWorks = false;
+    lastError = "no speech server reachable";
+    return null;
+  }
+}
 
+/** Fall back to calling OpenAI straight from the browser with a pasted key. */
+async function viaBrowserKey(text: string, voice: NeuralVoice): Promise<Blob | null> {
   const key = getVoiceKey();
   if (!key) return null;
-
   try {
-    const res = await fetch(ENDPOINT, {
+    const res = await fetch(OPENAI_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
@@ -106,22 +143,31 @@ async function synthesise(text: string): Promise<string | null> {
         speed: 1.0
       })
     });
-
     if (!res.ok) {
       lastError = res.status === 401 ? "key rejected (401)" : `http ${res.status}`;
       return null;
     }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    charsSynthesised += text.length;
     lastError = "";
-    cache.set(cacheKey, url);
-    return url;
+    return await res.blob();
   } catch (err) {
     lastError = err instanceof Error ? err.message : "request failed";
     return null;
   }
+}
+
+async function synthesise(text: string): Promise<string | null> {
+  const voice = getNeuralVoice();
+  const cacheKey = `${voice}::${text}`;
+  const hit = cache.get(cacheKey);
+  if (hit) return hit;
+
+  const blob = (await viaProxy(text, voice)) ?? (await viaBrowserKey(text, voice));
+  if (!blob) return null;
+
+  const url = URL.createObjectURL(blob);
+  charsSynthesised += text.length;
+  cache.set(cacheKey, url);
+  return url;
 }
 
 /** Fetch audio ahead of time so the first line of a demo is not a dead pause. */

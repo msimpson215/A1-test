@@ -22,5 +22,13 @@ cp out/icon.png demo-static/icon.png
 # Served from the domain root, so the demo is also the index.
 cp out/dierbergs-demo/index.html demo-static/index.html
 
+# Same build, dropped into public/ so the Express server serves it at
+# /dierbergs-demo. Hosted there it can reach /api/tts on its own origin, so the
+# neural voice uses the server's key and nothing needs configuring.
+rm -rf public/dierbergs-demo public/_next
+cp -r out/dierbergs-demo public/dierbergs-demo
+cp -r out/_next public/_next
+
 echo "demo-static/ rebuilt. Publish with:"
 echo "  npx surge --project ./demo-static --domain axon-dierbergs-demo.surge.sh"
+echo "public/dierbergs-demo/ rebuilt: served by the Express app at /dierbergs-demo"

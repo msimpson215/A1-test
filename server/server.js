@@ -209,6 +209,64 @@ app.get('/api/qbo/callback', async (req, res) => {
   }
 });
 
+// --- Dierbergs shopper: neural speech -------------------------------------
+// The demo is a static page, so it has no way to hold a key. It posts text
+// here and this server speaks it with the key Render already provides, which
+// keeps the key server-side where it belongs.
+const TTS_VOICE = process.env.TTS_VOICE || 'coral';
+const TTS_PERSONALITY =
+  'You are a warm, upbeat personal shopper at a friendly neighbourhood grocery store. ' +
+  'Speak naturally and conversationally, at an easy pace, like a real person helping someone ' +
+  'in the aisle. Sound genuinely pleased to help. Never robotic, never salesy, never rushed.';
+
+app.options('/api/tts', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.sendStatus(204);
+});
+
+app.post('/api/tts', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'no key configured' });
+
+  const text = String((req.body && req.body.text) || '').slice(0, 1200);
+  if (!text.trim()) return res.status(400).json({ error: 'no text' });
+
+  try {
+    const upstream = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini-tts',
+        voice: (req.body && req.body.voice) || TTS_VOICE,
+        input: text,
+        instructions: TTS_PERSONALITY,
+        response_format: 'mp3',
+        speed: 1.0
+      })
+    });
+
+    if (!upstream.ok) {
+      const detail = await upstream.text();
+      console.error('TTS error:', upstream.status, detail.slice(0, 200));
+      return res.status(upstream.status).json({ error: 'tts failed' });
+    }
+
+    const audio = Buffer.from(await upstream.arrayBuffer());
+    res.setHeader('Content-Type', 'audio/mpeg');
+    // The same handful of lines repeat all demo long.
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(audio);
+  } catch (error) {
+    console.error('TTS request failed:', error);
+    res.status(502).json({ error: 'tts unreachable' });
+  }
+});
+
 app.get('/api/brain/status', (req, res) => {
   res.json({
     ok: true,

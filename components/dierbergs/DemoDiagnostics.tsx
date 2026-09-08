@@ -64,12 +64,12 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError }: 
             <div>
               <dt>voice out</dt>
               <dd>
-                {report.neural
-                  ? `OpenAI ${getNeuralVoice()} (neural)`
+                {report.neuralSource
+                  ? `OpenAI ${getNeuralVoice()} — via ${report.neuralSource}`
                   : `${report.voice} — browser (${report.voiceCount} installed)`}
               </dd>
             </div>
-            {report.neural ? (
+            {report.neuralSource ? (
               <div><dt>spoken</dt><dd>{neuralUsage().toLocaleString()} chars this session</dd></div>
             ) : (
               <div><dt>also had</dt><dd>{report.runnersUp.join(", ") || "nothing else"}</dd></div>
@@ -80,7 +80,7 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError }: 
           </dl>
 
           <div className="demo-diag-voice">
-            <label htmlFor="tts-key">Natural voice — OpenAI key</label>
+            <label htmlFor="tts-key">Optional: your own OpenAI key</label>
             <input
               id="tts-key"
               type="password"
@@ -99,8 +99,8 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError }: 
               <button type="button" onClick={save}>{saved ? "Saved" : "Save & test"}</button>
             </div>
             <p className="demo-diag-note">
-              Stays in this browser only. Never committed, never sent anywhere but OpenAI.
-              Leave empty to use the built-in browser voice.
+              Only needed where no speech server is reachable. Stays in this browser,
+              never committed. Leave empty and the server&rsquo;s own key is used.
             </p>
           </div>
         </div>

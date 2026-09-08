@@ -1,4 +1,4 @@
-import { neuralAvailable, speakNeural, stopNeural } from "./dierbergs-neural-voice";
+import { getVoiceKey, neuralAvailable, proxyInUse, speakNeural, stopNeural } from "./dierbergs-neural-voice";
 
 export type SpeechHandle = {
   recognition: SpeechRecognition | null;
@@ -42,7 +42,8 @@ export function voiceReport() {
     voice: bestVoice()?.name ?? "browser default",
     voiceCount: voices.length,
     runnersUp: voiceCandidates(3).slice(1),
-    neural: neuralAvailable()
+    neural: neuralAvailable(),
+    neuralSource: proxyInUse() ? "this server" : getVoiceKey() ? "browser key" : ""
   };
 }
 

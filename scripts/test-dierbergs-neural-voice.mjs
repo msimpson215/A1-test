@@ -212,6 +212,73 @@ const open = async (mode, key, voice) => {
   await page.close();
 }
 
+/* 8. Served by the Express app: the server speaks, with nothing configured. */
+const SERVER_URL = process.argv[3];
+if (SERVER_URL) {
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1440, height: 900 });
+  await page.evaluateOnNewDocument(() => {
+    window.__spoken = [];
+    window.__played = [];
+    window.__proxyCalls = [];
+    window.localStorage.removeItem("axon.tts.key");
+
+    const synth = {
+      getVoices: () => [{ name: "Microsoft David Desktop", lang: "en-US", localService: true }],
+      cancel() {},
+      speak(u) { window.__spoken.push(u.text); setTimeout(() => u.onend?.(), 40); },
+      onvoiceschanged: null
+    };
+    Object.defineProperty(window, "speechSynthesis", { configurable: true, get: () => synth });
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      configurable: true, writable: true,
+      value: class { constructor(t) { this.text = t; this.onend = null; this.onerror = null; } }
+    });
+
+    // The stub audio is not decodable, so stand in for the element.
+    window.Audio = class {
+      constructor(src) {
+        this.src = src;
+        this.onended = null; this.onerror = null; this.onpause = null;
+        setTimeout(() => { window.__played.push(src); this.onended?.(); }, 30);
+      }
+      play() { return Promise.resolve(); }
+      pause() {}
+    };
+
+    const realFetch = window.fetch.bind(window);
+    window.fetch = async (url, init) => {
+      if (typeof url === "string" && url.includes("/api/tts")) {
+        window.__proxyCalls.push(JSON.parse(init.body));
+      }
+      return realFetch(url, init);
+    };
+  });
+  await page.goto(SERVER_URL, { waitUntil: "networkidle0", timeout: 60000 });
+  await page.click(".shopper-nav-pill");
+  await wait(2000);
+
+  const s = await page.evaluate(() => ({
+    proxy: window.__proxyCalls,
+    played: window.__played.length,
+    spoken: window.__spoken.length,
+    stored: window.localStorage.getItem("axon.tts.key")
+  }));
+  check("the page asks its own server to speak", s.proxy.length > 0, `${s.proxy.length} calls`);
+  check("with no key stored in the browser", !s.stored, String(s.stored));
+  check("the returned audio is played", s.played > 0, `${s.played} clips`);
+  check("the browser voice is not used", s.spoken === 0, `${s.spoken} browser lines`);
+  check("the greeting is what gets spoken", /AI shopper/i.test(s.proxy[0]?.text ?? ""), (s.proxy[0]?.text ?? "").slice(0, 50));
+
+  const diag = await page.evaluate(async () => {
+    document.querySelector(".demo-diag-toggle").click();
+    await new Promise((r) => setTimeout(r, 250));
+    return document.querySelector(".demo-diag-body")?.textContent ?? "";
+  });
+  check("the panel says the server is doing the talking", /via this server/i.test(diag), diag.slice(0, 130));
+  await page.close();
+}
+
 await browser.close();
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} checks passed`);
