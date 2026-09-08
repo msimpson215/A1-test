@@ -144,6 +144,8 @@ export default function DierbergsDemo() {
   // Set while a live voice line is open. The model is doing the talking then,
   // so anything we would have said is put on the strip and left unspoken.
   const live = useRef<ShopperSession | null>(null);
+  /** Set once the API says the balance is spent, so the strip keeps saying so. */
+  const outOfCredit = useRef(false);
   const [liveOn, setLiveOn] = useState(false);
 
   const say = useCallback(
@@ -385,14 +387,14 @@ export default function DierbergsDemo() {
        * headset when the account is out of credit sends them looking in
        * completely the wrong place.
        */
-      const outOfCredit = /insufficient_quota|credit_balance|billing|quota/i.test(message);
+      outOfCredit.current = /insufficient_quota|credit_balance|billing|quota/i.test(message);
       setPrompt(
-        outOfCredit
+        outOfCredit.current
           ? "My voice line is out of credit on the OpenAI account."
           : "I couldn't open the microphone."
       );
       setHint(
-        outOfCredit
+        outOfCredit.current
           ? "Add credit at platform.openai.com to switch it back on. Typing still works."
           : "Type below and I'll pick it up from there."
       );
@@ -439,8 +441,15 @@ export default function DierbergsDemo() {
         const { line, hint: help } = describeSpeechError(kind);
         log("recognition error", kind);
         setLastError(kind);
-        setPrompt(line);
-        setHint(help);
+        /*
+         * An exhausted balance already put the real reason on the strip, and
+         * the browser recogniser is only failing underneath it. Do not paper
+         * over the cause with a note about the microphone.
+         */
+        if (!outOfCredit.current) {
+          setPrompt(line);
+          setHint(help);
+        }
         inputRef.current?.focus();
       },
       onEnd: () => {
