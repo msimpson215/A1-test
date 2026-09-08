@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { narrowShelf, shelfById, shelves, type ShelfId } from "@/data/dierbergs-catalogue";
+import { shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
 import { asset } from "@/lib/asset-base";
-import { parseRequest } from "@/lib/dierbergs-demo-intents";
+import { forgetConversation, understand } from "@/lib/dierbergs-understand";
 import {
   browserName,
   cancelSpeech,
@@ -67,12 +67,6 @@ const FOLLOW_UPS = [
   "Anything else today?",
   "What else is on the list?"
 ];
-
-// Built from the catalogue, so standing up a new aisle offers it here too
-// rather than leaving the fallback quietly out of date.
-const AISLE_NAMES = shelves.map((s) => s.label);
-const AISLE_LIST = `${AISLE_NAMES.slice(0, -1).join(", ")} or ${AISLE_NAMES.at(-1)}`;
-const AISLE_HINT = `Try ${AISLE_LIST} \u2014 just say the word.`;
 
 const SPOKEN_WELCOME =
   "Welcome to Dierbergs. I'm your AI shopper. I know the whole store, and I can get you anything you need. What can I help you with today?";
@@ -215,102 +209,49 @@ export default function DierbergsDemo() {
 
   const handleUtterance = useCallback(
     async (text: string) => {
-      const current = view === "staples" ? null : view;
-      const req = parseRequest(text, current);
-      log("heard", JSON.stringify(text), "->", req.intent, req.shelf ?? "");
-      setLastHeard(`${text} (${req.intent}${req.shelf ? " " + req.shelf : ""})`);
       setQuery(text);
       enterBusy();
       setMood("thinking");
-      await new Promise((r) => setTimeout(r, 260));
 
-      switch (req.intent) {
-        // One path for every aisle. Which products come back is decided by the
-        // catalogue, so a new aisle needs no case of its own here.
-        case "SHOW":
-        case "ADD": {
-          const shelf = shelfById(req.shelf);
-          if (!shelf) break;
-          const picked = narrowShelf(shelf, req.text);
-          setView(shelf.id);
-          setShelfItems(picked);
+      const turn = await understand(text, {
+        showing: merchProducts,
+        cart,
+        current: view === "staples" ? null : view
+      });
+      log("heard", JSON.stringify(text), "->", turn.action, turn.aisle ?? "", `(${turn.source})`);
+      setLastHeard(`${text} (${turn.action}${turn.aisle ? " " + turn.aisle : ""} \u00b7 ${turn.model ?? turn.source})`);
 
-          if (picked.length === 1) {
-            const only = picked[0];
-            setMerchHeading(`${only.name}.`);
-            if (req.intent === "ADD") {
-              await addProduct(only);
-            } else {
-              await say(
-                `${only.shortName}, ${only.price}.`,
-                "Say \u201Cadd it to my cart\u201D when you want it."
-              );
-            }
-          } else {
-            setMerchHeading(shelf.heading);
-            const already = onTheList.filter((p) => p.category === shelf.id);
-            if (req.intent === "ADD" && already.length === 1) {
-              // "The cheese" when four are showing means the one they already
-              // asked for. Only unambiguous because there is exactly one.
-              await addProduct(already[0]);
-            } else if (req.intent === "ADD") {
-              // They asked to buy without saying which. Put the shelf up and
-              // ask rather than guessing on their behalf.
-              await say(`Happy to. ${shelf.ask}`, "Name one and I'll drop it in.");
-            } else {
-              await say(shelf.ask, shelf.askHint);
-            }
-          }
-          break;
-        }
+      // Put the shelf up before speaking, so what the shopper is being told
+      // about is already in front of them.
+      if (turn.aisle === "staples") {
+        setRequested(staplesProducts);
+        setView("staples");
+        setMerchHeading("Here are a few good matches.");
+      } else if (turn.aisle && turn.products.length) {
+        setView(turn.aisle);
+        setShelfItems(turn.products);
+        setMerchHeading(
+          turn.products.length === 1
+            ? `${turn.products[0].name}.`
+            : shelfById(turn.aisle)?.heading ?? "Here you are."
+        );
+      }
 
-        case "SHOW_STAPLES":
-          setRequested(staplesProducts);
-          setView("staples");
-          setMerchHeading("Here are a few good matches.");
-          await say("Sure. Here are a few good matches.", "Tell me which one to add.");
-          break;
-
-        case "ADD_CURRENT":
-          if (merchProducts.length === 1 && view) {
-            await addProduct(merchProducts[0]);
-          } else if (view) {
-            await say("Which one would you like?", "Name it and I'll add it.");
-          } else {
-            await say("Tell me what you're after first.", "Try: I need milk.");
-          }
-          break;
-
-        case "SEVERAL_ITEMS":
-          await say(
-            "Happy to help. What would you like to get first?",
-            "Name one thing at a time and I'll pull it up."
-          );
-          break;
-
-        case "HOW_IT_WORKS":
-          await say(
-            "Talk to the store the way you'd talk to a person.",
-            "Ask for a grocery and the shelves change. Narrow it down, then say \u201Cadd it to my cart.\u201D",
-            "Talk to the store the way you'd talk to a person. Ask for a grocery and the shelves change. Try: I need milk. Then narrow it down, like two percent, or a half gallon. When you're ready, say add it to my cart."
-          );
-          break;
-
-        default:
-          await say(
-            `I can bring up ${AISLE_LIST} right now.`,
-            "Tell me which and I'll put it on the shelf.",
-            `I can bring up ${AISLE_LIST} right now. Which would you like?`
-          );
+      if (turn.action === "add" && turn.products.length === 1) {
+        // addProduct speaks its own confirmation, because the cart total is
+        // only true once the package has landed in it.
+        await addProduct(turn.products[0]);
+      } else {
+        await say(turn.say, turn.hint);
       }
 
       // Clear only once the answer is out, so the shopper sees what was heard
       // while it is being handled, and a second request starts from empty.
       setQuery("");
       exitBusy();
-      log("done", req.intent);
+      log("done", turn.action);
     },
-    [addProduct, enterBusy, exitBusy, merchProducts, onTheList, say, view]
+    [addProduct, cart, enterBusy, exitBusy, merchProducts, say, view]
   );
 
   // Held in a ref so a state change mid-sentence cannot tear down and restart
@@ -410,6 +351,7 @@ export default function DierbergsDemo() {
 
   function reset() {
     cancelSpeech();
+    forgetConversation();
     stopListening(recRef.current);
     recRef.current = null;
     pendingAdd.current = null;

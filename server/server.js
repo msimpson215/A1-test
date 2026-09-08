@@ -267,6 +267,144 @@ app.post('/api/tts', async (req, res) => {
   }
 });
 
+// --- Dierbergs shopper: understanding -------------------------------------
+// The shopper's words go to a real model, not a pattern list. A parser can be
+// taught that "milks" is "milk", and then "cheeses", and then "not the 18" —
+// and it will still be wrong on the next thing a person says. This is the
+// difference between a demo that survives a stranger and one that does not.
+
+// Picked from what the key can actually reach rather than hard-coded, so this
+// keeps working as the account's models change. Newest family first; audio,
+// embedding and reasoning-only variants are not chat models.
+const CHAT_FAMILIES = [/^gpt-5[.-]/, /^gpt-5$/, /^gpt-4\.1/, /^gpt-4o/];
+const NOT_CHAT = /(audio|realtime|tts|transcribe|embedding|moderation|image|dall-e|whisper|search|instruct)/;
+
+let chatModelPromise = null;
+
+async function pickChatModel(apiKey) {
+  if (process.env.SHOPPER_MODEL) return process.env.SHOPPER_MODEL;
+  if (chatModelPromise) return chatModelPromise;
+
+  chatModelPromise = (async () => {
+    try {
+      const r = await fetch('https://api.openai.com/v1/models', {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      });
+      if (!r.ok) throw new Error(`models ${r.status}`);
+      const ids = (await r.json()).data.map((m) => m.id).filter((id) => !NOT_CHAT.test(id));
+      for (const family of CHAT_FAMILIES) {
+        // Within a family the plain name beats the dated snapshots and the
+        // cut-down minis, which is what "the best one available" means here.
+        const hits = ids.filter((id) => family.test(id)).sort((a, b) => a.length - b.length);
+        const full = hits.find((id) => !/mini|nano/.test(id)) || hits[0];
+        if (full) return full;
+      }
+      return 'gpt-4o';
+    } catch (error) {
+      console.error('Model list failed, falling back:', error.message);
+      chatModelPromise = null;
+      return 'gpt-4o';
+    }
+  })();
+  return chatModelPromise;
+}
+
+const SHOPPER_BRIEF = `You are the AI shopper built into the Dierbergs grocery website.
+A customer is talking to you the way they would talk to a person in the aisle.
+
+You are given the aisles this store has stocked and everything currently on the
+customer's screen and in their cart. Decide what should happen next.
+
+Rules:
+- Only ever choose products from the list you are given, by their exact id.
+- "show" puts products on the shelf. "add" puts ONE product in the cart.
+- Only "add" when the customer has made it clear which single product they
+  want. If it is still ambiguous, "show" what fits and ask them to narrow it.
+- Never add something they did not ask for.
+- If they rule something out ("not the 18 count"), respect that.
+- If they ask for an aisle you do not stock, say so plainly and name a couple
+  you do have. Do not pretend.
+- "say" is spoken aloud: one or two short sentences, warm, no lists, no
+  markdown, no prices unless they matter to the answer.
+- "hint" is a short line of on-screen help. It is not spoken.`;
+
+const SHOPPER_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['action', 'aisle', 'products', 'say', 'hint'],
+  properties: {
+    action: { type: 'string', enum: ['show', 'add', 'chat'] },
+    aisle: { type: ['string', 'null'], description: 'id of the aisle being shown, or null' },
+    products: {
+      type: 'array',
+      description: 'product ids to put on the shelf, or the single one to add',
+      items: { type: 'string' }
+    },
+    say: { type: 'string' },
+    hint: { type: 'string' }
+  }
+};
+
+app.options('/api/understand', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.sendStatus(204);
+});
+
+app.post('/api/understand', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'no key configured' });
+
+  const said = String((req.body && req.body.said) || '').slice(0, 400);
+  if (!said.trim()) return res.status(400).json({ error: 'nothing said' });
+
+  const { aisles = [], showing = [], cart = [], history = [] } = req.body || {};
+
+  try {
+    const model = await pickChatModel(apiKey);
+    const upstream = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: SHOPPER_BRIEF },
+          {
+            role: 'system',
+            content:
+              `Aisles and products:\n${JSON.stringify(aisles)}\n\n` +
+              `Currently on the shelf: ${JSON.stringify(showing)}\n` +
+              `Already in the cart: ${JSON.stringify(cart)}`
+          },
+          ...history.slice(-6),
+          { role: 'user', content: said }
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: { name: 'shopper_turn', strict: true, schema: SHOPPER_SCHEMA }
+        }
+      })
+    });
+
+    if (!upstream.ok) {
+      const detail = await upstream.text();
+      console.error('Understand error:', upstream.status, detail.slice(0, 300));
+      return res.status(upstream.status).json({ error: 'understand failed' });
+    }
+
+    const body = await upstream.json();
+    const turn = JSON.parse(body.choices[0].message.content);
+    res.json({ ...turn, model });
+  } catch (error) {
+    console.error('Understand request failed:', error);
+    res.status(502).json({ error: 'understand unreachable' });
+  }
+});
+
 app.get('/api/brain/status', (req, res) => {
   res.json({
     ok: true,
