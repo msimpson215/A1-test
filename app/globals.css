@@ -52,24 +52,26 @@ body { min-height: 100vh; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  /* Built like the "Weekly Ad" chip beside it: 23px tall, 8px of side padding,
+     a 4px corner and a flat fill with no outline. An outlined capsule was the
+     giveaway that this control had been added on top of the page. */
   height: 23px;
-  padding: 0 11px;
-  border: 1px solid var(--db-red-line);
-  border-radius: 999px;
-  background: var(--db-red-tint);
-  color: var(--db-red);
+  padding: 0 8px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--db-red);
+  color: #fff;
   cursor: pointer;
   white-space: nowrap;
   font: 700 12.5px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
   letter-spacing: 0.01em;
-  transition: background 160ms ease, box-shadow 160ms ease;
+  transition: background 160ms ease;
 }
 .shopper-nav-pill:hover {
-  background: #fbe0df;
+  background: var(--db-red-deep);
 }
 .shopper-nav-pill.is-active {
-  background: #fff;
-  box-shadow: inset 0 -2px 0 0 var(--db-red);
+  background: var(--db-red-deep);
 }
 .shopper-nav-ico { width: 14px; height: 14px; flex: none; }
 

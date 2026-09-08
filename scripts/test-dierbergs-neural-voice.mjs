@@ -12,6 +12,25 @@ const check = (name, pass, detail = "") => {
 };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Sections 1-7 cover what happens when the page has no speech proxy to lean on.
+// Point them at a host that does have one and every one of them fails for the
+// wrong reason, so refuse the run rather than report a fake failure.
+{
+  const origin = URL.replace(/\/dierbergs-demo\/?$/, "");
+  const probe = await fetch(`${origin}/api/tts`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text: "probe" })
+  }).catch(() => null);
+  if (probe && probe.ok) {
+    console.error(
+      `The first URL (${URL}) has a working /api/tts, so the fallback paths can never run.\n` +
+        "Pass a host without a speech proxy first, and the server-backed host second."
+    );
+    process.exit(2);
+  }
+}
+
 /**
  * Stands in for the browser's own speech engine and for OpenAI.
  * `mode` decides how the TTS endpoint behaves.
@@ -214,6 +233,7 @@ const open = async (mode, key, voice) => {
 
 /* 8. Served by the Express app: the server speaks, with nothing configured. */
 const SERVER_URL = process.argv[3];
+
 if (SERVER_URL) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1440, height: 900 });

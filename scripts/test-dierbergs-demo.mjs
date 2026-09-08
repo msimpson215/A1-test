@@ -96,23 +96,36 @@ const pill = await page.$eval(".shopper-nav-pill", (el) => {
   return { text: el.innerText.trim(), left: Math.round(r.left), top: Math.round(r.top), height: Math.round(r.height) };
 });
 check("nav entry reads 'Your Shopper'", pill.text === "Your Shopper", pill.text);
-// Measured off the storefront capture: links end at x 476 and sit 17-18px
-// apart, and Dierbergs' own "Weekly Ad" pill is 23px tall at y 14-36.
+// Measured off the storefront capture: the nav links end at x 476 and sit
+// 16-26px apart, and Dierbergs' own "Weekly Ad" chip occupies y 14-36.
+const WEEKLY_AD = { top: 14, bottom: 36, height: 23 };
 check(
   "nav entry keeps the gap the other links use",
-  pill.left - 476 >= 15 && pill.left - 476 <= 19,
-  `${pill.left - 476}px after Flowers & Gifts`
+  pill.left - 476 >= 16 && pill.left - 476 <= 26,
+  `${pill.left - 476}px after the last link`
 );
 check(
-  "nav entry starts at the same y as the Weekly Ad pill",
-  pill.top === 14,
-  `top ${pill.top}`
+  "nav entry shares the Weekly Ad chip's top edge",
+  pill.top === WEEKLY_AD.top,
+  `top ${pill.top}, chip is at ${WEEKLY_AD.top}`
 );
 check(
-  "nav entry is the same height as the Weekly Ad pill",
-  Math.abs(pill.height - 23) <= 1,
-  `${pill.height}px tall`
+  "nav entry is the same height as the Weekly Ad chip",
+  Math.abs(pill.height - WEEKLY_AD.height) <= 1,
+  `${pill.height}px tall, chip is ${WEEKLY_AD.height}px`
 );
+check(
+  "nav entry clears the red header below it",
+  pill.top + pill.height <= 44,
+  `bottom ${pill.top + pill.height}, header starts at 45`
+);
+// Built like the chip, not like an overlay: square-ish corner, no outline.
+const skin = await page.$eval(".shopper-nav-pill", (el) => {
+  const s = getComputedStyle(el);
+  return { radius: s.borderRadius, border: s.borderTopWidth };
+});
+check("nav entry uses the nav's corner, not a capsule", parseFloat(skin.radius) <= 6, skin.radius);
+check("nav entry has no pasted-on outline", parseFloat(skin.border) === 0, `${skin.border} border`);
 check("no chatbot bubble", (await page.$(".bubble, .chatbot, .chat-window")) === null);
 check("cart starts empty", (await cart()) === "0 items $0.00", await cart());
 check("no interaction strip before activation", (await page.$(".axon-strip")) === null);

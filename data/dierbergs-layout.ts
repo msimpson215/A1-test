@@ -10,6 +10,9 @@ export const dierbergsLayout = {
   pageWidth: 1440,
   // Measured off the capture: Dierbergs' own "Weekly Ad" pill is 23px tall at
   // y 14-36, and nav links sit 17-18px apart. The shopper pill matches both.
+  // Measured off Dierbergs' own "Weekly Ad" chip in the capture, which occupies
+  // x 128-193, y 14-36. Sharing its top and height is what makes this read as
+  // part of the nav rather than as something dropped on top of it.
   shopperNav: { left: 494, top: 14, width: 132, height: 23 },
   axonStrip: { left: 0, top: 105, width: 1440, height: 88 },
   // Hides the half-covered category icon row while the strip is open.
