@@ -297,7 +297,7 @@ export const borden: DemoProduct = {
   keywords: ["borden", "shredded", "finely shredded", "extra sharp", "cheapest", "3.91"],
   sku: "BORDENXSHARP",
   brand: "Borden",
-  subcategory: "cheese",
+  subcategory: "cheddar",
   type: ["extra sharp","finely shredded"],
   form: "shredded",
   dietary: []
@@ -316,7 +316,7 @@ export const sargento: DemoProduct = {
   keywords: ["sargento", "sliced", "slices", "ultra thin", "4.36"],
   sku: "SARGENTOSHARP",
   brand: "Sargento",
-  subcategory: "cheese",
+  subcategory: "cheddar",
   type: ["sharp","ultra thin"],
   form: "sliced",
   dietary: []
@@ -335,7 +335,7 @@ export const landOLakes: DemoProduct = {
   keywords: ["land o lakes", "land o", "white cheddar", "white", "4.69"],
   sku: "LOLXSHARP",
   brand: "Land O Lakes",
-  subcategory: "cheese",
+  subcategory: "cheddar",
   type: ["extra sharp","white"],
   form: "block",
   dietary: []
@@ -354,7 +354,7 @@ export const cabot: DemoProduct = {
   keywords: ["cabot", "block", "4.80"],
   sku: "CABOTXSHARP",
   brand: "Cabot",
-  subcategory: "cheese",
+  subcategory: "cheddar",
   type: ["extra sharp"],
   form: "block",
   dietary: []

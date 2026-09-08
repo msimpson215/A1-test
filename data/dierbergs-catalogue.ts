@@ -147,9 +147,19 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
   if (CHEAPEST.test(text)) return [least(pool)];
   if (DEAREST.test(text)) return [most(pool)];
 
+  /*
+   * Scored by how much of what was said each product accounts for, in
+   * characters rather than in words. A cell is deep enough now that counting
+   * matches is not enough to separate its products: "borden extra sharp" is
+   * two matches for the extra sharp Borden and two for the plain sharp one,
+   * because "sharp" sits inside "extra sharp". Weighing the longer phrase
+   * higher is what makes the more specific request win.
+   */
   let best = 0;
   const scored = pool.map((product) => {
-    const score = product.keywords.filter((k) => containsPhrase(text, k)).length;
+    const score = wordsFor(product)
+      .filter((k) => containsPhrase(text, k))
+      .reduce((sum, k) => sum + k.length, 0);
     best = Math.max(best, score);
     return { product, score };
   });
@@ -171,10 +181,28 @@ function containsPhrase(text: string, phrase: string): boolean {
   return new RegExp(`(^|\\s)${escaped}(\\s|$)`).test(text);
 }
 
+/**
+ * Everything a product answers to.
+ *
+ * Its own keywords plus the attributes that make it what it is, so that a
+ * product does not have to repeat "cheddar" in two places to be found by
+ * someone asking for cheddar. Written once here rather than once per record.
+ */
+function wordsFor(product: DemoProduct): string[] {
+  return [...new Set([
+    ...product.keywords,
+    ...(product.brand ? [product.brand.toLowerCase()] : []),
+    ...(product.subcategory ? [product.subcategory] : []),
+    ...(product.form ? [product.form] : []),
+    ...(product.type ?? []),
+    ...(product.dietary ?? []).map((d) => d.replace(/-/g, " "))
+  ])];
+}
+
 /** True when anything on the shelf answers to what was said. */
 export function shelfRespondsTo(shelf: Shelf, text: string): boolean {
   if (CHEAPEST.test(text) || DEAREST.test(text)) return true;
-  return shelf.products.some((p) => p.keywords.some((k) => containsPhrase(text, k)));
+  return shelf.products.some((p) => wordsFor(p).some((k) => containsPhrase(text, k)));
 }
 
 function least(list: DemoProduct[]): DemoProduct {
