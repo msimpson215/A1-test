@@ -499,6 +499,15 @@ export default function DierbergsDemo() {
     } else {
       setHint("This browser has no speech recognition. Type what you need below.");
     }
+
+    /*
+     * The fallback is good enough to hide why it is running, which is the
+     * problem: the shopper hears the browser's flat voice and has no way to
+     * know the account balance is what took the real one away. Say it.
+     */
+    if (outOfCredit.current) {
+      setHint("Browser voice \u2014 the OpenAI balance is out. Add credit to get my real voice back.");
+    }
   }
 
   function toggleListen() {
