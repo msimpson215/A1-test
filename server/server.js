@@ -200,6 +200,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
+app.get(['/axon', '/axon/', '/projects', '/projects/'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(publicDir, 'axon.html'));
+});
+
 app.get(['/joe-desk', '/joe/books'], (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.sendFile(path.join(publicDir, 'joe-desk.html'));

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Axon AI — projects</title>
+<meta name="description" content="Axon AI work you can open and send. One link for Gmail."/>
+<meta name="theme-color" content="#071433"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy: #071433;
+    --ink: #e8f1ff;
+    --muted: #9db4d4;
+    --line: rgba(160, 200, 255, .16);
+    --card: rgba(255, 255, 255, .05);
+    --blue: #3b9bff;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: radial-gradient(120% 80% at 50% -10%, #163a78 0%, #0a1c44 42%, var(--navy) 100%);
+    color: var(--ink);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+  body { min-height: 100vh; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 36px 22px 80px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .orb {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #9ed0ff, #2f86f0 42%, #0b4dad 100%);
+    box-shadow: 0 0 0 4px rgba(80, 160, 255, .18), 0 0 28px rgba(50, 140, 255, .45);
+    flex: none;
+  }
+  .wordmark { font-size: 28px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+  .wordmark span { display: block; font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--muted); margin-top: 4px; }
+  .lede {
+    font-size: 16px; line-height: 1.55; color: #d5e6ff; margin: 0 0 22px;
+    max-width: 46rem;
+  }
+  .permalink {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 14px; margin-bottom: 28px;
+  }
+  .permalink code {
+    flex: 1; min-width: 180px; font: 600 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: #cfe6ff; word-break: break-all;
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  button, .btn {
+    appearance: none; border: 0; cursor: pointer; text-decoration: none;
+    background: var(--blue); color: #fff; font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+    padding: 10px 14px; border-radius: 999px; display: inline-flex; align-items: center;
+  }
+  button.ghost, .btn.ghost {
+    background: transparent; color: #d6e8ff; border: 1px solid var(--line);
+  }
+  button:hover, .btn:hover { filter: brightness(1.08); }
+  h2 {
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin: 28px 0 10px;
+  }
+  .list { display: grid; gap: 8px; }
+  a.item {
+    display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; align-items: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; color: inherit; text-decoration: none;
+  }
+  a.item:hover { border-color: rgba(80, 160, 255, .45); background: rgba(255,255,255,.08); }
+  a.item strong { display: block; font-size: 16px; font-weight: 750; }
+  a.item em { display: block; font-style: normal; color: var(--muted); font-size: 13px; margin-top: 3px; font-weight: 500; }
+  a.item .go { font-size: 12px; font-weight: 700; color: #9cc9ff; }
+  .note { margin-top: 28px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .toast {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    background: #fff; color: #0b1a36; font-weight: 700; font-size: 13px;
+    padding: 10px 16px; border-radius: 999px; display: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="orb" aria-hidden="true"></div>
+      <div class="wordmark">AXON AI<span>Projects you can open and send</span></div>
+    </header>
+
+    <p class="lede">
+      One page of Axon work. Put the link below in Gmail — that is the whole post.
+    </p>
+
+    <div class="permalink">
+      <code id="shareUrl">https://a1-test-fyjq.onrender.com/axon</code>
+      <div class="actions">
+        <button type="button" id="copyLink">Copy this link</button>
+        <button type="button" class="ghost" id="copyList">Copy the list</button>
+        <a class="btn ghost" id="gmail" target="_blank" rel="noopener">Open Gmail draft</a>
+      </div>
+    </div>
+
+    <h2>Live</h2>
+    <div class="list">
+      <a class="item" href="https://a1-test-fyjq.onrender.com/dierbergs-demo/">
+        <span><strong>Grocery Shopper — Dierbergs</strong><em>Voice shopper on the Dierbergs storefront. Milk, bread, eggs, cheese.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://a1-test-fyjq.onrender.com/joe-desk">
+        <span><strong>Joe’s Professional Assistant</strong><em>Talk to the books. QuickBooks connect on the phone.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/launch.html">
+        <span><strong>Live AI Email</strong><em>The orb from a normal link. Gmail stays open.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://a1-test-fyjq.onrender.com/ai-talk.html">
+        <span><strong>A1 Asphalt AI team member</strong><em>Yellow A1 orb on Joe’s asphalt site.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/siteeye-ai.html">
+        <span><strong>SiteEye 360</strong><em>Job-site eye. WorkSite I 360.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/cv/">
+        <span><strong>Axon CV</strong><em>A resume you can talk to.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/start">
+        <span><strong>StartABusiness.Center</strong><em>Talk through starting the company.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/mentor">
+        <span><strong>SCORE mentor</strong><em>Master business mentor, plus the guides.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/dna">
+        <span><strong>DNA Paternity</strong><em>Voice demo for the testing business. Filipino version too.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/demo.html?src=std">
+        <span><strong>STD Testing</strong><em>Same lab / PSC model as DNA.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/demo.html?src=predeicer">
+        <span><strong>Pre-De-Icer</strong><em>Windshield IP. Licensing play.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/demo.html?src=bandage">
+        <span><strong>No More Boo-Boos</strong><em>Dissolvable bandage.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/demo.html?src=aipoint">
+        <span><strong>AI Point</strong><em>The platform under the orbs.</em></span>
+        <span class="go">Open</span>
+      </a>
+    </div>
+
+    <h2>Also on this stack</h2>
+    <div class="list">
+      <a class="item" href="https://liveai-email.onrender.com/axon-brain.html">
+        <span><strong>Axon Brain — QuickBooks</strong><em>Ask the books in plain English.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://liveai-email.onrender.com/links.html">
+        <span><strong>Full product links</strong><em>Every Axon URL in one sheet, including Tim and Ira.</em></span>
+        <span class="go">Open</span>
+      </a>
+      <a class="item" href="https://a1-test-fyjq.onrender.com">
+        <span><strong>A1 Professional Asphalt site</strong><em>The company site the yellow orb lives on.</em></span>
+        <span class="go">Open</span>
+      </a>
+    </div>
+
+    <p class="note">Job Coach is outlined, not built yet. This page is the postable list.</p>
+  </div>
+  <div class="toast" id="toast">Copied.</div>
+<script>
+  var PAGE = "https://a1-test-fyjq.onrender.com/axon";
+  var LIST = [
+    "Axon AI projects",
+    PAGE,
+    "",
+    "Grocery Shopper — Dierbergs",
+    "https://a1-test-fyjq.onrender.com/dierbergs-demo/",
+    "",
+    "Joe’s Professional Assistant",
+    "https://a1-test-fyjq.onrender.com/joe-desk",
+    "",
+    "Live AI Email",
+    "https://liveai-email.onrender.com/launch.html",
+    "",
+    "A1 Asphalt AI team member",
+    "https://a1-test-fyjq.onrender.com/ai-talk.html",
+    "",
+    "SiteEye 360",
+    "https://liveai-email.onrender.com/siteeye-ai.html",
+    "",
+    "Axon CV",
+    "https://liveai-email.onrender.com/cv/",
+    "",
+    "StartABusiness.Center",
+    "https://liveai-email.onrender.com/start",
+    "",
+    "SCORE mentor",
+    "https://liveai-email.onrender.com/mentor",
+    "",
+    "DNA Paternity",
+    "https://liveai-email.onrender.com/dna",
+    "",
+    "STD Testing",
+    "https://liveai-email.onrender.com/demo.html?src=std",
+    "",
+    "Pre-De-Icer",
+    "https://liveai-email.onrender.com/demo.html?src=predeicer",
+    "",
+    "No More Boo-Boos",
+    "https://liveai-email.onrender.com/demo.html?src=bandage",
+    "",
+    "AI Point",
+    "https://liveai-email.onrender.com/demo.html?src=aipoint",
+    "",
+    "Full catalog",
+    "https://liveai-email.onrender.com/links.html"
+  ].join("\n");
+
+  var toast = document.getElementById("toast");
+  function say(msg) {
+    toast.textContent = msg;
+    toast.style.display = "block";
+    setTimeout(function () { toast.style.display = "none"; }, 1600);
+  }
+  function copy(text, ok) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { say(ok); }).catch(fallback);
+    } else fallback();
+    function fallback() {
+      var area = document.createElement("textarea");
+      area.value = text;
+      document.body.appendChild(area);
+      area.select();
+      try { document.execCommand("copy"); say(ok); } catch (e) { say("Select and copy."); }
+      document.body.removeChild(area);
+    }
+  }
+  document.getElementById("copyLink").onclick = function () { copy(PAGE, "Link copied. Paste it in Gmail."); };
+  document.getElementById("copyList").onclick = function () { copy(LIST, "List copied. Paste it in Gmail."); };
+  document.getElementById("gmail").href =
+    "https://mail.google.com/mail/?view=cm&fs=1&su=" +
+    encodeURIComponent("Axon AI projects") +
+    "&body=" + encodeURIComponent(LIST);
+</script>
+</body>
+</html>
