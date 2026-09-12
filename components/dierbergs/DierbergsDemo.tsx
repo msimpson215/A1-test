@@ -74,8 +74,10 @@ const FOLLOW_UPS = [
 
 const SPOKEN_WELCOME =
   "Welcome to Dierbergs. How can I help you with your shopping today?";
+// Says which of the two it is, because "add a key" and "add credit" send a
+// person to completely different pages and only one of them is ever the fix.
 const CREDIT_HINT =
-  "Browser voice \u2014 Realtime GPT is off. Add credit at platform.openai.com.";
+  "Browser voice \u2014 the key works, the OpenAI account has no credit. Add credit at platform.openai.com.";
 const LIVE_FAILED_HINT = "Browser voice \u2014 Realtime GPT did not connect.";
 const NO_KEY_HINT =
   "Browser voice \u2014 the server has no OpenAI key. Set OPENAI_API_KEY on it.";
@@ -440,7 +442,7 @@ export default function DierbergsDemo() {
       noKey.current = /no key configured|invalid_api_key|incorrect api key|401/i.test(message);
       setPrompt(
         outOfCredit.current
-          ? "My voice line is out of credit on the OpenAI account."
+          ? "The OpenAI account is out of credit, so Realtime GPT will not open. No key needed \u2014 credit is."
           : noKey.current
             ? "The server has no OpenAI key, so the live voice line is off."
             : "I couldn't open the live voice line."
