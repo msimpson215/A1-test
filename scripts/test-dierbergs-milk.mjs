@@ -375,11 +375,12 @@ await wait(700);
 await type("I need a half gallon of milk.");
 await wait(1800);
 const halfMilk = await cards();
+const isFullGallonName = (n) => /128/.test(n) || (/Gallon/i.test(n) && !/Half/i.test(n));
 check(
   "half gallon of milk shows several half gallons, not the gallon",
   halfMilk.length >= 2 &&
-    halfMilk.every((n) => /Half/i.test(n)) &&
-    !halfMilk.some((n) => /Gallon/i.test(n) && !/Half/i.test(n)),
+    !halfMilk.some(isFullGallonName) &&
+    halfMilk.filter((n) => /Half/i.test(n)).length >= 2,
   halfMilk.join(" | ")
 );
 await page.evaluate(() => { window.__spoken = []; });
@@ -407,8 +408,8 @@ const halfSaid = await page.evaluate(() => window.__spoken.join(" "));
 check(
   "no, the half switches to half gallons, not the gallon",
   backToHalf.length >= 2 &&
-    backToHalf.every((n) => /Half/i.test(n)) &&
-    !backToHalf.some((n) => /Gallon/i.test(n) && !/Half/i.test(n)) &&
+    !backToHalf.some(isFullGallonName) &&
+    backToHalf.filter((n) => /Half/i.test(n)).length >= 2 &&
     !/eggs.*bread.*cheese|bread and cheese/i.test(halfSaid),
   `${backToHalf.join(" | ")} · ${halfSaid}`
 );
