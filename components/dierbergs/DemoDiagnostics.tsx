@@ -64,9 +64,9 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError, en
               <dt>voice line</dt>
               <dd>
                 {engine === "realtime"
-                  ? "Realtime GPT — live audio"
+                  ? "Axon — live audio"
                   : engine === "browser"
-                    ? "browser voice (Realtime GPT is not connected)"
+                    ? "browser voice (Axon is not connected)"
                     : "off"}
               </dd>
             </div>

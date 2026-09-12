@@ -1,5 +1,4 @@
 import {
-  enforceMilkSize,
   milkAskedForQuart,
   milkWantedSize,
   narrowShelf,
@@ -108,27 +107,22 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
     if (!response.ok) throw new Error(`understand ${response.status}`);
     const body = await response.json();
 
-    // The size they said wins over the size the model chose. See
-    // enforceMilkSize: being shown a gallon after asking for a half gallon is
-    // the one thing that makes this look broken no matter how well it talks.
-    const chosen = (body.products as string[])
+    const products = (body.products as string[])
       .map((id) => everyProduct.get(id))
       .filter((p): p is DemoProduct => Boolean(p));
-    const products = enforceMilkSize(said, chosen);
-    const say = sizeTrueLine(said, products, chosen, String(body.say ?? ""));
 
     // A model that says "add" without naming a product has not actually
     // chosen one, and guessing is how a demo puts the wrong thing in the cart.
     const action: Turn["action"] =
       body.action === "add" && products.length !== 1 ? "show" : body.action;
 
-    remember(said, say);
+    remember(said, body.say);
 
     return {
       action,
       aisle: body.aisle ?? null,
       products,
-      say,
+      say: body.say,
       hint: body.hint,
       source: "model",
       model: body.model
@@ -138,32 +132,6 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
     remember(said, turn.say);
     return turn;
   }
-}
-
-/**
- * What it says out loud has to be the size that is on the shelf.
- *
- * Correcting the cartons and letting the sentence run unchanged is its own
- * kind of broken: you ask for a half gallon, four half gallons come up, and
- * the voice announces the whole gallons anyway. So when the guard moved the
- * cartons, or when the sentence names the size that was not asked for, the
- * line is replaced with one that is true of what is showing.
- */
-function sizeTrueLine(
-  said: string,
-  shown: DemoProduct[],
-  chosen: DemoProduct[],
-  line: string
-): string {
-  const size = milkWantedSize(said);
-  if (size !== "gallon" && size !== "half gallon") return line;
-  if (!shown.some((p) => p.category === "milk")) return line;
-
-  const moved = shown.length !== chosen.length || shown.some((p, i) => p !== chosen[i]);
-  const lineSize = milkWantedSize(line);
-  if (!moved && (lineSize === null || lineSize === size)) return line;
-
-  return size === "half gallon" ? "Here are the half gallons." : "Here are the gallons.";
 }
 
 function remember(said: string, reply: string): void {

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { enforceMilkSize, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
+import { shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
 import {
@@ -77,8 +77,8 @@ const SPOKEN_WELCOME =
 // Says which of the two it is, because "add a key" and "add credit" send a
 // person to completely different pages and only one of them is ever the fix.
 const CREDIT_HINT =
-  "Browser voice \u2014 the key works, the OpenAI account has no credit. Add credit at platform.openai.com.";
-const LIVE_FAILED_HINT = "Browser voice \u2014 Realtime GPT did not connect.";
+  "Browser voice \u2014 Axon cannot open. The OpenAI account has no credit. Add credit at platform.openai.com.";
+const LIVE_FAILED_HINT = "Browser voice \u2014 Axon did not connect.";
 const NO_KEY_HINT =
   "Browser voice \u2014 the server has no OpenAI key. Set OPENAI_API_KEY on it.";
 
@@ -113,8 +113,6 @@ export default function DierbergsDemo() {
   const inputRef = useRef<HTMLInputElement>(null);
   const pendingAdd = useRef<DemoProduct | null>(null);
   const landed = useRef<(() => void) | null>(null);
-  /** The last thing the shopper said, spoken or typed, exactly as it arrived. */
-  const lastSaid = useRef("");
   const voiceAvailable = speechRecognitionAvailable();
 
   const axonOn = phase !== "idle";
@@ -259,7 +257,6 @@ export default function DierbergsDemo() {
 
   const handleUtterance = useCallback(
     async (text: string) => {
-      lastSaid.current = text;
       // With the line open, typing goes to the same mind that is listening,
       // so switching between talking and typing does not lose the thread.
       if (live.current) {
@@ -321,17 +318,8 @@ export default function DierbergsDemo() {
    * can start talking and finish typing without anything resetting.
    */
   const showProducts = useCallback((aisle: string, ids: string[]): string => {
-    const chosen = ids.map((id) => productById(id)).filter((p): p is DemoProduct => Boolean(p));
-    if (!chosen.length) return "no such products; check the ids against the shelves";
-
-    /*
-     * The model picks the ids, and a model that has been told twice that a
-     * half gallon means a half gallon still hands back the gallon. The size
-     * they said out loud is not up for debate, so it is imposed here, on the
-     * way to the shelf, whichever brain chose the cartons.
-     */
-    const picked = enforceMilkSize(lastSaid.current, chosen);
-    const corrected = picked.length !== chosen.length || picked.some((p, i) => p !== chosen[i]);
+    const picked = ids.map((id) => productById(id)).filter((p): p is DemoProduct => Boolean(p));
+    if (!picked.length) return "no such products; check the ids against the shelves";
 
     setView((aisle as ShelfId) || picked[0].category);
     setShelfItems(picked);
@@ -339,21 +327,13 @@ export default function DierbergsDemo() {
     setMerchHeading(
       picked.length === 1 ? `${picked[0].name}.` : shelfById(aisle as ShelfId)?.heading ?? "Here you are."
     );
-    if (corrected) log("size corrected", lastSaid.current, picked.map((p) => p.name));
-    // Told back to the model so its next sentence describes this shelf, not
-    // the one it asked for.
-    return `showing ${picked.map((p) => p.name).join(", ")}${
-      corrected ? " (corrected to the size the customer asked for; describe these)" : ""
-    }`;
+    return `showing ${picked.map((p) => p.name).join(", ")}`;
   }, []);
 
   const addToCart = useCallback(
     async (id: string): Promise<string> => {
-      const chosen = productById(id);
-      if (!chosen) return "no such product";
-      // Buying the wrong size is worse than showing it. Same rule, same guard.
-      const product = enforceMilkSize(lastSaid.current, [chosen])[0] ?? chosen;
-      if (product !== chosen) log("add corrected", lastSaid.current, product.name);
+      const product = productById(id);
+      if (!product) return "no such product";
       if (cartIds.includes(product.id)) return `${product.name} is already in the cart`;
       // Make sure it is on screen: the package has to fly out of a card.
       if (!imgRefs.current[product.id]) {
@@ -404,7 +384,6 @@ export default function DierbergsDemo() {
           },
           onHeard: (text) => {
             log("heard (live)", text);
-            lastSaid.current = text;
             setLastHeard(text);
           },
           onSaid: (text) => {
@@ -442,7 +421,7 @@ export default function DierbergsDemo() {
       noKey.current = /no key configured|invalid_api_key|incorrect api key|401/i.test(message);
       setPrompt(
         outOfCredit.current
-          ? "The OpenAI account is out of credit, so Realtime GPT will not open. No key needed \u2014 credit is."
+          ? "Axon cannot open \u2014 the OpenAI account is out of credit."
           : noKey.current
             ? "The server has no OpenAI key, so the live voice line is off."
             : "I couldn't open the live voice line."
@@ -597,7 +576,6 @@ export default function DierbergsDemo() {
     outOfCredit.current = false;
     setEngine("off");
     landed.current = null;
-    lastSaid.current = "";
     stopListening(recRef.current);
     recRef.current = null;
     pendingAdd.current = null;

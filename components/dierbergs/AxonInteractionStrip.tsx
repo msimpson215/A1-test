@@ -53,7 +53,7 @@ export default function AxonInteractionStrip({
           how this demo gets mistaken for a broken one. */}
       {engine && engine !== "off" ? (
         <span className={`axon-engine is-${engine}`}>
-          {engine === "realtime" ? "Realtime GPT" : "Browser voice"}
+          {engine === "realtime" ? "Axon" : "Browser voice"}
         </span>
       ) : null}
 

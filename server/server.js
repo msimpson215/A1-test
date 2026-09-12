@@ -55,24 +55,31 @@ function shopperRealtimeModel() {
   return process.env.SHOPPER_REALTIME_MODEL || 'gpt-realtime-2.1';
 }
 
-// The shopper's instructions, catalogue and tools arrive over the data channel
-// once it opens, because the catalogue lives with the demo. All this has to
-// do is open the line on the best model with a voice worth listening to.
+// Same conversational line as Joe's desk — Axon — opened for grocery.
+// The catalogue and the shelf/cart tools arrive over the data channel once
+// it opens, because they live with the demo. The identity has to be here
+// so the first token is Axon, not a blank Realtime session.
+const AXON_SHOPPER_INSTRUCTIONS = `You are Axon. You are helping this person shop on the Dierbergs grocery website.
+Dierbergs is pronounced "Deerbergs".
+Talk the way you talk everywhere else: a real conversation, not a script and not a kiosk.
+Warm, brief, one or two sentences. Never call yourself a chatbot or an AI shopper.
+Open with: "Welcome to Dierbergs. How can I help you with your shopping today?" Then listen.
+You have tools to put products on the shelf and one in the cart. Use them. Do not invent products.
+Follow the conversation. If they change their mind, follow what they mean now.`;
+
 function shopperSessionConfig() {
   return JSON.stringify({
     type: 'realtime',
     model: shopperRealtimeModel(),
     output_modalities: ['audio'],
+    instructions: AXON_SHOPPER_INSTRUCTIONS,
     audio: {
       input: {
         transcription: { model: 'gpt-4o-mini-transcribe' },
         turn_detection: {
           type: 'semantic_vad',
-          // Wait for them to finish. Medium/high jumps in on a pause and
-          // talks over a correction like "well, I need a whole gallon."
           eagerness: 'low',
           create_response: true,
-          // They can still cut the assistant off, the way they would a person.
           interrupt_response: true
         }
       },
@@ -354,70 +361,19 @@ async function pickChatModel(apiKey) {
   return chatModelPromise;
 }
 
-const SHOPPER_BRIEF = `You are helping a customer shop on the Dierbergs grocery website.
-A customer is talking to you the way they would talk to a person in the aisle.
-Never call yourself an AI shopper. Never say "tell me what you're after."
+const SHOPPER_BRIEF = `You are Axon, helping this person shop on the Dierbergs grocery website.
+Talk like yourself: a real conversation, not a script. One or two sentences.
+Never call yourself an AI shopper.
 
 You are given the aisles this store has stocked and everything currently on the
 customer's screen and in their cart. Decide what should happen next.
 
-Rules:
 - Only ever choose products from the list you are given, by their exact id.
 - "show" puts products on the shelf. "add" puts ONE product in the cart.
-- A bare aisle request ("I need bread") must show one of each kind, up to
-  eight, not the first four in the list. Bread must include rye and bagels.
-  Cheese must include Swiss, provolone and mozzarella, not four cheddars.
-- Milk is a capsule. A bare "I need milk" shows the Dierbergs store-brand
-  whole milk in a gallon and a half gallon, and asks if they want to save
-  money with that. There is no Dierbergs quart. If they ask for a quart or
-  a quarter, say so and keep the gallon and half gallon on the shelf.
-- If they ask for a half gallon, show several half gallons (different fats,
-  up to eight) and none of the gallons. "The half" / "no, I want the half"
-  means half gallon. A gallon request shows several gallons, not the half.
-- "A gallon", "a whole gallon", "half gallon" and "a half gallon" are milk
-  even if they never say milk. "A whole gallon" is the gallon size. If milk
-  is already on the shelf and they change size, switch the size — do not
-  list milk, eggs, bread and cheese.
-- If they name a fat level and no other brand, show the Dierbergs of that
-  fat in the sizes we have. If they name Prairie Farms, Lactaid, Horizon,
-  fairlife, a2, Organic Valley or Kalona, show that brand. If they say no
-  or something else, show the other brands. Every carton shown can go in
-  the cart.
-- Only "add" when one product is clearly the one they mean. If more than one
-  still fits, "show" exactly those and ask which — never more than they need
-  to choose between.
-- Use "chat" only when they are not asking about groceries at all. If they
-  named a grocery, something goes on the shelf.
-- Never add something they did not ask for.
-- A bare "the cheese" means the cheese they asked for earlier in the trip, if
-  there is exactly one of those. Otherwise ask which.
-- If they rule something out ("not the 18 count"), respect that.
-- If they ask for something this store clearly does not carry, say you have
-  milk, eggs, bread and cheese, and ask which of those you can help with.
-  Do not use that list as a fallback for a size or a short correction. Do
-  not pretend. Do not say you can "bring up" an aisle.
-- "say" is spoken aloud: one or two short sentences, warm, no lists, no
-  markdown, no prices unless they matter to the answer.
-- "hint" is a short line of on-screen help. It is not spoken.
-
-Following the conversation:
-- "That one", "the second one", "the cheaper one", "the big one" and "no, the
-  other one" all refer to what is on the shelf right now, in the order given.
-- "The wheat one" or "the sharp one" means whichever product on the shelf has
-  that kind or attribute. Narrow to it instead of starting the aisle over.
-- "No, I meant sourdough" replaces what they asked for. It does not add to it.
-- They should never have to say a full product name twice.
-
-What you know and what you do not:
-- Each product carries its kind, brand, form, size, price and diet badges.
-  Compare on those freely: cheapest, largest, which brands, which forms.
-- "diet" is only what Dierbergs marks on the product. Call something organic,
-  gluten free, keto or lactose free only if it is listed there. If it is not
-  listed, say the store does not flag it — not that it is not.
-- You have no ratings, no reviews and no nutrition figures. If asked which is
-  best rated or healthiest, say you do not have ratings, then offer to compare
-  on price, size, brand or kind.
-- Never invent a product, a price or a claim.`;
+- Follow the conversation. If they change their mind, follow what they mean now.
+- "That one" and "the other one" refer to what is on the shelf.
+- Never invent a product, a price, or a size this store does not sell.
+- "say" is spoken aloud. "hint" is on-screen only.`;
 
 const SHOPPER_SCHEMA = {
   type: 'object',

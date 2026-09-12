@@ -250,52 +250,6 @@ function milkSpreadOfSize(pool: DemoProduct[], size: "gallon" | "half gallon"): 
   });
 }
 
-/**
- * The size the shopper asked for, imposed on whatever was chosen.
- *
- * A model picks the products by id, and a model that has been told twice that
- * a half gallon means a half gallon will still hand back the gallon. Asking
- * for one thing and being shown another is the single worst thing this demo
- * can do, so the size is not left to the model's discretion: whoever answered,
- * the cartons on the shelf are the size that was said out loud.
- */
-export function enforceMilkSize(said: string, picked: DemoProduct[]): DemoProduct[] {
-  const size = milkWantedSize(said);
-  if (size !== "gallon" && size !== "half gallon") return picked;
-
-  const milks = picked.filter((p) => p.category === "milk");
-  if (!milks.length) return picked;
-
-  const rightSize = milks.filter((p) => milkJugSize(p) === size);
-  // Some of what it chose is the right size: drop the rest and keep its order.
-  if (rightSize.length) {
-    return picked.filter((p) => p.category !== "milk" || milkJugSize(p) === size);
-  }
-
-  /*
-   * Everything it chose is the wrong size. Swap each carton for the same milk
-   * in the size that was asked for, so "no, the half" on a shelf of Prairie
-   * Farms gallons answers with Prairie Farms half gallons rather than the
-   * store brand.
-   */
-  const cell = cells.milk;
-  const swapped: DemoProduct[] = [];
-  for (const wrong of milks) {
-    const match = cell.find(
-      (p) =>
-        milkJugSize(p) === size &&
-        p.brand === wrong.brand &&
-        p.subcategory === wrong.subcategory &&
-        !swapped.includes(p)
-    );
-    if (match) swapped.push(match);
-  }
-  if (swapped.length) return swapped;
-
-  // Nothing in that brand comes in that size, so show the size we do have.
-  return milkSpreadOfSize(cell, size);
-}
-
 export function shelfById(id: ShelfId | null | undefined): Shelf | null {
   return shelves.find((s) => s.id === id) ?? null;
 }
