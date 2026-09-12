@@ -73,6 +73,16 @@
   a.item strong { display: block; font-size: 16px; font-weight: 750; }
   a.item em { display: block; font-style: normal; color: var(--muted); font-size: 13px; margin-top: 3px; font-weight: 500; }
   a.item .go { font-size: 12px; font-weight: 700; color: #9cc9ff; }
+  .clip {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .clip strong { display: block; font-size: 16px; font-weight: 750; }
+  .clip em { display: block; font-style: normal; color: var(--muted); font-size: 13px; margin: 3px 0 12px; font-weight: 500; }
+  .clip video {
+    width: 100%; max-height: 360px; border-radius: 10px; background: #000;
+    display: block;
+  }
   .note { margin-top: 28px; color: var(--muted); font-size: 13px; line-height: 1.5; }
   .toast {
     position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
@@ -140,22 +150,11 @@
         <span><strong>DNA Paternity</strong><em>Voice demo for the testing business. Filipino version too.</em></span>
         <span class="go">Open</span>
       </a>
-      <a class="item" href="https://liveai-email.onrender.com/demo.html?src=std">
-        <span><strong>STD Testing</strong><em>Same lab / PSC model as DNA.</em></span>
-        <span class="go">Open</span>
-      </a>
-      <a class="item" href="https://liveai-email.onrender.com/demo.html?src=predeicer">
-        <span><strong>Pre-De-Icer</strong><em>Windshield IP. Licensing play.</em></span>
-        <span class="go">Open</span>
-      </a>
-      <a class="item" href="https://liveai-email.onrender.com/demo.html?src=bandage">
-        <span><strong>No More Boo-Boos</strong><em>Dissolvable bandage.</em></span>
-        <span class="go">Open</span>
-      </a>
-      <a class="item" href="https://liveai-email.onrender.com/demo.html?src=aipoint">
-        <span><strong>AI Point</strong><em>The platform under the orbs.</em></span>
-        <span class="go">Open</span>
-      </a>
+      <div class="clip">
+        <strong>Pre-De-Icer</strong>
+        <em>Windshield IP. The video, for now.</em>
+        <video controls playsinline preload="metadata" src="https://liveai-email.onrender.com/cv2/videos/pre-de-icer.mp4"></video>
+      </div>
     </div>
 
     <h2>Also on this stack</h2>
@@ -164,17 +163,13 @@
         <span><strong>Axon Brain — QuickBooks</strong><em>Ask the books in plain English.</em></span>
         <span class="go">Open</span>
       </a>
-      <a class="item" href="https://liveai-email.onrender.com/links.html">
-        <span><strong>Full product links</strong><em>Every Axon URL in one sheet, including Tim and Ira.</em></span>
-        <span class="go">Open</span>
-      </a>
       <a class="item" href="https://a1-test-fyjq.onrender.com">
-        <span><strong>A1 Professional Asphalt site</strong><em>The company site the yellow orb lives on.</em></span>
+        <span><strong>A1 Professional Asphalt site</strong><em>Axon AI in a legacy website.</em></span>
         <span class="go">Open</span>
       </a>
     </div>
 
-    <p class="note">Job Coach is outlined, not built yet. This page is the postable list.</p>
+    <p class="note">Grocery is the live build. STD Testing, No More Boo-Boos, and AI Point come back when the videos are ready.</p>
   </div>
   <div class="toast" id="toast">Copied.</div>
 <script>
@@ -210,20 +205,14 @@
     "DNA Paternity",
     "https://liveai-email.onrender.com/dna",
     "",
-    "STD Testing",
-    "https://liveai-email.onrender.com/demo.html?src=std",
+    "Pre-De-Icer (video)",
+    "https://liveai-email.onrender.com/cv2/videos/pre-de-icer.mp4",
     "",
-    "Pre-De-Icer",
-    "https://liveai-email.onrender.com/demo.html?src=predeicer",
+    "Axon Brain — QuickBooks",
+    "https://liveai-email.onrender.com/axon-brain.html",
     "",
-    "No More Boo-Boos",
-    "https://liveai-email.onrender.com/demo.html?src=bandage",
-    "",
-    "AI Point",
-    "https://liveai-email.onrender.com/demo.html?src=aipoint",
-    "",
-    "Full catalog",
-    "https://liveai-email.onrender.com/links.html"
+    "A1 Professional Asphalt — Axon AI in a legacy website",
+    "https://a1-test-fyjq.onrender.com"
   ].join("\n");
 
   var toast = document.getElementById("toast");
