@@ -195,6 +195,10 @@ body { min-height: 100vh; }
   line-height: 1.35;
   color: var(--db-muted);
 }
+.axon-strip-hint.is-engine {
+  color: #8a1f1f;
+  font-weight: 600;
+}
 .axon-strip-form {
   flex: 1;
   display: flex;

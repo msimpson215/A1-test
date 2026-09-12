@@ -18,12 +18,13 @@ type Props = {
   state: string;
   lastHeard: string;
   lastError: string;
+  engine?: string;
 };
 
 // A readout rather than a feature: this demo is driven on machines we cannot
 // attach a debugger to, and one screenshot of this panel says which build is
 // loaded, which browser, and what the voice actually did.
-export default function DemoDiagnostics({ build, state, lastHeard, lastError }: Props) {
+export default function DemoDiagnostics({ build, state, lastHeard, lastError, engine }: Props) {
   const [open, setOpen] = useState(false);
   const [report, setReport] = useState<ReturnType<typeof voiceReport> | null>(null);
   const [key, setKey] = useState("");
@@ -59,6 +60,16 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError }: 
         <div className="demo-diag-body">
           <dl className="demo-diag-list">
             <div><dt>build</dt><dd>{build}</dd></div>
+            <div>
+              <dt>voice line</dt>
+              <dd>
+                {engine === "realtime"
+                  ? "Realtime GPT — live audio"
+                  : engine === "browser"
+                    ? "browser voice (Realtime GPT is not connected)"
+                    : "off"}
+              </dd>
+            </div>
             <div><dt>browser</dt><dd>{report.browser}</dd></div>
             <div><dt>voice in</dt><dd>{report.recognition ? "available" : "not supported"}</dd></div>
             <div>

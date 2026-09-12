@@ -219,7 +219,7 @@ function locally(said: string, context: TurnContext): Turn {
       return {
         ...base,
         action: "chat",
-        say: context.current ? "Which one would you like?" : "Tell me what you're after first.",
+        say: context.current ? "Which one would you like?" : "What can I help you find?",
         hint: context.current ? "Name it and I'll add it." : "Try: I need milk."
       };
 
@@ -243,10 +243,39 @@ function locally(said: string, context: TurnContext): Turn {
       break;
   }
 
+  // Already looking at an aisle: a size, a correction, or a clipped
+  // follow-up is still about that aisle. Dumping milk/eggs/bread/cheese
+  // over a "whole gallon" is how this stops sounding like a person.
+  if (context.current) {
+    const shelf = shelfById(context.current);
+    if (shelf) {
+      const picked = narrowShelf(shelf, said);
+      const quart = shelf.id === "milk" && milkAskedForQuart(said);
+      return {
+        action: "show",
+        aisle: shelf.id,
+        products: picked,
+        say: quart
+          ? "We don't have a quart of the Dierbergs. Gallon or half gallon?"
+          : picked.length === 1
+            ? `${picked[0].shortName}, ${picked[0].price}.`
+            : shelf.id === "milk"
+              ? "Which size — a gallon or a half gallon?"
+              : shelf.ask,
+        hint: quart
+          ? "Name a gallon or a half gallon, or say if you want another brand."
+          : picked.length === 1
+            ? "Say \u201Cadd it to my cart\u201D when you want it."
+            : shelf.askHint,
+        source: "local"
+      };
+    }
+  }
+
   return {
     ...base,
     action: "chat",
-    say: `We've got ${AISLE_AND}. Which of those are you after?`,
+    say: `We've got ${AISLE_AND}. Which of those can I help you with?`,
     hint: "Name one and I'll put it on the shelf."
   };
 }

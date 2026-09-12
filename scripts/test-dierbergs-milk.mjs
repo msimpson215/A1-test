@@ -109,8 +109,11 @@ await wait(900);
 const greeting = await page.evaluate(() => window.__spoken.join(" "));
 check("greeting is spoken", greeting.length > 0);
 check(
-  "greeting is the shopper asking what they're after",
-  /ai shopper/i.test(greeting) && /after/i.test(greeting) && !/whole store/i.test(greeting) && !/chatbot/i.test(greeting),
+  "greeting offers to help with shopping",
+  /how can i help you with your shopping/i.test(greeting) &&
+    !/ai shopper/i.test(greeting) &&
+    !/what you.?re after/i.test(greeting) &&
+    !/whole store/i.test(greeting),
   greeting
 );
 
@@ -125,6 +128,11 @@ check(
   "but the screen still reads Dierbergs",
   /Dierbergs/.test(await page.$eval(".axon-strip-prompt", (el) => el.textContent)),
   await page.$eval(".axon-strip-prompt", (el) => el.textContent)
+);
+check(
+  "the strip names the browser fallback, not a fake live line",
+  /browser voice/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent || "")),
+  await page.$eval(".axon-strip-hint", (el) => el.textContent || "")
 );
 
 /* 2b. Opening with "I need a few items" keeps the conversation going. */
@@ -358,6 +366,38 @@ if (halfIdx >= 0) {
   await wait(2800);
 }
 check("the half gallon goes in the cart at $2.69", (await cart()) === "1 item $2.69", await cart());
+
+await page.click(".reset-demo");
+await wait(400);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(700);
+await type("I need a half gallon of milk.");
+await wait(1800);
+const halfMilk = await cards();
+check(
+  "half gallon of milk shows half gallons",
+  halfMilk.length >= 1 && halfMilk.some((n) => /Half/i.test(n)),
+  halfMilk.join(" | ")
+);
+await page.evaluate(() => { window.__spoken = []; });
+await type("Well, I need a whole gallon.");
+await wait(1800);
+const wholeGal = await cards();
+const wholeSaid = await page.evaluate(() => window.__spoken.join(" "));
+check(
+  "a whole gallon is still milk, not a four-aisle miss",
+  wholeGal.length >= 1 &&
+    wholeGal.some((n) => /Milk/i.test(n) && /Gallon/i.test(n) && !/Half/i.test(n)) &&
+    !/eggs.*bread.*cheese|bread and cheese/i.test(wholeSaid),
+  `${wholeGal.join(" | ")} · ${wholeSaid}`
+);
+check(
+  "the gallon size is on the shelf",
+  wholeGal.some((n) => /Dierbergs Whole Milk - Gallon/i.test(n)) &&
+    !wholeGal.some((n) => /Half/i.test(n)),
+  wholeGal.join(" | ")
+);
 
 await page.click(".reset-demo");
 await wait(400);

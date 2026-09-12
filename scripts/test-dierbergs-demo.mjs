@@ -149,8 +149,11 @@ check(
   /Welcome to Dierbergs/.test(await page.$eval(".axon-strip-prompt", (el) => el.textContent || ""))
 );
 check(
-  "describes itself in the positive, never as a negative",
-  /what you're after|what are you after/i.test(await page.$eval(".axon-strip-hint", (el) => el.textContent || ""))
+  "asks how it can help with shopping",
+  /how can I help you with your shopping/i.test(
+    await page.evaluate(() => window.__spoken.map((s) => s.text || s).join(" "))
+  ),
+  await page.evaluate(() => window.__spoken.map((s) => s.text || s).join(" "))
 );
 check("orb carries no face or text", (await page.$eval(".axon-orb", (el) => el.textContent.trim())) === "");
 check(

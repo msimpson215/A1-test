@@ -120,11 +120,16 @@ export const shelves: Shelf[] = [
 ];
 
 function mentionsHalfGallon(text: string): boolean {
-  return /\b(half gallon|half a gallon|64 ?oz)\b/.test(text);
+  return /\b(half[\s-]?gallon|half a gallon|64 ?oz)\b/.test(text);
 }
 
 function mentionsGallon(text: string): boolean {
-  return !mentionsHalfGallon(text) && /\b(gallon|128 ?oz)\b/.test(text);
+  return !mentionsHalfGallon(text) && /\b((whole\s+)?gallon|128 ?oz)\b/.test(text);
+}
+
+/** Size talk with no "milk" — "a whole gallon", "the half gallon". */
+export function utteranceNamesMilkSize(text: string): boolean {
+  return mentionsGallon(text) || mentionsHalfGallon(text) || milkAskedForQuart(text);
 }
 
 /** Quart, "a quarter", 32 oz — Dierbergs does not sell a store-brand quart. */
@@ -241,9 +246,12 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
    * because "sharp" sits inside "extra sharp". Weighing the longer phrase
    * higher is what makes the more specific request win.
    */
+  // "A whole gallon" is the gallon size, not whole-milk fat.
+  const scoredText = shelf.id === "milk" ? text.replace(/\bwhole\s+(?=gallons?\b)/g, "") : text;
+
   let best = 0;
   const scored = pool.map((product) => {
-    const value = score(product, text);
+    const value = score(product, scoredText);
     best = Math.max(best, value);
     return { product, score: value };
   });

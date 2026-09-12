@@ -63,8 +63,8 @@ function log(...parts: unknown[]) {
 
 const BUILD = process.env.NEXT_PUBLIC_BUILD_STAMP || "dev";
 
-const WELCOME = "Welcome to Dierbergs. I'm your AI shopper.";
-const SUBLINE = "Tell me what you're after.";
+const WELCOME = "Welcome to Dierbergs.";
+const SUBLINE = "How can I help you with your shopping today?";
 // Rotated so a run of additions does not sound like a recording.
 const FOLLOW_UPS = [
   "What else can I get you?",
@@ -73,7 +73,10 @@ const FOLLOW_UPS = [
 ];
 
 const SPOKEN_WELCOME =
-  "Welcome to Dierbergs. I'm your AI shopper. Tell me what you're after.";
+  "Welcome to Dierbergs. How can I help you with your shopping today?";
+const CREDIT_HINT =
+  "Browser voice \u2014 Realtime GPT is off. Add credit at platform.openai.com.";
+const LIVE_FAILED_HINT = "Browser voice \u2014 Realtime GPT did not connect.";
 
 export default function DierbergsDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
@@ -145,11 +148,20 @@ export default function DierbergsDemo() {
   const live = useRef<ShopperSession | null>(null);
   /** Set once the API says the balance is spent, so the strip keeps saying so. */
   const outOfCredit = useRef(false);
+  /** Live connect failed; we are on browser STT + TTS, not Realtime GPT. */
+  const fallback = useRef(false);
   const [liveOn, setLiveOn] = useState(false);
+  const [engine, setEngine] = useState<"off" | "realtime" | "browser">("off");
+
+  const browserHint = () =>
+    outOfCredit.current ? CREDIT_HINT : fallback.current ? LIVE_FAILED_HINT : null;
 
   const say = useCallback(
     async (line: string, sub?: string, spoken?: string) => {
-      if (sub !== undefined) setHint(sub);
+      // Do not paper over an out-of-credit / failed-live notice with the
+      // greeting subline. That is how the strip hid that this is browser voice.
+      const notice = browserHint();
+      if (sub !== undefined) setHint(notice && sub === SUBLINE ? notice : sub);
       // On a live line the model is mid-sentence about this already. Writing
       // our version of it too puts two confirmations on screen a beat apart.
       if (live.current) return;
@@ -374,12 +386,17 @@ export default function DierbergsDemo() {
       );
       live.current = session;
       setLiveOn(true);
+      setEngine("realtime");
       setVoiceMode(false);
+      fallback.current = false;
+      outOfCredit.current = false;
     } catch (error) {
       const message = String((error as Error)?.message || error);
       log("live failed", message);
       setLastError(message);
       setMood("resting");
+      fallback.current = true;
+      setEngine("browser");
       /*
        * Name the actual reason. An exhausted OpenAI balance and a dead
        * microphone both end up here, and telling someone to check their
@@ -390,13 +407,9 @@ export default function DierbergsDemo() {
       setPrompt(
         outOfCredit.current
           ? "My voice line is out of credit on the OpenAI account."
-          : "I couldn't open the microphone."
+          : "I couldn't open the live voice line."
       );
-      setHint(
-        outOfCredit.current
-          ? "Add credit at platform.openai.com to switch it back on. Typing still works."
-          : "Type below and I'll pick it up from there."
-      );
+      setHint(outOfCredit.current ? CREDIT_HINT : LIVE_FAILED_HINT);
       inputRef.current?.focus();
     }
   }, []);
@@ -471,6 +484,7 @@ export default function DierbergsDemo() {
   async function activate() {
     if (phase !== "idle") return;
     setPhase("active");
+    setEngine("browser");
 
     // A live voice line is the real thing: the model hears the shopper and
     // answers in its own voice, so it can be interrupted and it does not wait
@@ -486,38 +500,42 @@ export default function DierbergsDemo() {
 
     // One utterance, not two: cancelling a queued second line is unreliable, and
     // a shopper who interrupts the greeting must be listened to immediately.
-    await say(WELCOME, SUBLINE, SPOKEN_WELCOME);
+    await say(WELCOME, browserHint() ?? SUBLINE, SPOKEN_WELCOME);
     // Start listening without being asked. Waiting on a microphone press reads
     // as the shopper greeting you and then ignoring you.
     if (voiceAvailable) {
       log("auto-listening after greeting");
       if (browserName() !== "Chrome") {
-        setHint(`Listening. Voice is unreliable in ${browserName()} — if nothing happens, type below or use Chrome.`);
+        setHint(
+          browserHint() ??
+            `Listening. Voice is unreliable in ${browserName()} — if nothing happens, type below or use Chrome.`
+        );
+      } else if (browserHint()) {
+        setHint(browserHint() as string);
       }
       setVoiceMode(true);
     } else {
-      setHint("This browser has no speech recognition. Type what you need below.");
-    }
-
-    /*
-     * The fallback is good enough to hide why it is running, which is the
-     * problem: the shopper hears the browser's flat voice and has no way to
-     * know the account balance is what took the real one away. Say it.
-     */
-    if (outOfCredit.current) {
-      setHint("Browser voice \u2014 the OpenAI balance is out. Add credit to get my real voice back.");
+      setHint(browserHint() ?? "This browser has no speech recognition. Type what you need below.");
     }
   }
 
   function toggleListen() {
-    if (realtimeSupported()) {
-      cancelSpeech();
-      void goLive();
+    if (live.current) {
+      live.current.close();
+      live.current = null;
+      setLiveOn(false);
       return;
     }
-    if (!voiceAvailable) return;
+    // Already on the browser path. Pressing the mic must toggle listening,
+    // not retry Realtime — that puts "Connecting…" over the conversation.
+    if (fallback.current || outOfCredit.current || !realtimeSupported()) {
+      if (!voiceAvailable) return;
+      cancelSpeech();
+      setVoiceMode((on) => !on);
+      return;
+    }
     cancelSpeech();
-    setVoiceMode((on) => !on);
+    void goLive();
   }
 
   // Typing takes over from the microphone, so an open mic cannot inject room
@@ -537,6 +555,9 @@ export default function DierbergsDemo() {
     live.current?.close();
     live.current = null;
     setLiveOn(false);
+    fallback.current = false;
+    outOfCredit.current = false;
+    setEngine("off");
     landed.current = null;
     stopListening(recRef.current);
     recRef.current = null;
@@ -651,6 +672,7 @@ export default function DierbergsDemo() {
 
       <DemoDiagnostics
         build={BUILD}
+        engine={engine}
         state={listening ? "listening" : busy ? "thinking or speaking" : phase}
         lastHeard={lastHeard}
         lastError={lastError}

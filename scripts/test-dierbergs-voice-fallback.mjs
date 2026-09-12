@@ -106,7 +106,7 @@ const browser = await puppeteer.launch({ executablePath: "/usr/bin/google-chrome
   // both are dead ends for voice; what matters is that it says so.
   check(
     "voice failure is stated on screen",
-    /didn't connect|isn't working|couldn't open the microphone/i.test(prompt),
+    /didn't connect|isn't working|couldn't open the (microphone|live voice line)|browser voice/i.test(prompt),
     prompt
   );
   check("failure tells the shopper what to do", /type below/i.test(hint), hint);

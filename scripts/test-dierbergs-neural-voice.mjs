@@ -288,7 +288,7 @@ if (SERVER_URL) {
   check("with no key stored in the browser", !s.stored, String(s.stored));
   check("the returned audio is played", s.played > 0, `${s.played} clips`);
   check("the browser voice is not used", s.spoken === 0, `${s.spoken} browser lines`);
-  check("the greeting is what gets spoken", /AI shopper/i.test(s.proxy[0]?.text ?? ""), (s.proxy[0]?.text ?? "").slice(0, 50));
+  check("the greeting is what gets spoken", /how can I help you with your shopping/i.test(s.proxy[0]?.text ?? ""), (s.proxy[0]?.text ?? "").slice(0, 80));
 
   const diag = await page.evaluate(async () => {
     document.querySelector(".demo-diag-toggle").click();

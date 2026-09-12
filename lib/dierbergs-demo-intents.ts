@@ -2,6 +2,7 @@ import {
   shelfById,
   shelfRespondsTo,
   shelvesNamedIn,
+  utteranceNamesMilkSize,
   type ShelfId
 } from "@/data/dierbergs-catalogue";
 
@@ -81,6 +82,12 @@ export function parseRequest(raw: string, current: ShelfId | null = null): Parse
 
   if (named.length === 1) {
     return { intent: wantsToAdd(text) ? "ADD" : "SHOW", shelf: named[0].id, text };
+  }
+
+  // "A whole gallon" / "half gallon" is milk even when they never say milk.
+  // After a half-gallon request, that is how people correct the size.
+  if (utteranceNamesMilkSize(text)) {
+    return { intent: wantsToAdd(text) ? "ADD" : "SHOW", shelf: "milk", text };
   }
 
   // No aisle named. If what they said picks something out of the aisle already

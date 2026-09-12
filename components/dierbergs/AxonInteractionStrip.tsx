@@ -47,7 +47,9 @@ export default function AxonInteractionStrip({
 
       <div className="axon-strip-copy">
         <p className="axon-strip-prompt">{prompt}</p>
-        {hint ? <p className="axon-strip-hint">{hint}</p> : null}
+        {hint ? (
+          <p className={`axon-strip-hint${/^Browser voice/.test(hint) ? " is-engine" : ""}`}>{hint}</p>
+        ) : null}
       </div>
 
       <form
