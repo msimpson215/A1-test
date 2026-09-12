@@ -66,6 +66,96 @@ export const cells: Record<ShelfId, DemoProduct[]> = {
   cheese: cheeseCell
 };
 
+/**
+ * This week's ad: one item per cell.
+ *
+ * The products, their names and their shelf prices come off the storefront
+ * like everything else here. The promotion itself — the lower price and the
+ * day it ends — is the demo's own ad, because Dierbergs' weekly ad is not in
+ * what we harvested. It is written down rather than left to a model so that
+ * "is there a special on eggs" gets the same answer twice in a row, and so
+ * nothing invents a deal on a product that has none.
+ */
+export type Special = {
+  productId: string;
+  /** The ad price, against the product's own price as the "was". */
+  nowCents: number;
+  /** When it runs out, the way a shopper would hear it. */
+  through: string;
+  /** Offered in the assistant's own words, so eggs are "those" and a loaf is "it". */
+  ask: string;
+};
+
+export const specials: Record<ShelfId, Special> = {
+  eggs: { productId: "eggs-eb-large-18", nowCents: 549, through: "Saturday", ask: "Want those?" },
+  milk: { productId: "dierbergs-whole-gal", nowCents: 349, through: "Saturday", ask: "Want one?" },
+  bread: { productId: "natures-own-thick", nowCents: 399, through: "Saturday", ask: "Want it?" },
+  cheese: { productId: "sargento-sharp", nowCents: 299, through: "Saturday", ask: "Want it?" }
+};
+
+const SPECIAL_ASKED =
+  /\b(specials?|sales?|on sale|deals?|discount|coupon|promo|weekly ad|marked down|anything cheap)\b/;
+
+/** "Is there a special on eggs?" — asking about the ad rather than the aisle. */
+export function asksForSpecial(text: string): boolean {
+  return SPECIAL_ASKED.test(plain(text));
+}
+
+export function specialFor(id: ShelfId): { product: DemoProduct; special: Special } | null {
+  const special = specials[id];
+  const product = cells[id].find((p) => p.id === special.productId);
+  return product ? { product, special } : null;
+}
+
+function dollars(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+/** The ad price for one product, for the card. Null when it is not on the ad. */
+export function specialPriceFor(productId: string): string | null {
+  for (const special of Object.values(specials)) {
+    if (special.productId === productId) return dollars(special.nowCents);
+  }
+  return null;
+}
+
+/**
+ * What this actually rings up at.
+ *
+ * An ad price that the cart ignores is not a special, it is a claim. Every
+ * total goes through here so the saving is real at the register.
+ */
+export function payCents(product: DemoProduct): number {
+  for (const special of Object.values(specials)) {
+    if (special.productId === product.id) return special.nowCents;
+  }
+  return product.priceCents;
+}
+
+/** What to say when they ask about one aisle's special. */
+export function specialLine(id: ShelfId): string {
+  const found = specialFor(id);
+  if (!found) return "";
+  const { product, special } = found;
+  return `Yes \u2014 the ${product.shortName} is ${dollars(special.nowCents)} through ${
+    special.through
+  }, down from ${product.price}. ${special.ask}`;
+}
+
+/** What to say when they ask what is on special without naming an aisle. */
+export function allSpecialsLine(): string {
+  const parts = shelfOrder
+    .map((id) => {
+      const found = specialFor(id);
+      if (!found) return null;
+      return `${found.product.shortName} at ${dollars(found.special.nowCents)}`;
+    })
+    .filter((p): p is string => Boolean(p));
+  return `This week: ${parts.join(", ")}. Which of those would you like to see?`;
+}
+
+const shelfOrder: ShelfId[] = ["milk", "eggs", "bread", "cheese"];
+
 export const shelves: Shelf[] = [
   {
     id: "milk",

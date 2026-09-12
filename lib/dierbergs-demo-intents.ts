@@ -1,4 +1,5 @@
 import {
+  asksForSpecial,
   shelfById,
   shelfRespondsTo,
   shelvesNamedIn,
@@ -16,6 +17,8 @@ export type DemoIntent =
   | "SHOW_STAPLES"
   | "HOW_IT_WORKS"
   | "SEVERAL_ITEMS"
+  /** "Is there a special on eggs?" — the week's ad, not the whole aisle. */
+  | "SPECIAL"
   | "UNKNOWN";
 
 export type ParsedRequest = {
@@ -75,6 +78,17 @@ export function parseRequest(raw: string, current: ShelfId | null = null): Parse
   }
 
   const named = shelvesNamedIn(text);
+
+  /*
+   * Asking about the ad comes before asking about the aisle: "is there a
+   * special on eggs" is not a request to see the eggs, it is a question with
+   * one answer. With no aisle named it is the whole ad, and if they are
+   * already looking at an aisle it is that aisle's deal.
+   */
+  if (asksForSpecial(text)) {
+    return { intent: "SPECIAL", shelf: named.length === 1 ? named[0].id : current, text };
+  }
+
   if (named.length > 1) return { intent: "SHOW_STAPLES", shelf: null, text };
   if (/\b(staples|groceries|basics)\b/.test(text)) {
     return { intent: "SHOW_STAPLES", shelf: null, text };

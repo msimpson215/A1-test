@@ -468,7 +468,28 @@ body { min-height: 100vh; }
   background: #eaf5ee;
   color: var(--db-green);
   font-size: 12px;
-  cursor: default;
+}
+.db-add.is-added:hover { background: #d8ecdf; }
+
+/* THIS WEEK'S AD — the ad price leads, the shelf price is struck through */
+.db-deal { color: var(--db-red); }
+.db-was {
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--db-muted);
+  text-decoration: line-through;
+}
+.db-deal-flag {
+  margin-left: 6px;
+  vertical-align: 2px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--db-red);
+  color: #fff;
+  font: 700 9px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 /* ALSO REQUESTED MINI CARD */

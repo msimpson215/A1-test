@@ -1,16 +1,27 @@
 "use client";
 
+import { specialPriceFor } from "@/data/dierbergs-catalogue";
 import type { DemoProduct } from "@/data/dierbergs-demo-products";
 
 type Props = {
   product: DemoProduct;
   selected?: boolean;
   inCart?: boolean;
+  /** How many of this are in the cart, so a second one can be added. */
+  cartCount?: number;
   imageRef?: (node: HTMLImageElement | null) => void;
   onAdd?: (product: DemoProduct) => void;
 };
 
-export default function DierbergsProductCard({ product, selected, inCart, imageRef, onAdd }: Props) {
+export default function DierbergsProductCard({
+  product,
+  selected,
+  inCart,
+  cartCount = 0,
+  imageRef,
+  onAdd
+}: Props) {
+  const deal = specialPriceFor(product.id);
   return (
     <article className={`db-card${selected ? " is-selected" : ""}${inCart ? " is-in-cart" : ""}`}>
       <div className="db-card-media">
@@ -31,7 +42,15 @@ export default function DierbergsProductCard({ product, selected, inCart, imageR
         ) : null}
       </div>
 
-      <div className="db-price">{product.price}</div>
+      {deal ? (
+        <div className="db-price">
+          <span className="db-deal">{deal}</span>
+          <span className="db-was">{product.price}</span>
+          <span className="db-deal-flag">Special</span>
+        </div>
+      ) : (
+        <div className="db-price">{product.price}</div>
+      )}
       <div className="db-name">{product.name}</div>
       <div className="db-size">{product.size}</div>
 
@@ -45,14 +64,15 @@ export default function DierbergsProductCard({ product, selected, inCart, imageR
           </svg>
           {product.aisle}
         </span>
+        {/* Never disabled. Wanting a second one of something is normal, and a
+            dead button is what made two of anything impossible to ask for. */}
         <button
           type="button"
           className={`db-add${inCart ? " is-added" : ""}`}
           onClick={() => onAdd?.(product)}
-          disabled={inCart}
-          aria-label={inCart ? `${product.name} in cart` : `Add ${product.name}`}
+          aria-label={cartCount ? `Add another ${product.name}` : `Add ${product.name}`}
         >
-          {inCart ? "In cart" : "+"}
+          {cartCount > 1 ? `${cartCount} in cart` : cartCount === 1 ? "In cart" : "+"}
         </button>
       </div>
     </article>

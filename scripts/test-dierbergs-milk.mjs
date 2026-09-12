@@ -266,13 +266,15 @@ await page.keyboard.press("Enter");
 await wait(3000);
 check("cart accumulates to 2 items $8.15", (await cart()) === "2 items $8.15", await cart());
 
-/* 10. Asking for the same thing twice does not scold. */
+/* 10. Asking for the same thing twice buys two of it. A shopper who wants a
+   second Borden is not making a mistake, and being told they already have one
+   is the demo refusing an order it understood perfectly well. */
 await page.type(".axon-strip-input", "Add the Borden.");
 await page.keyboard.press("Enter");
-await wait(1800);
+await wait(3000);
 const repeated = await page.evaluate(() => window.__spoken.join(" "));
-check("a duplicate is handled gently", /already got/i.test(repeated), repeated.slice(-80));
-check("and the cart does not double up", (await cart()) === "2 items $8.15", await cart());
+check("a second one is not refused", !/already got/i.test(repeated), repeated.slice(-80));
+check("and the cart counts both", (await cart()) === "3 items $12.06", await cart());
 
 /* 11. It must not hear its own confirmation and act on it. */
 await page.click(".reset-demo");
@@ -296,7 +298,9 @@ for (let i = 0; i < 45; i += 1) {
   if ((await page.evaluate(() => window.__script.length)) === 0) break;
 }
 await wait(3500);
-check("the spoken run reaches 1 item $4.44", (await cart()) === "1 item $4.44", await cart());
+// $3.49, not the $4.44 on the shelf: the whole gallon is this week's milk
+// special, and the cart charges the ad price.
+check("the spoken run reaches 1 item $3.49", (await cart()) === "1 item $3.49", await cart());
 const echoed = await page.evaluate(() => window.__spoken.join(" "));
 check(
   "hearing itself did not trigger a second add",

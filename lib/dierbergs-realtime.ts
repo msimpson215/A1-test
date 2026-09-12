@@ -1,4 +1,4 @@
-import { shelves } from "@/data/dierbergs-catalogue";
+import { shelves, specialFor, specialPriceFor } from "@/data/dierbergs-catalogue";
 import { forSpeaking } from "./dierbergs-pronounce";
 
 /**
@@ -18,8 +18,8 @@ export type ShopperState = "connecting" | "idle" | "listening" | "thinking" | "s
 export type ShopperTools = {
   /** Put an aisle on the shelf. Returns what to tell the model happened. */
   showProducts(aisle: string, productIds: string[]): string;
-  /** Put one product in the cart, resolving once it has landed there. */
-  addToCart(productId: string): Promise<string>;
+  /** Put a product in the cart, resolving once it has landed there. */
+  addToCart(productId: string, quantity?: number): Promise<string>;
 };
 
 export type ShopperHandlers = {
@@ -57,6 +57,16 @@ The shelves you have are below. Only those products exist. Never invent a
 product, a price, or a size this store does not sell. There is no Dierbergs
 quart.
 
+One product in each aisle is on this week's ad. It is the only one with a
+"deal" on it, which is its sale price, and "dealThrough", which is the day it
+ends. If they ask whether there is a special, say what it is, what it costs,
+what it was, and when it ends, then offer it. Nothing without a "deal" is on
+special, however good the price looks. If they say yes to a special, add that
+product.
+
+If they ask for more than one of something, add it that many times with the
+quantity. If they ask for two different things, do both.
+
 Follow the conversation. If they change their mind, follow what they mean
 now. "That one", "the other one", "the cheaper one" refer to what is on the
 shelf. They should never have to say a full name twice. Wait until they have
@@ -85,11 +95,15 @@ const TOOLS = [
   {
     type: "function",
     name: "add_to_cart",
-    description: "Put one product into the customer's cart. It flies into the cart on screen.",
+    description: "Put a product into the customer's cart. It flies into the cart on screen.",
     parameters: {
       type: "object",
       properties: {
-        product_id: { type: "string", description: "id of the single product to add" }
+        product_id: { type: "string", description: "id of the product to add" },
+        quantity: {
+          type: "integer",
+          description: "how many of it they asked for; leave out for one"
+        }
       },
       required: ["product_id"]
     }
@@ -109,20 +123,26 @@ const TOOLS = [
  */
 function catalogueForModel(): string {
   return JSON.stringify(
-    shelves.map((shelf) => ({
-      aisle: shelf.id,
-      products: shelf.products.map((p) => ({
-        id: p.id,
-        name: forSpeaking(p.name),
-        brand: p.brand,
-        kind: p.subcategory,
-        also: p.type?.length ? p.type : undefined,
-        form: p.form,
-        size: p.size,
-        price: p.price,
-        diet: p.dietary?.length ? p.dietary : undefined
-      }))
-    }))
+    shelves.map((shelf) => {
+      const ad = specialFor(shelf.id);
+      return {
+        aisle: shelf.id,
+        products: shelf.products.map((p) => ({
+          id: p.id,
+          name: forSpeaking(p.name),
+          brand: p.brand,
+          kind: p.subcategory,
+          also: p.type?.length ? p.type : undefined,
+          form: p.form,
+          size: p.size,
+          price: p.price,
+          // Set on the one product on this week's ad, and on nothing else.
+          deal: specialPriceFor(p.id) ?? undefined,
+          dealThrough: specialPriceFor(p.id) ? ad?.special.through : undefined,
+          diet: p.dietary?.length ? p.dietary : undefined
+        }))
+      };
+    })
   );
 }
 
@@ -180,6 +200,14 @@ export async function connectShopper(
    */
   let responding = false;
   let queued = false;
+  /** Did the response that is running say anything out loud? */
+  let spoke = false;
+  /** A tool has delivered its result and nobody has spoken about it yet. */
+  let toolUnspoken = false;
+  /** Tool calls still running. Adding to the cart takes a second to land. */
+  let toolsRunning = 0;
+  /** Tool calls run one after another, never on top of each other. */
+  let toolChain: Promise<void> = Promise.resolve();
 
   const requestResponse = () => {
     if (responding) {
@@ -187,7 +215,24 @@ export async function connectShopper(
       return;
     }
     responding = true;
+    spoke = false;
     send({ type: "response.create" });
+  };
+
+  /*
+   * Whether to ask for a sentence about what a tool just did.
+   *
+   * Only when the turn that called it said nothing. A model that calls
+   * add_to_cart and says "okay, that's in your cart" in the same breath has
+   * already told them; asking again is what put two confirmations on top of
+   * each other, one voice over the other. Wait for the response and the tool
+   * both to finish before deciding, because either can land first.
+   */
+  const speakAboutToolIfSilent = () => {
+    if (responding || toolsRunning > 0 || !toolUnspoken) return;
+    toolUnspoken = false;
+    if (spoke) return;
+    requestResponse();
   };
 
   dc.addEventListener("open", () => {
@@ -227,6 +272,7 @@ export async function connectShopper(
     }
     if (type === "response.created") {
       responding = true;
+      spoke = false;
       handlers.onState("speaking");
       return;
     }
@@ -236,7 +282,9 @@ export async function connectShopper(
       if (queued) {
         queued = false;
         requestResponse();
+        return;
       }
+      speakAboutToolIfSilent();
       return;
     }
     if (type === "output_audio_buffer.stopped") {
@@ -253,6 +301,7 @@ export async function connectShopper(
         type === "response.output_audio_transcript.done") &&
       msg.transcript
     ) {
+      spoke = true;
       handlers.onSaid(String(msg.transcript));
       return;
     }
@@ -263,11 +312,27 @@ export async function connectShopper(
     }
 
     const call = functionCall(msg);
-    if (call) await runTool(call);
+    if (!call) return;
+    /*
+     * One at a time. Two products asked for in one breath arrive as two calls
+     * at once, and each add flies a package into the cart off a single slot —
+     * run them together and the second one is dropped, which is why asking
+     * for two things only ever bought one.
+     */
+    toolsRunning += 1;
+    toolChain = toolChain.then(() => runTool(call));
+    await toolChain;
+    toolsRunning -= 1;
+    speakAboutToolIfSilent();
   }
 
   async function runTool(call: { call_id: string; name: string; arguments: string }) {
-    let args: { aisle?: string; product_ids?: string[]; product_id?: string } = {};
+    let args: {
+      aisle?: string;
+      product_ids?: string[];
+      product_id?: string;
+      quantity?: number;
+    } = {};
     try {
       args = JSON.parse(call.arguments || "{}");
     } catch { /* the model sent something odd; treat as empty */ }
@@ -277,7 +342,7 @@ export async function connectShopper(
       if (call.name === "show_products") {
         output = tools.showProducts(args.aisle || "", args.product_ids || []);
       } else if (call.name === "add_to_cart" && args.product_id) {
-        output = await tools.addToCart(args.product_id);
+        output = await tools.addToCart(args.product_id, args.quantity);
       }
     } catch (error) {
       output = `that did not work: ${String(error)}`;
@@ -287,7 +352,7 @@ export async function connectShopper(
       type: "conversation.item.create",
       item: { type: "function_call_output", call_id: call.call_id, output }
     });
-    requestResponse();
+    toolUnspoken = true;
   }
 
   pc.addTrack(mic.getTracks()[0], mic);

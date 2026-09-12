@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
+import { payCents, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
 import {
@@ -94,6 +94,8 @@ export default function DierbergsDemo() {
   const [listening, setListening] = useState(false);
   const [busy, setBusy] = useState(false);
   const [cart, setCart] = useState<DemoProduct[]>([]);
+  /** The cart as it stands this instant, for adds that land back to back. */
+  const cartNow = useRef<DemoProduct[]>([]);
   const [pulse, setPulse] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // What is on the shelf right now. `shelfItems` is the narrowed-down set, so
@@ -117,7 +119,7 @@ export default function DierbergsDemo() {
 
   const axonOn = phase !== "idle";
   const cartIds = cart.map((p) => p.id);
-  const cartTotalCents = cart.reduce((sum, p) => sum + p.priceCents, 0);
+  const cartTotalCents = cart.reduce((sum, p) => sum + payCents(p), 0);
   const merchProducts = view === "staples" ? staplesProducts : shelfItems;
   // Everything on the go from other aisles stays visible as a reminder while
   // the grid is showing one aisle.
@@ -200,13 +202,6 @@ export default function DierbergsDemo() {
 
   const addProduct = useCallback(
     async (product: DemoProduct) => {
-      if (cartIds.includes(product.id)) {
-        await say(
-          `You've already got the ${product.shortName}.`,
-          "Ask me for something else whenever you're ready."
-        );
-        return;
-      }
       const img = imgRefs.current[product.id];
       const cartEl = cartRef.current;
       if (!img || !cartEl) return;
@@ -227,7 +222,7 @@ export default function DierbergsDemo() {
         landed.current = resolve;
       });
     },
-    [cartIds, say]
+    []
   );
 
   const onFlightDone = useCallback(async () => {
@@ -236,13 +231,19 @@ export default function DierbergsDemo() {
     setFlight(null);
     if (!product) return;
 
-    const next = [...cart, product];
+    /*
+     * Off the ref, not off the state. Two of the same thing land one after
+     * the other faster than a render, and reading the old state here is how
+     * the second one overwrites the first instead of adding to it.
+     */
+    const next = [...cartNow.current, product];
+    cartNow.current = next;
     setCart(next);
     setPulse(true);
     setPhase("active");
     window.setTimeout(() => setPulse(false), 240);
 
-    const total = next.reduce((sum, p) => sum + p.priceCents, 0);
+    const total = next.reduce((sum, p) => sum + payCents(p), 0);
     const count = `${next.length} ${next.length === 1 ? "item" : "items"}`;
     const followUp = FOLLOW_UPS[next.length % FOLLOW_UPS.length];
     await say(
@@ -253,7 +254,7 @@ export default function DierbergsDemo() {
     setSelectedId(null);
     landed.current?.();
     landed.current = null;
-  }, [cart, say]);
+  }, [say]);
 
   const handleUtterance = useCallback(
     async (text: string) => {
@@ -331,10 +332,12 @@ export default function DierbergsDemo() {
   }, []);
 
   const addToCart = useCallback(
-    async (id: string): Promise<string> => {
+    async (id: string, quantity?: number): Promise<string> => {
       const product = productById(id);
       if (!product) return "no such product";
-      if (cartIds.includes(product.id)) return `${product.name} is already in the cart`;
+      // "Two of those" is a normal thing to ask a person for. Capped so a
+      // misheard number cannot fill the cart.
+      const many = Math.min(Math.max(Math.round(quantity ?? 1) || 1, 1), 6);
       // Make sure it is on screen: the package has to fly out of a card.
       if (!imgRefs.current[product.id]) {
         setView(product.category as ShelfId);
@@ -342,14 +345,16 @@ export default function DierbergsDemo() {
         setMerchHeading(`${product.name}.`);
         await new Promise((r) => setTimeout(r, 420));
       }
-      await addProduct(product);
-      const next = [...cart, product];
-      const total = next.reduce((sum, p) => sum + p.priceCents, 0);
-      return `${product.name} is in the cart. ${next.length} ${
-        next.length === 1 ? "item" : "items"
+      for (let i = 0; i < many; i += 1) await addProduct(product);
+
+      const now = cartNow.current;
+      const total = now.reduce((sum, p) => sum + payCents(p), 0);
+      const mine = now.filter((p) => p.id === product.id).length;
+      return `${mine > 1 ? `${mine} \u00d7 ` : ""}${product.name} in the cart. ${now.length} ${
+        now.length === 1 ? "item" : "items"
       }, $${(total / 100).toFixed(2)}.`;
     },
-    [addProduct, cart, cartIds]
+    [addProduct]
   );
 
   const tools = useRef({ showProducts, addToCart });
@@ -373,7 +378,7 @@ export default function DierbergsDemo() {
       const session = await connectShopper(
         {
           showProducts: (aisle, ids) => tools.current.showProducts(aisle, ids),
-          addToCart: (id) => tools.current.addToCart(id)
+          addToCart: (id, quantity) => tools.current.addToCart(id, quantity)
         },
         {
           onState: (state) => {
@@ -592,6 +597,7 @@ export default function DierbergsDemo() {
     setBusy(false);
     spokenRecently.current = [];
     setCart([]);
+    cartNow.current = [];
     setPulse(false);
     setSelectedId(null);
     setFlight(null);

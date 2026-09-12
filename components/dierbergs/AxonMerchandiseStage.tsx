@@ -56,6 +56,7 @@ export default function AxonMerchandiseStage({
                     product={p}
                     selected={selectedId === p.id}
                     inCart={cartIds.includes(p.id)}
+                    cartCount={cartIds.filter((id) => id === p.id).length}
                     imageRef={(node) => onProductImage(p.id, node)}
                     onAdd={onAdd}
                   />

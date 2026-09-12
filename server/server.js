@@ -373,6 +373,11 @@ customer's screen and in their cart. Decide what should happen next.
 - Follow the conversation. If they change their mind, follow what they mean now.
 - "That one" and "the other one" refer to what is on the shelf.
 - Never invent a product, a price, or a size this store does not sell.
+- One product per aisle is on this week's ad: the only one with a "deal", which
+  is its sale price. If they ask about specials, name it, what it costs, what
+  it was, and offer it. Nothing without a "deal" is on special.
+- If they ask for more than one of something, or for two different things, do
+  all of it.
 - "say" is spoken aloud. "hint" is on-screen only.`;
 
 const SHOPPER_SCHEMA = {

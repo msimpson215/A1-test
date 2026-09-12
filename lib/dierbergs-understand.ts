@@ -1,9 +1,13 @@
 import {
+  allSpecialsLine,
   milkAskedForQuart,
   milkWantedSize,
   narrowShelf,
   shelfById,
   shelves,
+  specialFor,
+  specialLine,
+  specialPriceFor,
   type ShelfId
 } from "@/data/dierbergs-catalogue";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
@@ -61,6 +65,9 @@ const AISLE_PAYLOAD = shelves.map((shelf) => ({
     form: p.form,
     size: p.size,
     price: p.price,
+    // Only ever set on the one product per aisle that is on the ad, so the
+    // model cannot decide anything else is a deal.
+    deal: specialPriceFor(p.id) ?? undefined,
     diet: p.dietary?.length ? p.dietary : undefined
   }))
 }));
@@ -200,6 +207,32 @@ function locally(said: string, context: TurnContext): Turn {
               : req.intent === "ADD"
                 ? "Name one and I'll drop it in."
                 : shelf.askHint,
+        source: "local"
+      };
+    }
+
+    /*
+     * The week's ad. Put the one item up on its own and offer it, so a plain
+     * "yes" afterwards has exactly one thing to mean. With no aisle in play,
+     * read the four out and let them pick.
+     */
+    case "SPECIAL": {
+      const shelf = shelfById(req.shelf);
+      const found = shelf ? specialFor(shelf.id) : null;
+      if (!shelf || !found) {
+        return {
+          ...base,
+          action: "chat",
+          say: allSpecialsLine(),
+          hint: "Ask about any of those and I'll pull it up."
+        };
+      }
+      return {
+        action: "show",
+        aisle: shelf.id,
+        products: [found.product],
+        say: specialLine(shelf.id),
+        hint: `On special through ${found.special.through}. Say yes and I'll add it.`,
         source: "local"
       };
     }
