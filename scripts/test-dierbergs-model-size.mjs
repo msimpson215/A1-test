@@ -124,6 +124,14 @@ check(
   `${half.join(" | ")} · ${halfSizes.join(", ")}`
 );
 
+/* The sentence has to be true of the shelf, not of what the model wanted. */
+const said = await page.$eval(".axon-strip-prompt", (el) => el.textContent.trim());
+check(
+  "it does not announce the whole gallons over a half-gallon shelf",
+  /half/i.test(said) || !/gallon/i.test(said),
+  said
+);
+
 /* 2. "No, I want the half" after it put gallons up. */
 await type("Actually make it a gallon.");
 await wait(1600);
