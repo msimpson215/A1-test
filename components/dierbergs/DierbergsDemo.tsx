@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
+import { enforceMilkSize, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
 import {
@@ -77,6 +77,8 @@ const SPOKEN_WELCOME =
 const CREDIT_HINT =
   "Browser voice \u2014 Realtime GPT is off. Add credit at platform.openai.com.";
 const LIVE_FAILED_HINT = "Browser voice \u2014 Realtime GPT did not connect.";
+const NO_KEY_HINT =
+  "Browser voice \u2014 the server has no OpenAI key. Set OPENAI_API_KEY on it.";
 
 export default function DierbergsDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
@@ -109,6 +111,8 @@ export default function DierbergsDemo() {
   const inputRef = useRef<HTMLInputElement>(null);
   const pendingAdd = useRef<DemoProduct | null>(null);
   const landed = useRef<(() => void) | null>(null);
+  /** The last thing the shopper said, spoken or typed, exactly as it arrived. */
+  const lastSaid = useRef("");
   const voiceAvailable = speechRecognitionAvailable();
 
   const axonOn = phase !== "idle";
@@ -150,11 +154,19 @@ export default function DierbergsDemo() {
   const outOfCredit = useRef(false);
   /** Live connect failed; we are on browser STT + TTS, not Realtime GPT. */
   const fallback = useRef(false);
+  /** The server answered with no key of its own, which is a fixable thing. */
+  const noKey = useRef(false);
   const [liveOn, setLiveOn] = useState(false);
   const [engine, setEngine] = useState<"off" | "realtime" | "browser">("off");
 
   const browserHint = () =>
-    outOfCredit.current ? CREDIT_HINT : fallback.current ? LIVE_FAILED_HINT : null;
+    outOfCredit.current
+      ? CREDIT_HINT
+      : noKey.current
+        ? NO_KEY_HINT
+        : fallback.current
+          ? LIVE_FAILED_HINT
+          : null;
 
   const say = useCallback(
     async (line: string, sub?: string, spoken?: string) => {
@@ -245,6 +257,7 @@ export default function DierbergsDemo() {
 
   const handleUtterance = useCallback(
     async (text: string) => {
+      lastSaid.current = text;
       // With the line open, typing goes to the same mind that is listening,
       // so switching between talking and typing does not lose the thread.
       if (live.current) {
@@ -306,8 +319,17 @@ export default function DierbergsDemo() {
    * can start talking and finish typing without anything resetting.
    */
   const showProducts = useCallback((aisle: string, ids: string[]): string => {
-    const picked = ids.map((id) => productById(id)).filter((p): p is DemoProduct => Boolean(p));
-    if (!picked.length) return "no such products; check the ids against the shelves";
+    const chosen = ids.map((id) => productById(id)).filter((p): p is DemoProduct => Boolean(p));
+    if (!chosen.length) return "no such products; check the ids against the shelves";
+
+    /*
+     * The model picks the ids, and a model that has been told twice that a
+     * half gallon means a half gallon still hands back the gallon. The size
+     * they said out loud is not up for debate, so it is imposed here, on the
+     * way to the shelf, whichever brain chose the cartons.
+     */
+    const picked = enforceMilkSize(lastSaid.current, chosen);
+    const corrected = picked.length !== chosen.length || picked.some((p, i) => p !== chosen[i]);
 
     setView((aisle as ShelfId) || picked[0].category);
     setShelfItems(picked);
@@ -315,13 +337,21 @@ export default function DierbergsDemo() {
     setMerchHeading(
       picked.length === 1 ? `${picked[0].name}.` : shelfById(aisle as ShelfId)?.heading ?? "Here you are."
     );
-    return `showing ${picked.map((p) => p.name).join(", ")}`;
+    if (corrected) log("size corrected", lastSaid.current, picked.map((p) => p.name));
+    // Told back to the model so its next sentence describes this shelf, not
+    // the one it asked for.
+    return `showing ${picked.map((p) => p.name).join(", ")}${
+      corrected ? " (corrected to the size the customer asked for; describe these)" : ""
+    }`;
   }, []);
 
   const addToCart = useCallback(
     async (id: string): Promise<string> => {
-      const product = productById(id);
-      if (!product) return "no such product";
+      const chosen = productById(id);
+      if (!chosen) return "no such product";
+      // Buying the wrong size is worse than showing it. Same rule, same guard.
+      const product = enforceMilkSize(lastSaid.current, [chosen])[0] ?? chosen;
+      if (product !== chosen) log("add corrected", lastSaid.current, product.name);
       if (cartIds.includes(product.id)) return `${product.name} is already in the cart`;
       // Make sure it is on screen: the package has to fly out of a card.
       if (!imgRefs.current[product.id]) {
@@ -372,6 +402,7 @@ export default function DierbergsDemo() {
           },
           onHeard: (text) => {
             log("heard (live)", text);
+            lastSaid.current = text;
             setLastHeard(text);
           },
           onSaid: (text) => {
@@ -404,12 +435,17 @@ export default function DierbergsDemo() {
        * completely the wrong place.
        */
       outOfCredit.current = /insufficient_quota|credit_balance|billing|quota/i.test(message);
+      // "No key configured" is the server saying it has no OPENAI_API_KEY, and
+      // it is the one cause a person can actually do something about.
+      noKey.current = /no key configured|invalid_api_key|incorrect api key|401/i.test(message);
       setPrompt(
         outOfCredit.current
           ? "My voice line is out of credit on the OpenAI account."
-          : "I couldn't open the live voice line."
+          : noKey.current
+            ? "The server has no OpenAI key, so the live voice line is off."
+            : "I couldn't open the live voice line."
       );
-      setHint(outOfCredit.current ? CREDIT_HINT : LIVE_FAILED_HINT);
+      setHint(browserHint() ?? LIVE_FAILED_HINT);
       inputRef.current?.focus();
     }
   }, []);
@@ -559,6 +595,7 @@ export default function DierbergsDemo() {
     outOfCredit.current = false;
     setEngine("off");
     landed.current = null;
+    lastSaid.current = "";
     stopListening(recRef.current);
     recRef.current = null;
     pendingAdd.current = null;
@@ -623,6 +660,7 @@ export default function DierbergsDemo() {
                   onToggleListen={toggleListen}
                   disabled={phase === "adding"}
                   live={liveOn}
+                  engine={engine}
                 />
               </motion.div>
               <motion.div

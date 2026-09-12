@@ -1,4 +1,5 @@
 import {
+  enforceMilkSize,
   milkAskedForQuart,
   milkWantedSize,
   narrowShelf,
@@ -107,9 +108,15 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
     if (!response.ok) throw new Error(`understand ${response.status}`);
     const body = await response.json();
 
-    const products = (body.products as string[])
-      .map((id) => everyProduct.get(id))
-      .filter((p): p is DemoProduct => Boolean(p));
+    // The size they said wins over the size the model chose. See
+    // enforceMilkSize: being shown a gallon after asking for a half gallon is
+    // the one thing that makes this look broken no matter how well it talks.
+    const products = enforceMilkSize(
+      said,
+      (body.products as string[])
+        .map((id) => everyProduct.get(id))
+        .filter((p): p is DemoProduct => Boolean(p))
+    );
 
     // A model that says "add" without naming a product has not actually
     // chosen one, and guessing is how a demo puts the wrong thing in the cart.

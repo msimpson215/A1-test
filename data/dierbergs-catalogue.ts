@@ -119,15 +119,35 @@ export const shelves: Shelf[] = [
   }
 ];
 
-function mentionsHalfGallon(text: string): boolean {
-  if (/\b(half[\s-]?gallons?|half a gallon|64 ?oz)\b/.test(text)) return true;
-  // "No, I want the half" / "the half" / "just half" — they already said milk.
-  if (/\b(the half|half one|half size|smaller one)\b/.test(text)) return true;
-  if (/\b(want|need|get|got|no)\b.{0,24}\b(the )?half\b/.test(text)) return true;
-  return /^(no[, ]+)*(the )?half$/.test(text);
+/*
+ * Speech arrives with capitals and punctuation ("No, I want the half.") and
+ * these are also called with raw transcripts from the live voice line, so
+ * every one of them folds the words down first rather than trusting a caller
+ * to have done it.
+ */
+function plain(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/['\u2019]/g, "")
+    .replace(/[^\w\s.%$]/g, " ")
+    .replace(/(?<!\d)\.(?!\d)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function mentionsGallon(text: string): boolean {
+function mentionsHalfGallon(raw: string): boolean {
+  const text = plain(raw);
+  // "Half a dozen" is eggs. It is not a milk size.
+  if (/\bhalf\s+(a\s+)?dozen\b/.test(text)) return false;
+  if (/\b(half[\s-]?gallons?|half a gallon|64 ?oz)\b/.test(text)) return true;
+  // "No, I want the half" / "just the half" — they already said milk.
+  if (/\b(the half|a half|half one|half size|smaller one)\b/.test(text)) return true;
+  if (/\b(want|need|get|got|no)\b.{0,24}\b(the )?half\b/.test(text)) return true;
+  return /^(no[ ]+)*(the )?half$/.test(text);
+}
+
+function mentionsGallon(raw: string): boolean {
+  const text = plain(raw);
   if (mentionsHalfGallon(text)) return false;
   return /\b((whole|full|entire)\s+gallons?|gallons?|128 ?oz|the (big|large) one)\b/.test(text);
 }
@@ -146,11 +166,12 @@ export function utteranceNamesMilkSize(text: string): boolean {
 }
 
 /** Quart, "a quarter", 32 oz — Dierbergs does not sell a store-brand quart. */
-export function milkAskedForQuart(text: string): boolean {
-  return /\b(quarts?|quarter(\s+gallons?)?|32 ?oz)\b/.test(text);
+export function milkAskedForQuart(raw: string): boolean {
+  return /\b(quarts?|quarter(\s+gallons?)?|32 ?oz)\b/.test(plain(raw));
 }
 
-export function milkTurnedDownStore(text: string): boolean {
+export function milkTurnedDownStore(raw: string): boolean {
+  const text = plain(raw);
   return (
     /^(no|nope|nah|no thanks)$/.test(text) ||
     /\b(something else|other milks?|other brands?|different brand|not (the )?(dierbergs|store brand))\b/.test(text)
@@ -227,6 +248,52 @@ function milkSpreadOfSize(pool: DemoProduct[], size: "gallon" | "half gallon"): 
     ...shelfById("milk")!,
     products: ofSize.length ? ofSize : pool
   });
+}
+
+/**
+ * The size the shopper asked for, imposed on whatever was chosen.
+ *
+ * A model picks the products by id, and a model that has been told twice that
+ * a half gallon means a half gallon will still hand back the gallon. Asking
+ * for one thing and being shown another is the single worst thing this demo
+ * can do, so the size is not left to the model's discretion: whoever answered,
+ * the cartons on the shelf are the size that was said out loud.
+ */
+export function enforceMilkSize(said: string, picked: DemoProduct[]): DemoProduct[] {
+  const size = milkWantedSize(said);
+  if (size !== "gallon" && size !== "half gallon") return picked;
+
+  const milks = picked.filter((p) => p.category === "milk");
+  if (!milks.length) return picked;
+
+  const rightSize = milks.filter((p) => milkJugSize(p) === size);
+  // Some of what it chose is the right size: drop the rest and keep its order.
+  if (rightSize.length) {
+    return picked.filter((p) => p.category !== "milk" || milkJugSize(p) === size);
+  }
+
+  /*
+   * Everything it chose is the wrong size. Swap each carton for the same milk
+   * in the size that was asked for, so "no, the half" on a shelf of Prairie
+   * Farms gallons answers with Prairie Farms half gallons rather than the
+   * store brand.
+   */
+  const cell = cells.milk;
+  const swapped: DemoProduct[] = [];
+  for (const wrong of milks) {
+    const match = cell.find(
+      (p) =>
+        milkJugSize(p) === size &&
+        p.brand === wrong.brand &&
+        p.subcategory === wrong.subcategory &&
+        !swapped.includes(p)
+    );
+    if (match) swapped.push(match);
+  }
+  if (swapped.length) return swapped;
+
+  // Nothing in that brand comes in that size, so show the size we do have.
+  return milkSpreadOfSize(cell, size);
 }
 
 export function shelfById(id: ShelfId | null | undefined): Shelf | null {

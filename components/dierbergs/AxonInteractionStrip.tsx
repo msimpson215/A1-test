@@ -18,6 +18,8 @@ type Props = {
   disabled?: boolean;
   /** A live voice line is open to the model. */
   live?: boolean;
+  /** Which voice is actually answering, so nobody has to guess. */
+  engine?: "off" | "realtime" | "browser";
 };
 
 export default function AxonInteractionStrip({
@@ -32,7 +34,8 @@ export default function AxonInteractionStrip({
   onSubmit,
   onToggleListen,
   disabled,
-  live
+  live,
+  engine
 }: Props) {
   return (
     <div
@@ -44,6 +47,15 @@ export default function AxonInteractionStrip({
       <div className="axon-strip-orb">
         <AxonOrb size={30} mood={mood} />
       </div>
+
+      {/* Which voice is talking, always on screen. Hearing the flat browser
+          voice and having to guess whether the live model ever connected is
+          how this demo gets mistaken for a broken one. */}
+      {engine && engine !== "off" ? (
+        <span className={`axon-engine is-${engine}`}>
+          {engine === "realtime" ? "Realtime GPT" : "Browser voice"}
+        </span>
+      ) : null}
 
       <div className="axon-strip-copy">
         <p className="axon-strip-prompt">{prompt}</p>

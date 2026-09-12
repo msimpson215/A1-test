@@ -171,6 +171,26 @@ body { min-height: 100vh; }
   width: 34px;
   flex: none;
 }
+/* Which voice is answering. Deliberately plain and always present: the whole
+   point is that nobody has to open a console to find out. */
+.axon-engine {
+  flex: none;
+  align-self: center;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  font: 700 10px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.axon-engine.is-realtime {
+  background: #e3f5e6;
+  color: #1d6b2c;
+}
+.axon-engine.is-browser {
+  background: #fde8e8;
+  color: #8a1f1f;
+}
 .axon-strip-copy {
   width: 360px;
   flex: none;
