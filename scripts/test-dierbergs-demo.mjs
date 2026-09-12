@@ -105,7 +105,7 @@ const pill = await page.$eval(".shopper-nav-pill", (el) => {
   const r = el.getBoundingClientRect();
   return { text: el.innerText.trim(), left: Math.round(r.left), top: Math.round(r.top), height: Math.round(r.height) };
 });
-check("nav entry reads 'Your Shopper'", pill.text === "Your Shopper", pill.text);
+check("nav entry reads 'Your AI Shopper'", pill.text === "Your AI Shopper", pill.text);
 // Measured off the storefront capture: the nav links end at x 476 and sit
 // 16-26px apart, and Dierbergs' own "Weekly Ad" chip occupies y 14-36.
 const WEEKLY_AD = { top: 14, bottom: 36, height: 23 };
@@ -236,7 +236,7 @@ check(
 
 await page.click(".reset-demo");
 await new Promise((r) => setTimeout(r, 500));
-check("reset restores the nav entry", (await page.$eval(".shopper-nav-pill", (el) => el.innerText.trim())) === "Your Shopper");
+check("reset restores the nav entry", (await page.$eval(".shopper-nav-pill", (el) => el.innerText.trim())) === "Your AI Shopper");
 check("reset empties the cart", (await cart()) === "0 items $0.00", await cart());
 check("no chatbot appeared at any point", (await page.$(".bubble, .chatbot, .chat-window")) === null);
 check("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200));

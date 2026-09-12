@@ -1,5 +1,6 @@
 import {
   milkAskedForQuart,
+  milkWantedSize,
   narrowShelf,
   shelfById,
   shelves,
@@ -174,6 +175,7 @@ function locally(said: string, context: TurnContext): Turn {
 
       const single = picked.length === 1 ? picked[0] : null;
       const quart = shelf.id === "milk" && milkAskedForQuart(req.text);
+      const size = shelf.id === "milk" ? milkWantedSize(req.text) : null;
       return {
         action: "show",
         aisle: shelf.id,
@@ -182,16 +184,22 @@ function locally(said: string, context: TurnContext): Turn {
           ? "We don't have a quart of the Dierbergs. Gallon or half gallon?"
           : single
             ? `${single.shortName}, ${single.price}.`
-            : req.intent === "ADD"
-              ? `Happy to. ${shelf.ask}`
-              : shelf.ask,
+            : size === "half gallon"
+              ? "Here are the half gallons."
+              : size === "gallon"
+                ? "Here are the gallons."
+                : req.intent === "ADD"
+                  ? `Happy to. ${shelf.ask}`
+                  : shelf.ask,
         hint: quart
           ? "Name a gallon or a half gallon, or say if you want another brand."
           : single
             ? "Say \u201Cadd it to my cart\u201D when you want it."
-            : req.intent === "ADD"
-              ? "Name one and I'll drop it in."
-              : shelf.askHint,
+            : size
+              ? "Say which one, or add it from the card."
+              : req.intent === "ADD"
+                ? "Name one and I'll drop it in."
+                : shelf.askHint,
         source: "local"
       };
     }
@@ -251,6 +259,7 @@ function locally(said: string, context: TurnContext): Turn {
     if (shelf) {
       const picked = narrowShelf(shelf, said);
       const quart = shelf.id === "milk" && milkAskedForQuart(said);
+      const size = shelf.id === "milk" ? milkWantedSize(said) : null;
       return {
         action: "show",
         aisle: shelf.id,
@@ -259,14 +268,20 @@ function locally(said: string, context: TurnContext): Turn {
           ? "We don't have a quart of the Dierbergs. Gallon or half gallon?"
           : picked.length === 1
             ? `${picked[0].shortName}, ${picked[0].price}.`
-            : shelf.id === "milk"
-              ? "Which size — a gallon or a half gallon?"
-              : shelf.ask,
+            : size === "half gallon"
+              ? "Here are the half gallons."
+              : size === "gallon"
+                ? "Here are the gallons."
+                : shelf.id === "milk"
+                  ? "Which size — a gallon or a half gallon?"
+                  : shelf.ask,
         hint: quart
           ? "Name a gallon or a half gallon, or say if you want another brand."
           : picked.length === 1
             ? "Say \u201Cadd it to my cart\u201D when you want it."
-            : shelf.askHint,
+            : size
+              ? "Say which one, or add it from the card."
+              : shelf.askHint,
         source: "local"
       };
     }

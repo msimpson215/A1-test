@@ -376,8 +376,10 @@ await type("I need a half gallon of milk.");
 await wait(1800);
 const halfMilk = await cards();
 check(
-  "half gallon of milk shows half gallons",
-  halfMilk.length >= 1 && halfMilk.some((n) => /Half/i.test(n)),
+  "half gallon of milk shows several half gallons, not the gallon",
+  halfMilk.length >= 2 &&
+    halfMilk.every((n) => /Half/i.test(n)) &&
+    !halfMilk.some((n) => /Gallon/i.test(n) && !/Half/i.test(n)),
   halfMilk.join(" | ")
 );
 await page.evaluate(() => { window.__spoken = []; });
@@ -387,16 +389,28 @@ const wholeGal = await cards();
 const wholeSaid = await page.evaluate(() => window.__spoken.join(" "));
 check(
   "a whole gallon is still milk, not a four-aisle miss",
-  wholeGal.length >= 1 &&
-    wholeGal.some((n) => /Milk/i.test(n) && /Gallon/i.test(n) && !/Half/i.test(n)) &&
+  wholeGal.length >= 2 &&
+    wholeGal.every((n) => /Milk/i.test(n) && /Gallon/i.test(n) && !/Half/i.test(n)) &&
     !/eggs.*bread.*cheese|bread and cheese/i.test(wholeSaid),
   `${wholeGal.join(" | ")} · ${wholeSaid}`
 );
 check(
   "the gallon size is on the shelf",
-  wholeGal.some((n) => /Dierbergs Whole Milk - Gallon/i.test(n)) &&
-    !wholeGal.some((n) => /Half/i.test(n)),
+  wholeGal.some((n) => /Dierbergs Whole Milk - Gallon/i.test(n)),
   wholeGal.join(" | ")
+);
+await page.evaluate(() => { window.__spoken = []; });
+await type("No no I want the half.");
+await wait(1800);
+const backToHalf = await cards();
+const halfSaid = await page.evaluate(() => window.__spoken.join(" "));
+check(
+  "no, the half switches to half gallons, not the gallon",
+  backToHalf.length >= 2 &&
+    backToHalf.every((n) => /Half/i.test(n)) &&
+    !backToHalf.some((n) => /Gallon/i.test(n) && !/Half/i.test(n)) &&
+    !/eggs.*bread.*cheese|bread and cheese/i.test(halfSaid),
+  `${backToHalf.join(" | ")} · ${halfSaid}`
 );
 
 await page.click(".reset-demo");

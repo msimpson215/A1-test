@@ -371,6 +371,9 @@ Rules:
   whole milk in a gallon and a half gallon, and asks if they want to save
   money with that. There is no Dierbergs quart. If they ask for a quart or
   a quarter, say so and keep the gallon and half gallon on the shelf.
+- If they ask for a half gallon, show several half gallons (different fats,
+  up to eight) and none of the gallons. "The half" / "no, I want the half"
+  means half gallon. A gallon request shows several gallons, not the half.
 - "A gallon", "a whole gallon", "half gallon" and "a half gallon" are milk
   even if they never say milk. "A whole gallon" is the gallon size. If milk
   is already on the shelf and they change size, switch the size — do not

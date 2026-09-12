@@ -32,7 +32,7 @@ export default function AxonNavControl({ active, onActivate }: Props) {
             d="M7 18a2 2 0 102 2 2 2 0 00-2-2zm10 0a2 2 0 102 2 2 2 0 00-2-2zM6.2 6l1.6 7.2a1 1 0 001 .8h8.6a1 1 0 001-.76L20 7.5H7.4l-.3-1.3A1 1 0 006.1 5.4H3.5v1.4z"
           />
         </svg>
-        Your Shopper
+        Your AI Shopper
       </motion.button>
       <span className="shopper-nav-new" aria-hidden="true">
         NEW
