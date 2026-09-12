@@ -33,9 +33,9 @@ export type Shelf = {
   products: DemoProduct[];
   /**
    * Which products to score against after the shopper has named a kind.
-   * Milk's capsule uses this only to honour a named size (gallon, half
-   * gallon) or to refuse a quart we do not stock. A bare "I need milk"
-   * ignores it and opens on the spread.
+   * Milk's capsule uses this to honour a named size. A bare "I need milk"
+   * ignores it and opens on the Dierbergs gallon and half gallon — the
+   * money-saving ask — rather than the whole cooler.
    */
   opening?: (text: string, all: DemoProduct[]) => DemoProduct[];
   /** What counts as a different kind on an un-narrowed open. */
@@ -71,18 +71,18 @@ export const shelves: Shelf[] = [
     id: "milk",
     label: "milk",
     words: ["milk"],
-    heading: "Our milk.",
-    ask: "Whole, two percent, skim, lactose-free or organic. Gallon or half gallon — which would you like?",
-    askHint: "Name a kind, a brand or a size and I'll put it on the shelf.",
+    heading: "Our Dierbergs milk.",
+    ask: "Want to save money? Our Dierbergs milk comes in a gallon or a half gallon. Which size?",
+    askHint: "Name a size, or say if you want another brand.",
     products: milkCell,
     kindOf: milkKind,
     spread: ["whole", "2%", "1%", "skim", "chocolate", "lactose-free", "organic", "filtered"],
     /*
-     * Milk capsule. The cooler is the harvested cartons — Dierbergs gallons
-     * and half gallons, Prairie Farms, Lactaid, Horizon, Organic Valley,
-     * Kalona, fairlife, a2. Naming a kind or a brand shows the matching
-     * ones, all addable. We do not stock quarts; asking for one keeps the
-     * jugs on the shelf so the shopper can pick a size we have.
+     * Milk capsule. The cooler has dozens of cartons. A clerk does not dump
+     * them on the counter. The opening is the money-saving ask: Dierbergs
+     * whole, gallon and half gallon. (The live storefront has no Dierbergs
+     * quart.) Prairie Farms, Lactaid, Horizon and the rest are a "something
+     * else" away, and every carton that is shown can still go in the cart.
      */
     opening: (text, all) => milkCapsulePool(text, all)
   },
@@ -127,24 +127,60 @@ function mentionsGallon(text: string): boolean {
   return !mentionsHalfGallon(text) && /\b(gallon|128 ?oz)\b/.test(text);
 }
 
-/** Quart, "a quarter", 32 oz — sizes the cooler does not carry. */
+/** Quart, "a quarter", 32 oz — Dierbergs does not sell a store-brand quart. */
 export function milkAskedForQuart(text: string): boolean {
   return /\b(quarts?|quarter(\s+gallons?)?|32 ?oz)\b/.test(text);
 }
 
-/** Gallon or half gallon, including extras that only record it as form/size. */
-function milkJugSize(product: DemoProduct): "gallon" | "half gallon" | null {
-  if (product.volume) return product.volume;
-  if (product.form === "gallon" || product.form === "half gallon") return product.form;
+export function milkTurnedDownStore(text: string): boolean {
+  return (
+    /^(no|nope|nah|no thanks)$/.test(text) ||
+    /\b(something else|other milks?|other brands?|different brand|not (the )?(dierbergs|store brand))\b/.test(text)
+  );
+}
+
+/** Gallon, half gallon or quart, including extras that only record it as form/size. */
+function milkJugSize(product: DemoProduct): "gallon" | "half gallon" | "quart" | null {
+  if (product.volume === "gallon" || product.volume === "half gallon") return product.volume;
+  if (product.form === "gallon" || product.form === "half gallon" || product.form === "quart") {
+    return product.form;
+  }
   const size = (product.size || "").toLowerCase();
+  if (/\b(32\s*(fl\s*)?oz|1\s*qt|quart)\b/.test(size)) return "quart";
   if (/\b(128\s*(fl\s*)?oz|1\s*gal)\b/.test(size)) return "gallon";
   if (/\b(64\s*(fl\s*)?oz|0\.5\s*gal)\b/.test(size)) return "half gallon";
   return null;
 }
 
+function isDierbergsWhiteMilk(product: DemoProduct): boolean {
+  return (
+    product.category === "milk" &&
+    product.brand === "Dierbergs" &&
+    product.subcategory !== "chocolate" &&
+    (product.type ?? []).includes("store brand")
+  );
+}
+
+const SIZE_ORDER: Array<"gallon" | "half gallon" | "quart"> = ["gallon", "half gallon", "quart"];
+
+/** Dierbergs whole (or the named fat) in the sizes the store actually sells. */
+function milkStoreBrandSizes(pool: DemoProduct[], fat = "whole"): DemoProduct[] {
+  const ofFat = pool.filter((p) => isDierbergsWhiteMilk(p) && p.subcategory === fat);
+  return SIZE_ORDER.map((size) => ofFat.find((p) => milkJugSize(p) === size)).filter(
+    (p): p is DemoProduct => Boolean(p)
+  );
+}
+
+function namedOtherMilkBrand(text: string): boolean {
+  return /\b(prairie|lactaid|horizon|fairlife|kalona|organic valley|a2)\b/.test(text);
+}
+
 function milkCapsulePool(text: string, all: DemoProduct[]): DemoProduct[] {
+  if (milkTurnedDownStore(text)) {
+    return all.filter((p) => !isDierbergsWhiteMilk(p));
+  }
   if (milkAskedForQuart(text)) {
-    return all.filter((p) => milkJugSize(p) !== null);
+    return all.filter((p) => isDierbergsWhiteMilk(p) && milkJugSize(p) !== "quart");
   }
   if (mentionsHalfGallon(text)) {
     return all.filter((p) => milkJugSize(p) === "half gallon");
@@ -180,7 +216,7 @@ export function shelvesNamedIn(text: string): Shelf[] {
   );
 }
 
-const CHEAPEST = /\b(cheapest|least expensive|lowest price|budget|save money|on a budget)\b/;
+const CHEAPEST = /\b(cheapest|least expensive|lowest price|budget|on a budget)\b/;
 const DEAREST = /\b(most expensive|priciest|dearest|best one|nicest|fanciest)\b/;
 
 /**
@@ -188,8 +224,8 @@ const DEAREST = /\b(most expensive|priciest|dearest|best one|nicest|fanciest)\b/
  *
  * Each product is scored by how many of its own keywords appear in what was
  * said, and the best-scoring products survive. Saying more narrows further,
- * which is why "whole" leaves the whole milks and "whole milk, a gallon"
- * leaves the gallons, without either rule being written down per product.
+ * which is why "whole" leaves the Dierbergs whole milks and "a gallon"
+ * leaves the gallon, without either rule being written down per product.
  */
 export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
   const pool = shelf.opening ? shelf.opening(text, shelf.products) : shelf.products;
@@ -213,11 +249,17 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
   });
   /*
    * Nothing in the request names a product, so this is the aisle opening.
-   * Use the whole capsule, not a four-gallon wall: "I need bread" has to
-   * put rye and bagels on the shelf, and "I need milk" has to put more than
-   * the four Dierbergs gallons the demo has always shown.
+   * Bread still opens on a spread of kinds. Milk does not dump the cooler:
+   * it puts the Dierbergs gallon and half gallon up and asks if they want
+   * to save money.
    */
   if (best === 0) {
+    if (shelf.id === "milk") {
+      if (milkTurnedDownStore(text)) {
+        return oneOfEachKind({ ...shelf, products: pool });
+      }
+      return milkStoreBrandSizes(pool);
+    }
     if (shelf.opening && pool.length > 0 && pool.length !== shelf.products.length) {
       return oneOfEachKind({ ...shelf, products: pool });
     }
@@ -225,10 +267,18 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
   }
 
   const cap = shelf.id === "milk" ? 8 : 4;
-  return scored
-    .filter((s) => s.score === best)
-    .map((s) => s.product)
-    .slice(0, cap);
+  const hits = scored.filter((s) => s.score === best).map((s) => s.product);
+  if (shelf.id === "milk" && !namedOtherMilkBrand(text) && !milkTurnedDownStore(text)) {
+    const store = hits.filter(isDierbergsWhiteMilk);
+    if (store.length) {
+      const fats = [...new Set(store.map((p) => p.subcategory).filter(Boolean))] as string[];
+      if (fats.length === 1) return milkStoreBrandSizes(pool, fats[0]);
+      return SIZE_ORDER.map((size) => store.find((p) => milkJugSize(p) === size)).filter(
+        (p): p is DemoProduct => Boolean(p)
+      );
+    }
+  }
+  return hits.slice(0, cap);
 }
 
 const SPREAD_CAP = 8;
@@ -308,6 +358,7 @@ function milkSizeWords(product: DemoProduct): string[] {
   const size = milkJugSize(product);
   if (size === "gallon") return ["gallon", "128 oz"];
   if (size === "half gallon") return ["half gallon", "half a gallon", "64 oz"];
+  if (size === "quart") return ["quart", "quarter", "32 oz"];
   return [];
 }
 
@@ -339,7 +390,12 @@ function wordsFor(product: DemoProduct): string[] {
 /** True when anything on the shelf answers to what was said. */
 export function shelfRespondsTo(shelf: Shelf, text: string): boolean {
   if (CHEAPEST.test(text) || DEAREST.test(text)) return true;
-  if (shelf.id === "milk" && milkAskedForQuart(text)) return true;
+  if (
+    shelf.id === "milk" &&
+    (milkAskedForQuart(text) || milkTurnedDownStore(text) || /\bsave money\b/.test(text))
+  ) {
+    return true;
+  }
   return shelf.products.some((p) => wordsFor(p).some((k) => containsPhrase(text, k)));
 }
 

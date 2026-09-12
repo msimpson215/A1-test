@@ -179,14 +179,14 @@ function locally(said: string, context: TurnContext): Turn {
         aisle: shelf.id,
         products: picked,
         say: quart
-          ? "We have gallons and half gallons — no quarts. Which size?"
+          ? "We don't have a quart of the Dierbergs. Gallon or half gallon?"
           : single
             ? `${single.shortName}, ${single.price}.`
             : req.intent === "ADD"
               ? `Happy to. ${shelf.ask}`
               : shelf.ask,
         hint: quart
-          ? "Name a gallon or a half gallon."
+          ? "Name a gallon or a half gallon, or say if you want another brand."
           : single
             ? "Say \u201Cadd it to my cart\u201D when you want it."
             : req.intent === "ADD"

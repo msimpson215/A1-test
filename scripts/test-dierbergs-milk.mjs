@@ -146,26 +146,30 @@ check(
 );
 check("explaining did not open a shelf", (await page.$(".axon-merch")) === null);
 
-/* 4. Asking for milk brings up the milk, and asks which kind. */
+/* 4. Asking for milk offers the Dierbergs, to save money. */
 await type("I need milk.");
 await wait(1800);
 const wall = await cards();
-check("the milk cooler appears", wall.length >= 4, `${wall.length} cards`);
+check("the milk cooler appears", wall.length >= 2 && wall.length <= 3, `${wall.length} cards`);
 stripBoxes.push(await stripBox());
 check(
-  "the store-brand gallons are still there",
-  ["Whole", "2%"].every((k) => wall.some((n) => n.includes(k))),
+  "it is the Dierbergs gallon and half gallon",
+  wall.some((n) => /Dierbergs Whole Milk - Gallon/i.test(n)) &&
+    wall.some((n) => /Dierbergs Whole Milk - Half/i.test(n)) &&
+    wall.every((n) => /dierbergs/i.test(n)),
   wall.join(" | ")
 );
 check(
-  "and so is something that is not the old four",
-  wall.some((n) => /chocolate|lactaid|lactose|horizon|fairlife|organic|prairie/i.test(n)),
+  "it did not dump the rest of the cooler",
+  !wall.some((n) => /lactaid|horizon|fairlife|prairie|organic valley/i.test(n)),
   wall.join(" | ")
 );
 check("asking did not buy anything", (await cart()) === "0 items $0.00", await cart());
 check(
-  "it asks which kind",
-  /which would you like/i.test(await page.evaluate(() => window.__spoken.join(" ")))
+  "it asks if they want to save money",
+  /save money/i.test(await page.evaluate(() => window.__spoken.join(" "))) &&
+    /gallon/i.test(await page.evaluate(() => window.__spoken.join(" "))),
+  await page.evaluate(() => window.__spoken.slice(-1)[0])
 );
 check(
   "the input clears so the next request starts empty",
@@ -179,17 +183,17 @@ await page.keyboard.press("Enter");
 await wait(1600);
 check("it will not guess which milk", (await cart()) === "0 items $0.00", await cart());
 
-/* 6. Naming a kind shows the matching cartons, not only the store-brand gallon. */
+/* 6. Naming a fat stays on the Dierbergs of that fat, in both sizes. */
 await page.type(".axon-strip-input", "Two percent.");
 await page.keyboard.press("Enter");
 await wait(1800);
 const narrowed = await cards();
-check("two percent keeps more than one carton on the shelf", narrowed.length >= 2, narrowed.join(" | "));
+check("two percent keeps the Dierbergs sizes on the shelf", narrowed.length >= 2, narrowed.join(" | "));
 stripBoxes.push(await stripBox());
-check("and they are 2% milks", narrowed.filter((n) => /2%/.test(n)).length >= 2, narrowed.join(" | "));
+check("and they are the Dierbergs 2%", narrowed.every((n) => /Dierbergs 2%/i.test(n)), narrowed.join(" | "));
 check(
-  "including a brand that is not Dierbergs",
-  narrowed.some((n) => /prairie|lactaid|horizon|fairlife|organic valley/i.test(n)),
+  "gallon and half gallon",
+  narrowed.some((n) => /Gallon/i.test(n)) && narrowed.some((n) => /Half/i.test(n)),
   narrowed.join(" | ")
 );
 
@@ -209,7 +213,7 @@ const watch = setInterval(async () => {
   try {
     if (await page.$(".flying-item")) {
       sawFlyer = true;
-      cartDuringFlight = await cart();
+      if (cartDuringFlight === null) cartDuringFlight = await cart();
     }
   } catch { /* page busy */ }
 }, 40);
@@ -301,6 +305,23 @@ await page.waitForSelector(".axon-strip-input");
 await wait(700);
 await type("I need milk.");
 await wait(1600);
+await type("something else.");
+await wait(1800);
+const others = await cards();
+check(
+  "something else shows the other brands",
+  others.some((n) => /prairie|lactaid|horizon|fairlife/i.test(n)) &&
+    !others.some((n) => /Dierbergs Whole Milk - Gallon/i.test(n)),
+  others.join(" | ")
+);
+
+await page.click(".reset-demo");
+await wait(400);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(700);
+await type("I need milk.");
+await wait(1600);
 await type("Prairie Farms.");
 await wait(1800);
 const prairie = await cards();
@@ -351,7 +372,7 @@ await wait(1800);
 const quartSaid = await page.evaluate(() => window.__spoken.join(" "));
 check(
   "a quart is refused without inventing one",
-  /gallon/i.test(quartSaid) && /half/i.test(quartSaid) && /no quarts/i.test(quartSaid),
+  /don't have a quart|do not have a quart/i.test(quartSaid) && /gallon/i.test(quartSaid) && /half/i.test(quartSaid),
   quartSaid
 );
 check("and nothing was added", (await cart()) === "0 items $0.00", await cart());

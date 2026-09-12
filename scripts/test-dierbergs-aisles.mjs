@@ -108,8 +108,18 @@ for (const aisle of aisles) {
   await type(aisle.ask);
   await wait(1500);
   const shelf = await cards();
-  check(`"${aisle.ask}" fills the shelf`, shelf.length >= 4 && shelf.length <= 8, `${shelf.length} cards: ${shelf.join(" | ")}`);
-  check(`"${aisle.ask}" asks which one`, /which would you like/i.test(await spoken()));
+  const milkAsk = /milk/i.test(aisle.ask);
+  check(
+    `"${aisle.ask}" fills the shelf`,
+    milkAsk ? shelf.length >= 2 && shelf.length <= 3 : shelf.length >= 4 && shelf.length <= 8,
+    `${shelf.length} cards: ${shelf.join(" | ")}`
+  );
+  check(
+    `"${aisle.ask}" asks which one`,
+    milkAsk
+      ? /save money/i.test(await spoken())
+      : /which would you like/i.test(await spoken())
+  );
   check(`"${aisle.ask}" buys nothing on its own`, (await cart()) === "0 items $0.00", await cart());
 
   await type(aisle.narrow);

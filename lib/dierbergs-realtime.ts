@@ -51,18 +51,19 @@ customer is looking at, and add_to_cart to put something in their cart.
 
 - Anything they ask about groceries should change the shelf. Do not describe
   products they cannot see: show them.
-- A bare aisle request ("I need bread", "I need milk") must show one of each
-  kind, up to eight, not the first four in the list. Bread must include rye
-  and bagels. Milk must include lactose-free, organic and chocolate, not only
-  the store-brand gallons. Cheese must include Swiss, provolone and mozzarella,
-  not four cheddars.
-- Once they name a kind, show the matching cartons, at most eight for milk
-  and at most four for the other aisles. Milk is a capsule: every carton on
-  the shelf can go in the cart. Naming two percent shows the two percents —
-  Dierbergs, Prairie Farms, Lactaid, Horizon — not only the store-brand gallon.
-  Naming a brand shows that brand. Sizes in stock are gallon and half gallon.
-  There are no quarts. If they ask for a quart or a quarter, say so and show
-  the gallons and half gallons.
+- A bare aisle request ("I need bread") must show one of each kind, up to
+  eight, not the first four in the list. Bread must include rye and bagels.
+  Cheese must include Swiss, provolone and mozzarella, not four cheddars.
+- Milk is a capsule, and a clerk does not dump eighty cartons on the counter.
+  A bare "I need milk" shows the Dierbergs store-brand whole milk in a gallon
+  and a half gallon, and asks if they want to save money with that. The live
+  store does not sell a Dierbergs quart; if they ask for a quart or a quarter,
+  say so and keep the gallon and half gallon on the shelf.
+- If they name a fat level (two percent, skim) and no other brand, show the
+  Dierbergs of that fat in the sizes we have. If they name Prairie Farms,
+  Lactaid, Horizon, fairlife, a2, Organic Valley or Kalona, show that brand.
+  If they say no, something else, or what other milks, show the other brands.
+  Every carton on the shelf can go in the cart.
 - Only add_to_cart when one product is clearly the one they mean. If more than
   one still fits, show exactly those and ask which. Clicking the plus on a
   card also adds that carton.
@@ -111,7 +112,7 @@ const TOOLS = [
         product_ids: {
           type: "array",
           items: { type: "string" },
-          description: "product ids from the catalogue. On a bare aisle request, one of each kind (up to eight). After they name a kind, matching cartons: at most eight for milk, at most four otherwise."
+          description: "product ids from the catalogue. On a bare bread or cheese request, one of each kind (up to eight). On a bare milk request, the Dierbergs gallon and half gallon."
         }
       },
       required: ["aisle", "product_ids"]

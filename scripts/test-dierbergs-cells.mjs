@@ -142,10 +142,13 @@ check(
 console.log("\n--- MILK CELL ---\n");
 
 shown = await ask("I need milk.");
-check("milk opens on more than the old four gallons", shown.length > 4, shown.join(" | "));
-check("milk opening includes lactose-free", shown.some((n) => /lactaid|lactose|prairie farms/i.test(n)), shown.join(" | "));
-check("milk opening includes organic", shown.some((n) => /horizon|organic valley|kalona|organic/i.test(n)), shown.join(" | "));
-check("milk opening includes chocolate", shown.some((n) => /chocolate/i.test(n)), shown.join(" | "));
+check("milk opens on the Dierbergs sizes", shown.length >= 2 && shown.length <= 3, shown.join(" | "));
+check("milk opening is store brand", shown.every((n) => /dierbergs/i.test(n)), shown.join(" | "));
+check("milk opening includes a gallon", shown.some((n) => /gallon/i.test(n) && !/half/i.test(n)), shown.join(" | "));
+check("milk opening includes a half gallon", shown.some((n) => /half/i.test(n)), shown.join(" | "));
+
+shown = await ask("something else.");
+check("something else reaches the other brands", shown.some((n) => /prairie|lactaid|horizon|fairlife|organic/i.test(n)), shown.join(" | "));
 
 shown = await ask("Do you have lactose free?");
 check("lactose free milk is stocked", shelfIsAll(/lactaid|lactose/i, shown), shown.join(" | "));
@@ -155,23 +158,11 @@ check("organic milk is stocked", shelfIsAll(/organic|horizon|valley|kalona/i, sh
 
 shown = await ask("A half gallon of two percent.");
 check(
-  "kind and size together stay on half gallons of 2%",
-  shown.length >= 1 && shown.length <= 8,
+  "kind and size together land on the Dierbergs half gallon",
+  shown.length === 1 && /Dierbergs 2% Milk - Half/i.test(shown[0] ?? ""),
   shown.join(" | ")
 );
-check(
-  "and the Dierbergs half gallon is one of them",
-  shown.some((n) => /Dierbergs 2% Milk - Half/i.test(n)),
-  shown.join(" | ")
-);
-const halfIdx = shown.findIndex((n) => /Dierbergs 2% Milk - Half/i.test(n));
-if (halfIdx >= 0) {
-  const btns = await page.$$(".db-card .db-add");
-  await btns[halfIdx].click();
-  await wait(3000);
-} else {
-  await ask("Put that one in my cart.", 3000);
-}
+await ask("Put that one in my cart.", 3000);
 check("that one adds a carton on the shelf", (await cart()).startsWith("1 item"), await cart());
 
 console.log("\n--- EGG CELL ---\n");
