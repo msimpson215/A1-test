@@ -100,7 +100,7 @@ const SCRIPT = process.env.DEMO_SCRIPT
   ? JSON.parse(process.env.DEMO_SCRIPT)
   : [
       "I need milk",
-      "put the whole milk in the cart",
+      "put a gallon of whole milk in the cart",
       "what cheeses do you have",
       "the Cabot, put it in the cart",
       "I need eggs",

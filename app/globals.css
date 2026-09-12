@@ -8,6 +8,10 @@
   --db-line: #e6e6e6;
   --db-card: #ffffff;
   --db-green: #1f8a4c;
+  /* Sampled off Dierbergs' own Weekly Ad chip in the storefront capture. */
+  --db-ad-yellow: #ffe7ab;
+  --db-ad-yellow-deep: #f5d078;
+  --db-ad-ink: #3d2a16;
 }
 
 * { box-sizing: border-box; }
@@ -41,26 +45,27 @@ body { min-height: 100vh; }
 }
 .axon-overlay > * { pointer-events: auto; }
 
-/* NAV ENTRY — reads as a Dierbergs nav item, but clearly its own thing */
+/* NAV ENTRY — same yellow chip as Weekly Ad, sitting after Flowers & Gifts */
 .shopper-nav {
   position: absolute;
   z-index: 9;
   display: flex;
   align-items: center;
+  overflow: visible;
 }
 .shopper-nav-pill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   /* Built like the "Weekly Ad" chip beside it: 23px tall, 8px of side padding,
-     a 4px corner and a flat fill with no outline. An outlined capsule was the
+     a 4px corner and that same pale yellow fill. An outlined capsule was the
      giveaway that this control had been added on top of the page. */
   height: 23px;
   padding: 0 8px;
   border: 0;
   border-radius: 4px;
-  background: var(--db-red);
-  color: #fff;
+  background: var(--db-ad-yellow);
+  color: var(--db-ad-ink);
   cursor: pointer;
   white-space: nowrap;
   font: 700 12.5px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -68,12 +73,30 @@ body { min-height: 100vh; }
   transition: background 160ms ease;
 }
 .shopper-nav-pill:hover {
-  background: var(--db-red-deep);
+  background: var(--db-ad-yellow-deep);
 }
 .shopper-nav-pill.is-active {
-  background: var(--db-red-deep);
+  background: var(--db-ad-yellow-deep);
 }
 .shopper-nav-ico { width: 14px; height: 14px; flex: none; }
+/* A 45° NEW sticker on the chip's corner, in the store red so it reads
+   against the yellow. Hangs off the pill; the button's own box is unchanged. */
+.shopper-nav-new {
+  position: absolute;
+  top: -6px;
+  right: -20px;
+  z-index: 2;
+  pointer-events: none;
+  transform: rotate(45deg);
+  transform-origin: center;
+  background: var(--db-red);
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 1px;
+  font: 800 7.5px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.08em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
 
 /* ORB — light only, no face */
 .axon-orb {

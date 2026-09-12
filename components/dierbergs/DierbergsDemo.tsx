@@ -64,8 +64,7 @@ function log(...parts: unknown[]) {
 const BUILD = process.env.NEXT_PUBLIC_BUILD_STAMP || "dev";
 
 const WELCOME = "Welcome to Dierbergs. I'm your AI shopper.";
-const SUBLINE =
-  "I know the whole store and can get you anything you need. What can I help you with?";
+const SUBLINE = "Tell me what you're after.";
 // Rotated so a run of additions does not sound like a recording.
 const FOLLOW_UPS = [
   "What else can I get you?",
@@ -74,7 +73,7 @@ const FOLLOW_UPS = [
 ];
 
 const SPOKEN_WELCOME =
-  "Welcome to Dierbergs. I'm your AI shopper. I know the whole store, and I can get you anything you need. What can I help you with today?";
+  "Welcome to Dierbergs. I'm your AI shopper. Tell me what you're after.";
 
 export default function DierbergsDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");

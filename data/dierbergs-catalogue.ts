@@ -33,10 +33,9 @@ export type Shelf = {
   products: DemoProduct[];
   /**
    * Which products to score against after the shopper has named a kind.
-   * Milk uses this so "two percent" lands on the store-brand gallon rather
-   * than every 2% carton in the cooler. A bare "I need milk" ignores it and
-   * opens on the spread instead — otherwise the shelf is the same four
-   * gallons it has always been.
+   * Milk's capsule uses this only to honour a named size (gallon, half
+   * gallon) or to refuse a quart we do not stock. A bare "I need milk"
+   * ignores it and opens on the spread.
    */
   opening?: (text: string, all: DemoProduct[]) => DemoProduct[];
   /** What counts as a different kind on an un-narrowed open. */
@@ -54,6 +53,8 @@ export type ShelfId = "milk" | "eggs" | "bread" | "cheese";
  * particular still opens on the familiar ones.
  */
 const breadCell = [...breadProducts, ...breadCellExtras];
+// Milk is the first capsule: every harvested carton in this list can go in
+// the cart. Later aisles get the same treatment; milk is the one we polish.
 const milkCell = [...milkProducts, ...milkCellExtras];
 const eggCell = [...eggProducts, ...eggCellExtras];
 const cheeseCell = [...cheddarProducts, ...cheeseCellExtras];
@@ -71,28 +72,19 @@ export const shelves: Shelf[] = [
     label: "milk",
     words: ["milk"],
     heading: "Our milk.",
-    ask: "Whole, two percent, lactose-free, organic or chocolate. Which would you like?",
-    askHint: "Name a kind, a brand or a size.",
+    ask: "Whole, two percent, skim, lactose-free or organic. Gallon or half gallon — which would you like?",
+    askHint: "Name a kind, a brand or a size and I'll put it on the shelf.",
     products: milkCell,
     kindOf: milkKind,
-    spread: ["whole", "2%", "chocolate", "lactose-free", "organic", "filtered", "a2", "1%"],
+    spread: ["whole", "2%", "1%", "skim", "chocolate", "lactose-free", "organic", "filtered"],
     /*
-     * The store's own milk is the same four cartons in two jug sizes, and
-     * putting all eight up at once is not a choice, it is a wall. So the
-     * shelf shows one jug size at a time, and a plain "whole milk" answers
-     * with the store's own carton rather than every whole milk in the cell.
-     *
-     * The rest of the cell — the lactose free, the organics, the brands — is
-     * reached by asking for it: when something off the wall answers the
-     * question better than the wall can, the whole aisle opens up.
+     * Milk capsule. The cooler is the harvested cartons — Dierbergs gallons
+     * and half gallons, Prairie Farms, Lactaid, Horizon, Organic Valley,
+     * Kalona, fairlife, a2. Naming a kind or a brand shows the matching
+     * ones, all addable. We do not stock quarts; asking for one keeps the
+     * jugs on the shelf so the shopper can pick a size we have.
      */
-    opening: (text, all) => {
-      const size = mentionsHalfGallon(text) ? "half gallon" : "gallon";
-      const inSize = all.filter((p) => !p.volume || p.volume === size);
-      const wall = inSize.filter((p) => p.volume);
-      const beyond = inSize.filter((p) => !p.volume);
-      return bestScore(beyond, text) > bestScore(wall, text) ? inSize : wall;
-    }
+    opening: (text, all) => milkCapsulePool(text, all)
   },
   {
     id: "eggs",
@@ -128,7 +120,39 @@ export const shelves: Shelf[] = [
 ];
 
 function mentionsHalfGallon(text: string): boolean {
-  return /\b(half gallon|half a gallon|64 ?oz|small(er)?)\b/.test(text);
+  return /\b(half gallon|half a gallon|64 ?oz)\b/.test(text);
+}
+
+function mentionsGallon(text: string): boolean {
+  return !mentionsHalfGallon(text) && /\b(gallon|128 ?oz)\b/.test(text);
+}
+
+/** Quart, "a quarter", 32 oz — sizes the cooler does not carry. */
+export function milkAskedForQuart(text: string): boolean {
+  return /\b(quarts?|quarter(\s+gallons?)?|32 ?oz)\b/.test(text);
+}
+
+/** Gallon or half gallon, including extras that only record it as form/size. */
+function milkJugSize(product: DemoProduct): "gallon" | "half gallon" | null {
+  if (product.volume) return product.volume;
+  if (product.form === "gallon" || product.form === "half gallon") return product.form;
+  const size = (product.size || "").toLowerCase();
+  if (/\b(128\s*(fl\s*)?oz|1\s*gal)\b/.test(size)) return "gallon";
+  if (/\b(64\s*(fl\s*)?oz|0\.5\s*gal)\b/.test(size)) return "half gallon";
+  return null;
+}
+
+function milkCapsulePool(text: string, all: DemoProduct[]): DemoProduct[] {
+  if (milkAskedForQuart(text)) {
+    return all.filter((p) => milkJugSize(p) !== null);
+  }
+  if (mentionsHalfGallon(text)) {
+    return all.filter((p) => milkJugSize(p) === "half gallon");
+  }
+  if (mentionsGallon(text)) {
+    return all.filter((p) => milkJugSize(p) === "gallon");
+  }
+  return all;
 }
 
 export function shelfById(id: ShelfId | null | undefined): Shelf | null {
@@ -164,8 +188,8 @@ const DEAREST = /\b(most expensive|priciest|dearest|best one|nicest|fanciest)\b/
  *
  * Each product is scored by how many of its own keywords appear in what was
  * said, and the best-scoring products survive. Saying more narrows further,
- * which is why "whole" leaves two jug sizes and "whole milk, a gallon" leaves
- * one, without either rule being written down anywhere.
+ * which is why "whole" leaves the whole milks and "whole milk, a gallon"
+ * leaves the gallons, without either rule being written down per product.
  */
 export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
   const pool = shelf.opening ? shelf.opening(text, shelf.products) : shelf.products;
@@ -189,16 +213,22 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
   });
   /*
    * Nothing in the request names a product, so this is the aisle opening.
-   * Use the whole cell, not milk's four-gallon wall: "I need bread" has to
+   * Use the whole capsule, not a four-gallon wall: "I need bread" has to
    * put rye and bagels on the shelf, and "I need milk" has to put more than
    * the four Dierbergs gallons the demo has always shown.
    */
-  if (best === 0) return oneOfEachKind(shelf);
+  if (best === 0) {
+    if (shelf.opening && pool.length > 0 && pool.length !== shelf.products.length) {
+      return oneOfEachKind({ ...shelf, products: pool });
+    }
+    return oneOfEachKind(shelf);
+  }
 
+  const cap = shelf.id === "milk" ? 8 : 4;
   return scored
     .filter((s) => s.score === best)
     .map((s) => s.product)
-    .slice(0, 4);
+    .slice(0, cap);
 }
 
 const SPREAD_CAP = 8;
@@ -254,10 +284,6 @@ function score(product: DemoProduct, text: string): number {
     .reduce((sum, k) => sum + k.length, 0);
 }
 
-function bestScore(list: DemoProduct[], text: string): number {
-  return list.reduce((top, p) => Math.max(top, score(p, text)), 0);
-}
-
 /** True when the whole phrase appears, so "large" does not match "x-large". */
 function containsPhrase(text: string, phrase: string): boolean {
   const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -271,13 +297,41 @@ function containsPhrase(text: string, phrase: string): boolean {
  * product does not have to repeat "cheddar" in two places to be found by
  * someone asking for cheddar. Written once here rather than once per record.
  */
+const MILK_FAT_WORDS: Record<string, string[]> = {
+  whole: ["whole", "vitamin d", "full fat"],
+  "2%": ["2%", "2 percent", "two percent", "reduced fat"],
+  "1%": ["1%", "1 percent", "one percent", "lowfat", "low fat"],
+  skim: ["skim", "fat free", "nonfat", "non fat"]
+};
+
+function milkSizeWords(product: DemoProduct): string[] {
+  const size = milkJugSize(product);
+  if (size === "gallon") return ["gallon", "128 oz"];
+  if (size === "half gallon") return ["half gallon", "half a gallon", "64 oz"];
+  return [];
+}
+
+function brandWords(brand: string): string[] {
+  const lower = brand.toLowerCase();
+  const skip = new Set(["milk", "bread", "eggs", "cheese", "the", "of", "and"]);
+  const parts = lower.split(/\s+/).filter((w) => w.length > 1 && !skip.has(w));
+  return [lower, ...parts];
+}
+
 function wordsFor(product: DemoProduct): string[] {
+  const fat =
+    product.category === "milk" && product.subcategory
+      ? MILK_FAT_WORDS[product.subcategory] ?? []
+      : [];
   return [...new Set([
     ...product.keywords,
-    ...(product.brand ? [product.brand.toLowerCase()] : []),
+    ...fat,
+    ...milkSizeWords(product),
+    ...(product.brand ? brandWords(product.brand) : []),
     ...(product.subcategory ? [product.subcategory] : []),
     ...(product.form ? [product.form] : []),
     ...(product.type ?? []),
+    ...(hasType(product, "a2 protein") ? ["a2"] : []),
     ...(product.dietary ?? []).map((d) => d.replace(/-/g, " "))
   ])];
 }
@@ -285,6 +339,7 @@ function wordsFor(product: DemoProduct): string[] {
 /** True when anything on the shelf answers to what was said. */
 export function shelfRespondsTo(shelf: Shelf, text: string): boolean {
   if (CHEAPEST.test(text) || DEAREST.test(text)) return true;
+  if (shelf.id === "milk" && milkAskedForQuart(text)) return true;
   return shelf.products.some((p) => wordsFor(p).some((k) => containsPhrase(text, k)));
 }
 

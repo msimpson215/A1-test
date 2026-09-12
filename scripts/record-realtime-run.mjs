@@ -85,7 +85,7 @@ const say = async (text, until) => {
 };
 
 await say("I need milk", async () => (await cardCount()) > 0);
-await say("put the whole milk in the cart", async () => /1 item/.test(await cart()));
+await say("put a gallon of whole milk in the cart", async () => /1 item/.test(await cart()));
 await say("what cheeses do you have", async () => (await cardCount()) > 1);
 await say("the Cabot, put it in the cart", async () => /2 items/.test(await cart()));
 

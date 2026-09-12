@@ -16,7 +16,6 @@ export default function AxonNavControl({ active, onActivate }: Props) {
       style={{
         left: shopperNav.left,
         top: shopperNav.top,
-        width: shopperNav.width,
         height: shopperNav.height
       }}
     >
@@ -35,6 +34,9 @@ export default function AxonNavControl({ active, onActivate }: Props) {
         </svg>
         Your Shopper
       </motion.button>
+      <span className="shopper-nav-new" aria-hidden="true">
+        NEW
+      </span>
     </div>
   );
 }

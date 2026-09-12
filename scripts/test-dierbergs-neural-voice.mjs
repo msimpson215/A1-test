@@ -200,7 +200,7 @@ const open = async (mode, key, voice) => {
 {
   const page = await open("ok", "sk-test-123");
   const cart = () => page.$eval(".db-cart", (el) => el.innerText.replace(/\s+/g, " ").trim());
-  await page.evaluate(() => { window.__script = ["I need milk", "whole milk", "put it in my cart"]; });
+  await page.evaluate(() => { window.__script = ["I need milk", "a gallon of whole milk", "put it in my cart"]; });
   await page.click(".shopper-nav-pill");
   for (let i = 0; i < 45; i += 1) {
     await wait(400);

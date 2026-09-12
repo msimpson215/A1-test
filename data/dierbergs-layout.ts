@@ -13,6 +13,8 @@ export const dierbergsLayout = {
   // Measured off Dierbergs' own "Weekly Ad" chip in the capture, which occupies
   // x 128-193, y 14-36. Sharing its top and height is what makes this read as
   // part of the nav rather than as something dropped on top of it.
+  // Width is the yellow chip itself. The NEW flag hangs off the right corner
+  // and is not part of this box, so the pill still lines up with Weekly Ad.
   shopperNav: { left: 494, top: 14, width: 132, height: 23 },
   axonStrip: { left: 0, top: 105, width: 1440, height: 88 },
   // Hides the half-covered category icon row while the strip is open.

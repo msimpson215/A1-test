@@ -109,8 +109,8 @@ await wait(900);
 const greeting = await page.evaluate(() => window.__spoken.join(" "));
 check("greeting is spoken", greeting.length > 0);
 check(
-  "greeting is positive about what it is, with no negatives",
-  /ai shopper/i.test(greeting) && /whole store/i.test(greeting) && !/chatbot/i.test(greeting),
+  "greeting is the shopper asking what they're after",
+  /ai shopper/i.test(greeting) && /after/i.test(greeting) && !/whole store/i.test(greeting) && !/chatbot/i.test(greeting),
   greeting
 );
 
@@ -179,16 +179,30 @@ await page.keyboard.press("Enter");
 await wait(1600);
 check("it will not guess which milk", (await cart()) === "0 items $0.00", await cart());
 
-/* 6. Naming a kind narrows the shelf to one. */
+/* 6. Naming a kind shows the matching cartons, not only the store-brand gallon. */
 await page.type(".axon-strip-input", "Two percent.");
 await page.keyboard.press("Enter");
 await wait(1800);
 const narrowed = await cards();
-check("the shelf narrows to one", narrowed.length === 1, narrowed.join(" | "));
+check("two percent keeps more than one carton on the shelf", narrowed.length >= 2, narrowed.join(" | "));
 stripBoxes.push(await stripBox());
-check("and it is the 2%", /2%/.test(narrowed[0] ?? ""), narrowed[0] ?? "none");
+check("and they are 2% milks", narrowed.filter((n) => /2%/.test(n)).length >= 2, narrowed.join(" | "));
+check(
+  "including a brand that is not Dierbergs",
+  narrowed.some((n) => /prairie|lactaid|horizon|fairlife|organic valley/i.test(n)),
+  narrowed.join(" | ")
+);
 
-/* 7. Now adding flies the jug to the cart, and only then does the cart move. */
+/* 7. An unspecific add still will not guess among those cartons. */
+await page.type(".axon-strip-input", "Add it to my cart.");
+await page.keyboard.press("Enter");
+await wait(1600);
+check("it will not guess which 2%", (await cart()) === "0 items $0.00", await cart());
+
+/* 8. Clicking + on any carton flies it to the cart. */
+const twoPctNames = await cards();
+const twoIdx = twoPctNames.findIndex((n) => /Dierbergs 2% Milk - Gallon/i.test(n));
+check("the Dierbergs 2% gallon is on the shelf to add", twoIdx >= 0, twoPctNames.join(" | "));
 let sawFlyer = false;
 let cartDuringFlight = null;
 const watch = setInterval(async () => {
@@ -200,8 +214,10 @@ const watch = setInterval(async () => {
   } catch { /* page busy */ }
 }, 40);
 
-await page.type(".axon-strip-input", "Add it to my cart.");
-await page.keyboard.press("Enter");
+if (twoIdx >= 0) {
+  const addButtons = await page.$$(".db-card .db-add");
+  await addButtons[twoIdx].click();
+}
 await wait(2800);
 clearInterval(watch);
 
@@ -251,7 +267,7 @@ await page.click(".reset-demo");
 await wait(500);
 await page.evaluate(() => {
   window.__spoken = [];   // only judge what this run says
-  window.__script = ["I need milk", "whole milk", "put it in my cart"];
+  window.__script = ["I need milk", "a gallon of whole milk", "put it in my cart"];
   // Then feed back exactly what it says, the way an open microphone would.
   window.__echoAfter = true;
 });
@@ -276,6 +292,88 @@ check(
   echoed.slice(-110)
 );
 check("no microphone press was needed", true);
+
+/* 12. The rest of the milk capsule: brands, half gallons, no invented quarts. */
+await page.click(".reset-demo");
+await wait(400);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(700);
+await type("I need milk.");
+await wait(1600);
+await type("Prairie Farms.");
+await wait(1800);
+const prairie = await cards();
+check(
+  "Prairie Farms is a brand we carry",
+  prairie.length >= 1 && prairie.every((n) => /prairie farms/i.test(n)),
+  prairie.join(" | ")
+);
+const prairieAdd = await page.$$(".db-card .db-add");
+if (prairieAdd[0]) await prairieAdd[0].click();
+await wait(2800);
+check("a Prairie Farms carton goes in the cart", /1 item/.test(await cart()), await cart());
+
+await page.click(".reset-demo");
+await wait(400);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(700);
+await type("I need milk.");
+await wait(1600);
+await type("A half gallon of two percent.");
+await wait(1800);
+const halves = await cards();
+check(
+  "half gallon of 2% shows half gallons",
+  halves.length >= 1 && halves.length <= 8,
+  halves.join(" | ")
+);
+const halfIdx = halves.findIndex((n) => /Dierbergs 2% Milk - Half/i.test(n));
+check("the Dierbergs 2% half gallon is among them", halfIdx >= 0, halves.join(" | "));
+if (halfIdx >= 0) {
+  const btns = await page.$$(".db-card .db-add");
+  await btns[halfIdx].click();
+  await wait(2800);
+}
+check("the half gallon goes in the cart at $2.69", (await cart()) === "1 item $2.69", await cart());
+
+await page.click(".reset-demo");
+await wait(400);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(700);
+await type("I need milk.");
+await wait(1600);
+await page.evaluate(() => { window.__spoken = []; });
+await type("A quart.");
+await wait(1800);
+const quartSaid = await page.evaluate(() => window.__spoken.join(" "));
+check(
+  "a quart is refused without inventing one",
+  /gallon/i.test(quartSaid) && /half/i.test(quartSaid) && /no quarts/i.test(quartSaid),
+  quartSaid
+);
+check("and nothing was added", (await cart()) === "0 items $0.00", await cart());
+
+await page.click(".reset-demo");
+await wait(400);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(700);
+await type("I need milk.");
+await wait(1600);
+await type("Skim.");
+await wait(1800);
+const skims = await cards();
+check("skim milk is on the shelf", skims.some((n) => /skim|fat free/i.test(n)), skims.join(" | "));
+const skimIdx = skims.findIndex((n) => /Dierbergs Skim Milk - Gallon/i.test(n));
+if (skimIdx >= 0) {
+  const btns = await page.$$(".db-card .db-add");
+  await btns[skimIdx].click();
+  await wait(2800);
+}
+check("skim goes in the cart", (await cart()) === "1 item $4.24", await cart());
 
 // The hint line under the prompt comes and goes as the conversation moves on.
 // If the copy column is allowed to resize with it, the strip breathes on every

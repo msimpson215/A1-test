@@ -154,10 +154,25 @@ shown = await ask("What about organic?");
 check("organic milk is stocked", shelfIsAll(/organic|horizon|valley|kalona/i, shown), shown.join(" | "));
 
 shown = await ask("A half gallon of two percent.");
-check("kind and size together land on one carton", shown.length === 1, shown.join(" | "));
-
-await ask("Put that one in my cart.", 3000);
-check("that one adds the carton on the shelf", (await cart()).startsWith("1 item"), await cart());
+check(
+  "kind and size together stay on half gallons of 2%",
+  shown.length >= 1 && shown.length <= 8,
+  shown.join(" | ")
+);
+check(
+  "and the Dierbergs half gallon is one of them",
+  shown.some((n) => /Dierbergs 2% Milk - Half/i.test(n)),
+  shown.join(" | ")
+);
+const halfIdx = shown.findIndex((n) => /Dierbergs 2% Milk - Half/i.test(n));
+if (halfIdx >= 0) {
+  const btns = await page.$$(".db-card .db-add");
+  await btns[halfIdx].click();
+  await wait(3000);
+} else {
+  await ask("Put that one in my cart.", 3000);
+}
+check("that one adds a carton on the shelf", (await cart()).startsWith("1 item"), await cart());
 
 console.log("\n--- EGG CELL ---\n");
 

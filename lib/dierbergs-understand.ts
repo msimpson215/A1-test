@@ -1,4 +1,10 @@
-import { narrowShelf, shelfById, shelves, type ShelfId } from "@/data/dierbergs-catalogue";
+import {
+  milkAskedForQuart,
+  narrowShelf,
+  shelfById,
+  shelves,
+  type ShelfId
+} from "@/data/dierbergs-catalogue";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
 import { parseRequest } from "./dierbergs-demo-intents";
 
@@ -134,7 +140,7 @@ function remember(said: string, reply: string): void {
 }
 
 const AISLE_NAMES = shelves.map((s) => s.label);
-const AISLE_LIST = `${AISLE_NAMES.slice(0, -1).join(", ")} or ${AISLE_NAMES.at(-1)}`;
+const AISLE_AND = `${AISLE_NAMES.slice(0, -1).join(", ")} and ${AISLE_NAMES.at(-1)}`;
 
 /** The parser, in the same shape, for when the model cannot be reached. */
 function locally(said: string, context: TurnContext): Turn {
@@ -167,20 +173,25 @@ function locally(said: string, context: TurnContext): Turn {
       }
 
       const single = picked.length === 1 ? picked[0] : null;
+      const quart = shelf.id === "milk" && milkAskedForQuart(req.text);
       return {
         action: "show",
         aisle: shelf.id,
         products: picked,
-        say: single
-          ? `${single.shortName}, ${single.price}.`
-          : req.intent === "ADD"
-            ? `Happy to. ${shelf.ask}`
-            : shelf.ask,
-        hint: single
-          ? "Say \u201Cadd it to my cart\u201D when you want it."
-          : req.intent === "ADD"
-            ? "Name one and I'll drop it in."
-            : shelf.askHint,
+        say: quart
+          ? "We have gallons and half gallons — no quarts. Which size?"
+          : single
+            ? `${single.shortName}, ${single.price}.`
+            : req.intent === "ADD"
+              ? `Happy to. ${shelf.ask}`
+              : shelf.ask,
+        hint: quart
+          ? "Name a gallon or a half gallon."
+          : single
+            ? "Say \u201Cadd it to my cart\u201D when you want it."
+            : req.intent === "ADD"
+              ? "Name one and I'll drop it in."
+              : shelf.askHint,
         source: "local"
       };
     }
@@ -235,7 +246,7 @@ function locally(said: string, context: TurnContext): Turn {
   return {
     ...base,
     action: "chat",
-    say: `I can bring up ${AISLE_LIST} right now. Which would you like?`,
-    hint: "Tell me which and I'll put it on the shelf."
+    say: `We've got ${AISLE_AND}. Which of those are you after?`,
+    hint: "Name one and I'll put it on the shelf."
   };
 }

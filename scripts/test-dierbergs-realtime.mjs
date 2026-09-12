@@ -113,7 +113,7 @@ const watch = setInterval(async () => {
   try { if (await page.$(".flying-item")) flew = true; } catch { /* mid-render */ }
 }, 40);
 
-await say("put the whole milk in the cart");
+await say("put a gallon of whole milk in the cart");
 const bought = await settle(async () => /1 item/.test(await cart()));
 clearInterval(watch);
 check("asking for it puts it in the cart", bought, await cart());
