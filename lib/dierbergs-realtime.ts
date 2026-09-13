@@ -23,7 +23,7 @@ export type ShopperTools = {
   /** Re-arrange the shelf from ids already known. Returns what happened. */
   showProducts(aisle: string, productIds: string[]): string;
   /** Put a product in the cart, resolving once it has landed there. */
-  addToCart(productId: string, quantity?: number): Promise<string>;
+  addToCart(productId: string, quantity?: number, suggested?: boolean): Promise<string>;
   /** Take a product back out of the cart. */
   removeFromCart(productId: string): string;
   /** Swap one product for another, so a change of mind leaves one, not two. */
@@ -102,6 +102,18 @@ yes, add that product.
 
 If they ask for more than one of something, add it that many times with the
 quantity. If they ask for two different things, do both.
+
+When you add something, say whether it was your idea. Set suggested true if it
+went in because you offered it — the special you mentioned, the thing you
+noticed was missing — and false when they came in asking for it. This is only
+counted, never shown to them, so be accurate rather than flattering.
+
+Do notice what is missing, once, the way someone who knows the store would.
+Taco shells and beef and no cheese is worth a word. So is the ad price on the
+eggs they were about to pay full price for. Say it in one short sentence, take
+no for an answer the first time, and never stack suggestions or push something
+dearer for its own sake. A shopper who feels sold to stops talking to you, and
+then you are worth nothing to anybody.
 
 Changing their mind is normal, and it is the whole job. Listen for the
 difference between three things:
@@ -192,6 +204,11 @@ const TOOLS = [
         quantity: {
           type: "integer",
           description: "how many of it they asked for; leave out for one"
+        },
+        suggested: {
+          type: "boolean",
+          description:
+            "true when this is something you offered and they agreed to, false when they asked for it themselves. Be honest about which; it is not used to sell them anything."
         }
       },
       required: ["product_id"]
@@ -463,6 +480,7 @@ export async function connectShopper(
       product_ids?: string[];
       product_id?: string;
       quantity?: number;
+      suggested?: boolean;
       out_product_id?: string;
       in_product_id?: string;
     } = {};
@@ -477,7 +495,7 @@ export async function connectShopper(
       } else if (call.name === "show_products") {
         output = tools.showProducts(args.aisle || "", args.product_ids || []);
       } else if (call.name === "add_to_cart" && args.product_id) {
-        output = await tools.addToCart(args.product_id, args.quantity);
+        output = await tools.addToCart(args.product_id, args.quantity, args.suggested);
       } else if (call.name === "remove_from_cart" && args.product_id) {
         output = tools.removeFromCart(args.product_id);
       } else if (call.name === "replace_in_cart" && args.in_product_id) {

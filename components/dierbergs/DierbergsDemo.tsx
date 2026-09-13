@@ -187,6 +187,10 @@ export default function DierbergsDemo() {
   /** The server answered with no key of its own, which is a fixable thing. */
   const noKey = useRef(false);
   const [liveOn, setLiveOn] = useState(false);
+  // What went in because Axon offered it. A ref alongside the state because two
+  // adds can land faster than a render, same as the cart.
+  const suggestedRef = useRef({ items: 0, cents: 0 });
+  const [suggested, setSuggested] = useState({ items: 0, cents: 0 });
   const [engine, setEngine] = useState<"off" | "realtime" | "browser">("off");
 
   const browserHint = () =>
@@ -458,7 +462,7 @@ export default function DierbergsDemo() {
   }, []);
 
   const addToCart = useCallback(
-    async (id: string, quantity?: number): Promise<string> => {
+    async (id: string, quantity?: number, suggested?: boolean): Promise<string> => {
       const product = productById(id);
       if (!product) return "no such product";
       // "Two of those" is a normal thing to ask a person for. Capped so a
@@ -473,6 +477,19 @@ export default function DierbergsDemo() {
         setMerchHeading(`${product.name}.`);
       }
       for (let i = 0; i < many; i += 1) await addProduct(product);
+
+      /*
+       * Whose idea it was, at the price actually being charged. This is the
+       * other half of the ledger from the cost meter: what the conversation put
+       * in the basket that a search box would not have.
+       */
+      if (suggested) {
+        suggestedRef.current = {
+          items: suggestedRef.current.items + many,
+          cents: suggestedRef.current.cents + payCents(product) * many
+        };
+        setSuggested(suggestedRef.current);
+      }
 
       const now = cartNow.current;
       const total = now.reduce((sum, p) => sum + payCents(p), 0);
@@ -530,7 +547,8 @@ export default function DierbergsDemo() {
         {
           findProducts: (query, aisle) => tools.current.findForModel(query, aisle),
           showProducts: (aisle, ids) => tools.current.showProducts(aisle, ids),
-          addToCart: (id, quantity) => tools.current.addToCart(id, quantity),
+          addToCart: (id, quantity, suggested) =>
+            tools.current.addToCart(id, quantity, suggested),
           removeFromCart: (id) => tools.current.removeFromCart(id),
           replaceInCart: (outId, inId) => tools.current.replaceInCart(outId, inId)
         },
@@ -788,6 +806,8 @@ export default function DierbergsDemo() {
     spokenRecently.current = [];
     setCart([]);
     cartNow.current = [];
+    suggestedRef.current = { items: 0, cents: 0 };
+    setSuggested({ items: 0, cents: 0 });
     setPulse(false);
     setSelectedId(null);
     setFlight(null);
@@ -888,6 +908,7 @@ export default function DierbergsDemo() {
         build={BUILD}
         engine={engine}
         cartCents={cartTotalCents}
+        suggested={suggested}
         state={listening ? "listening" : busy ? "thinking or speaking" : phase}
         lastHeard={lastHeard}
         lastError={lastError}

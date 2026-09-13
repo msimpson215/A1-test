@@ -27,6 +27,7 @@ import {
   leftFor,
   verdictFor
 } from "../lib/dierbergs-budget.ts";
+import { GROSS_MARGIN, liftFrom } from "../lib/dierbergs-lift.ts";
 import fs from "node:fs";
 
 const results = [];
@@ -304,6 +305,84 @@ check(
 check(
   "and running out moves to typing rather than hanging up",
   /Let's carry on in writing/.test(demo) && /setVoiceMode\(false\)/.test(demo)
+);
+
+console.log("\n— the other side of the ledger —");
+
+/*
+ * The cost is only half the argument. A store will not buy a cheaper cost
+ * centre; it will buy something that puts more in the basket than it costs to
+ * run. So what the conversation added is attributed rather than assumed: Axon
+ * says whose idea each item was as it adds it.
+ */
+const realtimeSource = fs.readFileSync("lib/dierbergs-realtime.ts", "utf8");
+const fifteenTurns = convoCost(15);
+const nothing = liftFrom(0, 0, fifteenTurns);
+check(
+  "a conversation that suggested nothing shows no lift, and does not pretend to",
+  nothing.items === 0 && nothing.profit === 0 && nothing.net < 0,
+  `${money(nothing.net)} down on ${money(fifteenTurns)} spent`
+);
+
+/*
+ * One suggestion taken: the special on the eggs, say. This is the check that
+ * changes the pitch — a single $4 item carries more margin than five minutes of
+ * conversation costs, so the assistant does not need to be a salesman to wash
+ * its face. It needs to be right once.
+ */
+const oneItem = liftFrom(429, 1, fifteenTurns);
+check(
+  "one suggestion taken already covers a five minute conversation",
+  oneItem.net > 0,
+  `${money(oneItem.profit)} margin on one $4.29 item against ${money(oneItem.spent)} spent`
+);
+
+/* Three, which is what a good conversation does: the ad item, the forgotten
+ * cheese, the second carton. */
+const threeItems = liftFrom(1499, 3, fifteenTurns);
+check(
+  "three suggestions taken pays for the conversation",
+  threeItems.net > 0 && threeItems.ratio > 1,
+  `${money(threeItems.profit)} margin against ${money(threeItems.spent)} spent, ${threeItems.ratio.toFixed(1)}x`
+);
+check(
+  "and the margin, not the sale price, is what is compared",
+  Math.abs(threeItems.profit - 14.99 * GROSS_MARGIN) < 0.001,
+  `$14.99 of groceries is ${money(threeItems.profit)} of margin at ${Math.round(GROSS_MARGIN * 100)}%`
+);
+
+/* The number that decides the pitch: how much has to be suggested to break
+ * even on a fully spoken hundred dollar order. */
+const fullShop = convoCost(60);
+const breakEven = fullShop / GROSS_MARGIN;
+console.log(
+  `      a fully spoken $100 order costs ${money(fullShop)}, so it breaks even ` +
+    `if the conversation adds $${breakEven.toFixed(2)} of groceries — ${Math.round(
+      (breakEven / 100) * 100
+    )}% basket lift`
+);
+check(
+  "breaking even on a full spoken shop needs a lift in the low teens of per cent",
+  breakEven / 100 > 0.05 && breakEven / 100 < 0.2,
+  `${((breakEven / 100) * 100).toFixed(0)}% lift needed`
+);
+
+/* Attribution has to come from Axon, or it is guesswork dressed as data. */
+check(
+  "the model is asked whose idea each item was",
+  /suggested/.test(realtimeSource) && /add_to_cart/.test(realtimeSource)
+);
+check(
+  "and told to be accurate rather than flattering about it",
+  /accurate rather than flattering/.test(realtimeSource)
+);
+check(
+  "and told not to stack suggestions or push dearer things",
+  /never stack suggestions|no for an answer/.test(realtimeSource)
+);
+check(
+  "the demo counts it at the price actually charged, deal price included",
+  /suggestedRef\.current/.test(demo) && /payCents\(product\) \* many/.test(demo)
 );
 
 /* The meter has to be wired to the live line, or it measures nothing. */

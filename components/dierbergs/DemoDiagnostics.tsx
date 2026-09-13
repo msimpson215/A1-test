@@ -5,6 +5,7 @@ import { packshotSource } from "@/lib/dierbergs-packshot";
 import { speak, voiceReport } from "@/lib/dierbergs-speech";
 import { money, spendReport } from "@/lib/dierbergs-spend";
 import { budgetNow } from "@/lib/dierbergs-budget";
+import { liftFrom } from "@/lib/dierbergs-lift";
 import {
   NEURAL_VOICES,
   getNeuralVoice,
@@ -24,6 +25,8 @@ type Props = {
   engine?: string;
   /** What is in the cart, which is what buys the spoken minutes. */
   cartCents?: number;
+  /** What went in because Axon offered it, rather than being asked for. */
+  suggested?: { items: number; cents: number };
 };
 
 // A readout rather than a feature: this demo is driven on machines we cannot
@@ -35,12 +38,14 @@ export default function DemoDiagnostics({
   lastHeard,
   lastError,
   engine,
-  cartCents = 0
+  cartCents = 0,
+  suggested = { items: 0, cents: 0 }
 }: Props) {
   const [open, setOpen] = useState(false);
   const [report, setReport] = useState<ReturnType<typeof voiceReport> | null>(null);
   const [spend, setSpend] = useState(spendReport());
   const [budget, setBudget] = useState(budgetNow(0));
+  const lift = liftFrom(suggested.cents, suggested.items, spend.dollars);
   const [key, setKey] = useState("");
   const [voice, setVoice] = useState<NeuralVoice>(NEURAL_VOICES[0]);
   const [saved, setSaved] = useState(false);
@@ -137,6 +142,18 @@ export default function DemoDiagnostics({
                   <dd>
                     {money(budget.left)} left of {money(budget.allowance)}
                     {budget.verdict === "spent" ? " — spent" : budget.verdict === "warn" ? " — running low" : ""}
+                  </dd>
+                </div>
+                {/* The other side of the ledger: what the talking put in the
+                    basket that a search box would not have. */}
+                <div>
+                  <dt>Axon suggested</dt>
+                  <dd>
+                    {suggested.items > 0
+                      ? `${suggested.items} ${suggested.items === 1 ? "item" : "items"}, $${(
+                          suggested.cents / 100
+                        ).toFixed(2)} — ${money(lift.profit)} margin against ${money(lift.spent)} spent`
+                      : "nothing yet"}
                   </dd>
                 </div>
               </>
