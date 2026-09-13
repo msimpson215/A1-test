@@ -304,6 +304,85 @@ function namedOtherMilkBrand(text: string): boolean {
   return /\b(prairie|lactaid|horizon|fairlife|kalona|organic valley|a2)\b/.test(text);
 }
 
+/**
+ * Milk that does not agree with them.
+ *
+ * "I'm lactose intolerant" is not a product request and narrowing the shelf by
+ * those words finds nothing, so it needs catching before the keyword match.
+ */
+export function asksAboutLactose(raw: string): boolean {
+  const text = plain(raw);
+  return (
+    /\blactos/.test(text) ||
+    /\b(dairy free|non dairy)\b/.test(text) ||
+    /\b(cant|cannot|dont|do not) (drink|have|handle|do) (milk|dairy)\b/.test(text) ||
+    /\bmilk (bothers|upsets|hurts|messes with)\b/.test(text)
+  );
+}
+
+/**
+ * The four answers to it, one of each kind, cheapest way in first.
+ *
+ * Lactose free and a2 are not the same thing and the difference is the useful
+ * part, so one of each goes up rather than five cartons of Lactaid.
+ */
+export function milkForLactose(): DemoProduct[] {
+  const wanted = ["milk-lactaid-2", "milk-pf-lf-whole", "milk-fairlife-2", "milk-a2-whole"];
+  const milk = shelfById("milk")?.products ?? [];
+  return wanted
+    .map((id) => milk.find((p) => p.id === id))
+    .filter((p): p is DemoProduct => Boolean(p));
+}
+
+/**
+ * The one carton "the half gallon" means.
+ *
+ * A size on its own matches a dozen cartons, and asking "which one?" after
+ * someone has already told you the size is the kiosk answer. They mean the
+ * store's own in that size, in the fat they named if they named one — which is
+ * what a person behind the counter would hand them.
+ */
+export function milkTheyMean(raw: string): DemoProduct | null {
+  const size = milkWantedSize(raw);
+  if (!size || size === "quart") return null;
+  const fat = namedMilkFat(plain(raw));
+  const milk = shelfById("milk")?.products ?? [];
+  const inSize = milk.filter((p) => milkJugSize(p) === size && isDierbergsWhiteMilk(p));
+  if (fat) return inSize.find((p) => p.subcategory === fat) ?? null;
+  return inSize.find((p) => p.subcategory === "whole") ?? inSize[0] ?? null;
+}
+
+/**
+ * The same milk in the size they just asked for.
+ *
+ * "Make it the gallon instead" means this milk, bigger — not the fourteen
+ * gallons in the case. Same brand and same fat, and if that carton does not
+ * exist in that size, the store's own in the fat they were drinking.
+ */
+export function milkSwapForSize(
+  going: DemoProduct,
+  size: "gallon" | "half gallon" | "quart"
+): DemoProduct | null {
+  const milk = shelfById("milk")?.products ?? [];
+  const inSize = milk.filter((p) => milkJugSize(p) === size);
+  const sameCarton = inSize.find(
+    (p) => p.brand === going.brand && p.subcategory === going.subcategory
+  );
+  if (sameCarton) return sameCarton;
+  const store = inSize.find(
+    (p) => isDierbergsWhiteMilk(p) && p.subcategory === going.subcategory
+  );
+  return store ?? inSize.find(isDierbergsWhiteMilk) ?? null;
+}
+
+/** Said out loud with them. Not advice — what each carton is. */
+export const LACTOSE_LINE =
+  "I'm not a doctor, so I won't tell you what to drink \u2014 but here's what we carry. " +
+  "Lactaid and Prairie Farms are ordinary milk with the lactose already broken down, so they taste like milk. " +
+  "fairlife is ultra filtered: lactose free, more protein, less sugar. " +
+  "a2 isn't lactose free at all \u2014 it's milk with only the a2 protein, which some people say sits easier. " +
+  "Any of those sound right?";
+
 function milkCapsulePool(text: string, all: DemoProduct[]): DemoProduct[] {
   if (milkTurnedDownStore(text)) {
     return all.filter((p) => !isDierbergsWhiteMilk(p));

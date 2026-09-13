@@ -200,37 +200,13 @@ export default function DierbergsDemo() {
     imgRefs.current[id] = node;
   }, []);
 
-  const addProduct = useCallback(
-    async (product: DemoProduct) => {
-      const img = imgRefs.current[product.id];
-      const cartEl = cartRef.current;
-      if (!img || !cartEl) return;
-
-      setSelectedId(product.id);
-      setPhase("adding");
-      setPrompt(`Adding ${product.shortName}.`);
-      setHint("Watch the cart.");
-      pendingAdd.current = product;
-      setFlight({
-        src: product.image,
-        from: img.getBoundingClientRect(),
-        to: cartEl.getBoundingClientRect()
-      });
-      // Resolves when the package lands, so a caller can wait for the cart to
-      // be true before saying anything about it.
-      await new Promise<void>((resolve) => {
-        landed.current = resolve;
-      });
-    },
-    []
-  );
-
-  const onFlightDone = useCallback(async () => {
-    const product = pendingAdd.current;
-    pendingAdd.current = null;
-    setFlight(null);
-    if (!product) return;
-
+  /*
+   * The cart, once something is actually in it.
+   *
+   * Kept apart from the animation because the cart being right does not depend
+   * on a package having flown anywhere.
+   */
+  const dropIn = useCallback((product: DemoProduct): DemoProduct[] => {
     /*
      * Off the ref, not off the state. Two of the same thing land one after
      * the other faster than a render, and reading the old state here is how
@@ -242,19 +218,122 @@ export default function DierbergsDemo() {
     setPulse(true);
     setPhase("active");
     window.setTimeout(() => setPulse(false), 240);
+    return next;
+  }, []);
 
-    const total = next.reduce((sum, p) => sum + payCents(p), 0);
-    const count = `${next.length} ${next.length === 1 ? "item" : "items"}`;
-    const followUp = FOLLOW_UPS[next.length % FOLLOW_UPS.length];
-    await say(
-      `Got it \u2014 ${product.shortName} is in your cart.`,
-      `${count}, $${(total / 100).toFixed(2)}. ${followUp}`,
-      `Got it. ${product.shortName} is in your cart. ${followUp}`
-    );
-    setSelectedId(null);
+  const confirmAdd = useCallback(
+    async (product: DemoProduct, next: DemoProduct[]) => {
+      const total = next.reduce((sum, p) => sum + payCents(p), 0);
+      const count = `${next.length} ${next.length === 1 ? "item" : "items"}`;
+      const followUp = FOLLOW_UPS[next.length % FOLLOW_UPS.length];
+      await say(
+        `Got it \u2014 ${product.shortName} is in your cart.`,
+        `${count}, $${(total / 100).toFixed(2)}. ${followUp}`,
+        `Got it. ${product.shortName} is in your cart. ${followUp}`
+      );
+      setSelectedId(null);
+    },
+    [say]
+  );
+
+  /** The card, once React has actually put it on the shelf. */
+  const cardFor = useCallback(async (id: string): Promise<HTMLImageElement | null> => {
+    for (let i = 0; i < 12; i += 1) {
+      const found = imgRefs.current[id];
+      if (found) return found;
+      await new Promise((r) => setTimeout(r, 60));
+    }
+    return null;
+  }, []);
+
+  const addProduct = useCallback(
+    async (product: DemoProduct) => {
+      /*
+       * Wait for the card before giving up on it. A swap puts the new carton on
+       * the shelf and adds it in the same breath, and the card is one render
+       * behind — reading the ref straight away found nothing and the add was
+       * quietly dropped, which is a cart that ignores what it was told.
+       */
+      const img = await cardFor(product.id);
+      const cartEl = cartRef.current;
+      if (!img || !cartEl) {
+        // No card to fly out of, so no animation. It still goes in the cart.
+        await confirmAdd(product, dropIn(product));
+        return;
+      }
+
+      setSelectedId(product.id);
+      setPhase("adding");
+      setPrompt(`Adding ${product.shortName}.`);
+      setHint("Watch the cart.");
+      pendingAdd.current = product;
+      setFlight({
+        src: product.image,
+        from: img.getBoundingClientRect(),
+        to: cartEl.getBoundingClientRect()
+      });
+      /*
+       * Resolves when the package lands, so a caller can wait for the cart to
+       * be true before saying anything about it.
+       *
+       * Whatever happens, this settles. An add that never came back left the
+       * assistant with no answer at all, and with nothing to report it decided
+       * the page must still be loading and told the shopper to refresh — which
+       * would have emptied their cart. Two guards: a waiter that is still
+       * pending is released before it is replaced, and the wait is bounded.
+       */
+      landed.current?.();
+      await new Promise<void>((resolve) => {
+        let done = false;
+        const settle = () => {
+          if (done) return;
+          done = true;
+          window.clearTimeout(timer);
+          landed.current = null;
+          resolve();
+        };
+        const timer = window.setTimeout(settle, 4500);
+        landed.current = settle;
+      });
+    },
+    [cardFor, confirmAdd, dropIn]
+  );
+
+  const onFlightDone = useCallback(async () => {
+    const product = pendingAdd.current;
+    pendingAdd.current = null;
+    setFlight(null);
+    if (!product) return;
+
+    await confirmAdd(product, dropIn(product));
     landed.current?.();
     landed.current = null;
-  }, [say]);
+  }, [confirmAdd, dropIn]);
+
+  /*
+   * Taking something back out.
+   *
+   * "No, not that one" is half of shopping, and until now the only way out of
+   * the cart was to reload the page, which threw the whole cart away.
+   */
+  const removeFromCart = useCallback((id: string): string => {
+    const product = productById(id);
+    const now = cartNow.current;
+    const at = now.map((p) => p.id).lastIndexOf(id);
+    if (at < 0) {
+      return product ? `${product.name} is not in the cart` : "no such product";
+    }
+    const next = [...now.slice(0, at), ...now.slice(at + 1)];
+    cartNow.current = next;
+    setCart(next);
+    setPulse(true);
+    window.setTimeout(() => setPulse(false), 240);
+
+    const total = next.reduce((sum, p) => sum + payCents(p), 0);
+    return `took ${product?.name ?? id} out. ${next.length} ${
+      next.length === 1 ? "item" : "items"
+    }, $${(total / 100).toFixed(2)}.`;
+  }, []);
 
   const handleUtterance = useCallback(
     async (text: string) => {
@@ -300,6 +379,22 @@ export default function DierbergsDemo() {
         // addProduct speaks its own confirmation, because the cart total is
         // only true once the package has landed in it.
         await addProduct(turn.products[0]);
+      } else if (turn.action === "replace" && turn.outgoing && turn.products.length === 1) {
+        // The old one goes as the new one arrives, so a change of mind about
+        // the size leaves one carton in the cart rather than two.
+        removeFromCart(turn.outgoing.id);
+        await addProduct(turn.products[0]);
+      } else if (turn.action === "remove" && turn.outgoing) {
+        const gone = turn.outgoing;
+        removeFromCart(gone.id);
+        const left = cartNow.current;
+        const total = left.reduce((sum, p) => sum + payCents(p), 0);
+        await say(
+          `Done \u2014 the ${gone.name.replace(/\s+-\s+/g, ", ")} is out of your cart.`,
+          left.length
+            ? `${left.length} ${left.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`
+            : "Your cart is empty."
+        );
       } else {
         await say(turn.say, turn.hint);
       }
@@ -310,7 +405,7 @@ export default function DierbergsDemo() {
       exitBusy();
       log("done", turn.action);
     },
-    [addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, say, view]
+    [addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, removeFromCart, say, view]
   );
 
   /*
@@ -357,10 +452,34 @@ export default function DierbergsDemo() {
     [addProduct]
   );
 
-  const tools = useRef({ showProducts, addToCart });
+  /*
+   * One for the other, in a single move.
+   *
+   * "Make it the gallon instead" is one thought, not two, and running it as a
+   * remove and then an add let a slow add land after the remove and leave both
+   * cartons sitting in the cart.
+   */
+  const replaceInCart = useCallback(
+    async (outId: string, inId: string): Promise<string> => {
+      const going = productById(outId);
+      const coming = productById(inId);
+      if (!coming) return "no such product to put in";
+      const had = cartNow.current.some((p) => p.id === outId);
+      if (had) removeFromCart(outId);
+      await addToCart(inId);
+      const now = cartNow.current;
+      const total = now.reduce((sum, p) => sum + payCents(p), 0);
+      return `${had ? `swapped ${going?.name ?? outId} for ` : "put "}${coming.name} in the cart. ${
+        now.length
+      } ${now.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`;
+    },
+    [addToCart, removeFromCart]
+  );
+
+  const tools = useRef({ showProducts, addToCart, removeFromCart, replaceInCart });
   useEffect(() => {
-    tools.current = { showProducts, addToCart };
-  }, [showProducts, addToCart]);
+    tools.current = { showProducts, addToCart, removeFromCart, replaceInCart };
+  }, [showProducts, addToCart, removeFromCart, replaceInCart]);
 
   const goLive = useCallback(async () => {
     if (live.current) {
@@ -378,7 +497,9 @@ export default function DierbergsDemo() {
       const session = await connectShopper(
         {
           showProducts: (aisle, ids) => tools.current.showProducts(aisle, ids),
-          addToCart: (id, quantity) => tools.current.addToCart(id, quantity)
+          addToCart: (id, quantity) => tools.current.addToCart(id, quantity),
+          removeFromCart: (id) => tools.current.removeFromCart(id),
+          replaceInCart: (outId, inId) => tools.current.replaceInCart(outId, inId)
         },
         {
           onState: (state) => {

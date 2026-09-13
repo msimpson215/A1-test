@@ -20,6 +20,10 @@ export type ShopperTools = {
   showProducts(aisle: string, productIds: string[]): string;
   /** Put a product in the cart, resolving once it has landed there. */
   addToCart(productId: string, quantity?: number): Promise<string>;
+  /** Take a product back out of the cart. */
+  removeFromCart(productId: string): string;
+  /** Swap one product for another, so a change of mind leaves one, not two. */
+  replaceInCart(outProductId: string, inProductId: string): Promise<string>;
 };
 
 export type ShopperHandlers = {
@@ -49,9 +53,17 @@ yourself with that line.
 Open with: "Welcome to Dierbergs. How can I help you with your shopping
 today?" Then stop and listen.
 
-You have two hands. show_products puts products on the shelf they can see.
-add_to_cart puts one in the cart. Use them. Do not describe products they
-cannot see — show them. Call the tool first, then speak.
+Your hands: show_products puts products on the shelf they can see. add_to_cart
+puts one in the cart. remove_from_cart takes one back out. replace_in_cart
+swaps one for another in a single move. Use them. Do not describe products
+they cannot see — show them. Call the tool first, then speak.
+
+You are not waiting on a web page and you cannot see one. Your hands work the
+instant you use them and they tell you what happened. So never say a shelf is
+loading, that something is still in progress, that you cannot see the screen
+yet, or that a refresh would help. A refresh would throw away their whole
+cart. If a hand ever comes back with a problem, say plainly what did not work
+and offer to try it again.
 
 The shelves you have are below. Only those products exist. Never invent a
 product, a price, or a size this store does not sell. There is no Dierbergs
@@ -67,10 +79,41 @@ product.
 If they ask for more than one of something, add it that many times with the
 quantity. If they ask for two different things, do both.
 
-Follow the conversation. If they change their mind, follow what they mean
-now. "That one", "the other one", "the cheaper one" refer to what is on the
-shelf. They should never have to say a full name twice. Wait until they have
-finished speaking.
+Changing their mind is normal, and it is the whole job. Listen for the
+difference between three things:
+"Make it the gallon instead", "no, I wanted the half gallon", "replace that
+with the chocolate" — one thought. Use replace_in_cart, so they end up with
+one carton, not two.
+"Actually, just add chocolate milk too" — that is a second thought. Add it and
+leave what is already there alone.
+"Take that back out", "never mind the milk" — remove_from_cart.
+When it is ambiguous, the cart is the truth: say what is in it now and ask
+which way they want it. Never leave two cartons in there because they said two
+sizes.
+
+"That one", "the other one", "the cheaper one" refer to what is on the shelf.
+They should never have to say a full name twice. Wait until they have finished
+speaking; a sentence that starts "no" usually has the real answer at the end
+of it.
+
+If they turn around three or four times on the same item, stop moving it and
+wait: say you want to get it right, name the two they are between, and let
+them pick. Friendly, not scolding, and no more swapping until they answer.
+
+Milk, in particular. You know this aisle cold:
+Fat runs whole, 2%, 1%, skim — and skim, fat free and nonfat all mean the same
+carton. Dierbergs' own comes in gallon and half gallon; the store brand is the
+cheapest milk in the case. There is no Dierbergs quart.
+Lactose. If they say they are lactose intolerant, or that milk bothers them,
+say you are not a doctor and then be useful: Lactaid and Prairie Farms Lactose
+Free are regular milk with the lactose already broken down, so they taste like
+milk; fairlife is ultra filtered, lactose free, with more protein and less
+sugar. a2 is different — it is not lactose free, it is milk from cows whose
+protein is only the a2 kind, which some people say sits easier. Say which is
+which, show a few, and let them choose. Never promise how their body will
+react and never tell them to take anything.
+Chocolate milk is Dierbergs 1% chocolate, in the half gallon.
+Organic is Horizon. If they want a brand this store does not carry, say so.
 
 If they ask for something this store does not carry, say so. Never invent.`;
 
@@ -106,6 +149,32 @@ const TOOLS = [
         }
       },
       required: ["product_id"]
+    }
+  },
+  {
+    type: "function",
+    name: "remove_from_cart",
+    description: "Take a product back out of the customer's cart.",
+    parameters: {
+      type: "object",
+      properties: {
+        product_id: { type: "string", description: "id of the product to take out" }
+      },
+      required: ["product_id"]
+    }
+  },
+  {
+    type: "function",
+    name: "replace_in_cart",
+    description:
+      "Swap one product in the cart for another in a single move. Use this when they change their mind about size, kind or brand, so they are not left with both.",
+    parameters: {
+      type: "object",
+      properties: {
+        out_product_id: { type: "string", description: "id of the product to take out" },
+        in_product_id: { type: "string", description: "id of the product to put in instead" }
+      },
+      required: ["out_product_id", "in_product_id"]
     }
   }
 ];
@@ -313,16 +382,31 @@ export async function connectShopper(
 
     const call = functionCall(msg);
     if (!call) return;
-    /*
-     * One at a time. Two products asked for in one breath arrive as two calls
-     * at once, and each add flies a package into the cart off a single slot —
-     * run them together and the second one is dropped, which is why asking
-     * for two things only ever bought one.
-     */
     toolsRunning += 1;
-    toolChain = toolChain.then(() => runTool(call));
-    await toolChain;
-    toolsRunning -= 1;
+    try {
+      /*
+       * Cart moves go one at a time. Two products asked for in one breath
+       * arrive as two calls at once, and each one flies a package into the
+       * cart off a single slot — run them together and the second is dropped,
+       * which is why asking for two things only ever bought one.
+       *
+       * Putting products on a shelf is not a cart move: it is instant, and it
+       * waits for nothing. It used to sit in the same line, so a shelf change
+       * asked for while a package was still in the air did not happen and did
+       * not answer. That silence is what had the assistant telling the shopper
+       * the page was still loading and offering a refresh.
+       */
+      if (call.name === "show_products") {
+        await runTool(call);
+      } else {
+        const mine = toolChain.then(() => runTool(call));
+        // A failure ends here rather than poisoning the line behind it.
+        toolChain = mine.catch(() => {});
+        await mine;
+      }
+    } finally {
+      toolsRunning -= 1;
+    }
     speakAboutToolIfSilent();
   }
 
@@ -332,6 +416,8 @@ export async function connectShopper(
       product_ids?: string[];
       product_id?: string;
       quantity?: number;
+      out_product_id?: string;
+      in_product_id?: string;
     } = {};
     try {
       args = JSON.parse(call.arguments || "{}");
@@ -343,6 +429,10 @@ export async function connectShopper(
         output = tools.showProducts(args.aisle || "", args.product_ids || []);
       } else if (call.name === "add_to_cart" && args.product_id) {
         output = await tools.addToCart(args.product_id, args.quantity);
+      } else if (call.name === "remove_from_cart" && args.product_id) {
+        output = tools.removeFromCart(args.product_id);
+      } else if (call.name === "replace_in_cart" && args.in_product_id) {
+        output = await tools.replaceInCart(args.out_product_id || "", args.in_product_id);
       }
     } catch (error) {
       output = `that did not work: ${String(error)}`;

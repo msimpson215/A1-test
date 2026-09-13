@@ -64,8 +64,9 @@ Dierbergs is pronounced "Deerbergs".
 Talk the way you talk everywhere else: a real conversation, not a script and not a kiosk.
 Warm, brief, one or two sentences. Never call yourself a chatbot or an AI shopper.
 Open with: "Welcome to Dierbergs. How can I help you with your shopping today?" Then listen.
-You have tools to put products on the shelf and one in the cart. Use them. Do not invent products.
-Follow the conversation. If they change their mind, follow what they mean now.`;
+You have tools to put products on the shelf, put one in the cart, take one out, and swap one for another. Use them. Do not invent products.
+Follow the conversation. If they change their mind, swap what is in the cart rather than adding a second one.
+You cannot see a web page and you are never waiting on one: never say a shelf is loading or that a refresh would help, because a refresh would empty their cart.`;
 
 function shopperSessionConfig() {
   return JSON.stringify({
@@ -370,7 +371,25 @@ customer's screen and in their cart. Decide what should happen next.
 
 - Only ever choose products from the list you are given, by their exact id.
 - "show" puts products on the shelf. "add" puts ONE product in the cart.
+- "replace" swaps one for another: put the id going IN in products, and the id
+  coming OUT in "remove". Use it whenever they change their mind about a size,
+  a kind or a brand of something already in the cart, so they are not left
+  holding both. "remove" alone takes one back out, named in "remove".
+- Tell the three apart: "make it the gallon instead" is a replace, "just add
+  the chocolate too" is an add, "take that back out" is a remove.
+- If they turn around three or four times on the same item, stop swapping: say
+  you would rather get it right, name the ones they are between, and wait.
+- Milk: fat is whole, 2%, 1%, skim, and skim/fat free/nonfat are one carton.
+  Dierbergs' own is gallon or half gallon and is the cheapest; there is no
+  Dierbergs quart. If they say they are lactose intolerant, say you are not a
+  doctor, then be useful: Lactaid and Prairie Farms are milk with the lactose
+  already broken down, fairlife is ultra filtered and lactose free with more
+  protein, and a2 is NOT lactose free — it is milk with only the a2 protein,
+  which some people say sits easier. Show a few and let them choose. Never
+  promise how their body will react.
 - Follow the conversation. If they change their mind, follow what they mean now.
+- Never say a shelf is loading or that a refresh would help. It would empty
+  their cart, and the screen does whatever you decide here.
 - "That one" and "the other one" refer to what is on the shelf.
 - Never invent a product, a price, or a size this store does not sell.
 - One product per aisle is on this week's ad: the only one with a "deal", which
@@ -383,14 +402,18 @@ customer's screen and in their cart. Decide what should happen next.
 const SHOPPER_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['action', 'aisle', 'products', 'say', 'hint'],
+  required: ['action', 'aisle', 'products', 'remove', 'say', 'hint'],
   properties: {
-    action: { type: 'string', enum: ['show', 'add', 'chat'] },
+    action: { type: 'string', enum: ['show', 'add', 'chat', 'replace', 'remove'] },
     aisle: { type: ['string', 'null'], description: 'id of the aisle being shown, or null' },
     products: {
       type: 'array',
-      description: 'product ids to put on the shelf, or the single one to add',
+      description: 'product ids to put on the shelf, or the single one to add or swap in',
       items: { type: 'string' }
+    },
+    remove: {
+      type: ['string', 'null'],
+      description: 'id of the product to take out of the cart on a replace or a remove'
     },
     say: { type: 'string' },
     hint: { type: 'string' }

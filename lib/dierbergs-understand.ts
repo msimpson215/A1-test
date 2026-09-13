@@ -1,6 +1,10 @@
 import {
   allSpecialsLine,
+  LACTOSE_LINE,
   milkAskedForQuart,
+  milkForLactose,
+  milkSwapForSize,
+  milkTheyMean,
   milkWantedSize,
   narrowShelf,
   shelfById,
@@ -20,11 +24,13 @@ import { parseRequest } from "./dierbergs-demo-intents";
  * acting on a turn no matter which one answered.
  */
 export type Turn = {
-  action: "show" | "add" | "chat";
+  action: "show" | "add" | "chat" | "replace" | "remove";
   /** The aisle to put on the shelf. */
   aisle: ShelfId | "staples" | null;
-  /** Products to show, or the single one to add. */
+  /** Products to show, the one to add, or the one to put in on a replace. */
   products: DemoProduct[];
+  /** What leaves the cart on a replace or a remove. */
+  outgoing?: DemoProduct;
   /** Spoken aloud. */
   say: string;
   /** On screen only. */
@@ -76,8 +82,20 @@ type Spoken = { role: "user" | "assistant"; content: string };
 
 const history: Spoken[] = [];
 
+/*
+ * How many times in a row they have moved the same item.
+ *
+ * Two changes of mind is a person deciding. Four is nobody deciding, and
+ * swapping the cart a fourth time helps no one, so the count is what tells the
+ * shopper it is time to stop and ask.
+ */
+let swaps = 0;
+let swapping: ShelfId | null = null;
+
 export function forgetConversation(): void {
   history.length = 0;
+  swaps = 0;
+  swapping = null;
 }
 
 /** Everything the store stocks, by the id the model chooses it with. */
@@ -118,10 +136,16 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       .map((id) => everyProduct.get(id))
       .filter((p): p is DemoProduct => Boolean(p));
 
+    const outgoing = body.remove ? everyProduct.get(String(body.remove)) : undefined;
+
     // A model that says "add" without naming a product has not actually
     // chosen one, and guessing is how a demo puts the wrong thing in the cart.
-    const action: Turn["action"] =
-      body.action === "add" && products.length !== 1 ? "show" : body.action;
+    // Same for a swap with nothing to swap out, or with nothing to put in.
+    let action: Turn["action"] = body.action;
+    if ((action === "add" || action === "replace") && products.length !== 1) action = "show";
+    if ((action === "replace" || action === "remove") && !outgoing) {
+      action = action === "replace" ? "add" : "chat";
+    }
 
     remember(said, body.say);
 
@@ -129,6 +153,7 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       action,
       aisle: body.aisle ?? null,
       products,
+      outgoing,
       say: body.say,
       hint: body.hint,
       source: "model",
@@ -147,6 +172,27 @@ function remember(said: string, reply: string): void {
   if (history.length > 12) history.splice(0, history.length - 12);
 }
 
+/**
+ * How to name a carton in a conversation about sizes.
+ *
+ * The short name drops the size — "Dierbergs Whole Milk" — which is the one
+ * thing they are choosing between, so a swap has to say the long one.
+ */
+function sizeful(product: DemoProduct): string {
+  return product.name.replace(/\s+-\s+/g, ", ");
+}
+
+/** The one of theirs a correction is about: the last of that aisle they bought. */
+function lastFromCart(cart: DemoProduct[], aisle: ShelfId | null): DemoProduct | null {
+  const mine = aisle ? cart.filter((p) => p.category === aisle) : cart;
+  return mine.length ? mine[mine.length - 1] : null;
+}
+
+function dedupeById(products: DemoProduct[]): DemoProduct[] {
+  const seen = new Set<string>();
+  return products.filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)));
+}
+
 const AISLE_NAMES = shelves.map((s) => s.label);
 const AISLE_AND = `${AISLE_NAMES.slice(0, -1).join(", ")} and ${AISLE_NAMES.at(-1)}`;
 
@@ -154,6 +200,11 @@ const AISLE_AND = `${AISLE_NAMES.slice(0, -1).join(", ")} and ${AISLE_NAMES.at(-
 function locally(said: string, context: TurnContext): Turn {
   const req = parseRequest(said, context.current);
   const base = { source: "local" as const, products: [] as DemoProduct[], aisle: null };
+  // Anything that is not another correction ends the run of them.
+  if (req.intent !== "REPLACE") {
+    swaps = 0;
+    swapping = null;
+  }
 
   switch (req.intent) {
     case "SHOW":
@@ -165,14 +216,23 @@ function locally(said: string, context: TurnContext): Turn {
       // "The cheese" with four cheddars showing means the one they already
       // asked for. Only unambiguous because there is exactly one of them.
       const already = context.onList.filter((p) => p.category === shelf.id);
-      const one = picked.length === 1 ? picked[0] : already.length === 1 ? already[0] : null;
+      // "I'll take the half gallon" is a decision, not a question. A size names
+      // one carton: the store's own, in the fat they said.
+      const bySize =
+        shelf.id === "milk" && req.intent === "ADD" && picked.length !== 1
+          ? milkTheyMean(req.text)
+          : null;
+      const one =
+        picked.length === 1 ? picked[0] : bySize ?? (already.length === 1 ? already[0] : null);
 
       if (req.intent === "ADD" && one) {
         return {
           action: "add",
           // Leave the shelf be when the choice came from the list rather than
-          // the words: they are looking at four cheddars and buying one.
-          aisle: picked.length === 1 ? shelf.id : null,
+          // the words: they are looking at four cheddars and buying one. A
+          // size, though, is words, and the carton has to be on screen to fly
+          // out of it.
+          aisle: picked.length === 1 || bySize ? shelf.id : null,
           products: [one],
           say: "",
           hint: "",
@@ -236,6 +296,128 @@ function locally(said: string, context: TurnContext): Turn {
         source: "local"
       };
     }
+
+    /*
+     * "Make it the gallon instead."
+     *
+     * One thought, so it is one move: the old carton comes out as the new one
+     * goes in. Adding without removing is what left a shopper who said two
+     * sizes holding both.
+     */
+    case "REPLACE": {
+      const shelf = shelfById(req.shelf);
+      const going = lastFromCart(context.cart, req.shelf);
+      // Nothing of theirs to swap: they are choosing, not correcting.
+      if (!shelf || !going) break;
+
+      const picked = narrowShelf(shelf, req.text);
+      const size = shelf.id === "milk" ? milkWantedSize(req.text) : null;
+      const coming =
+        picked.length === 1
+          ? picked[0]
+          : // "The gallon instead" is this milk in that size, not every gallon
+            // in the case.
+            size && size !== "quart"
+            ? milkSwapForSize(going, size)
+            : null;
+
+      if (!coming) {
+        return {
+          action: "show",
+          aisle: shelf.id,
+          products: picked,
+          say:
+            size === "quart"
+              ? `We don't have a quart of the Dierbergs. You've got the ${sizeful(going)} \u2014 keep it, or go up to the gallon?`
+              : `You've got the ${sizeful(going)}. What would you like instead?`,
+          hint: "Name the one you want and I'll swap it.",
+          source: "local"
+        };
+      }
+
+      if (coming.id === going.id) {
+        return {
+          ...base,
+          action: "chat",
+          say: `That's the one you've got \u2014 the ${sizeful(going)} is already in your cart.`,
+          hint: "Nothing to change."
+        };
+      }
+
+      swaps = swapping === shelf.id ? swaps + 1 : 1;
+      swapping = shelf.id;
+
+      // Third turnaround on the same aisle. Stop moving it and let them think.
+      if (swaps >= 3) {
+        // Asked once. Whatever they say next is honoured rather than met with
+        // the same line again.
+        swaps = 0;
+        swapping = null;
+        return {
+          action: "show",
+          aisle: shelf.id,
+          products: dedupeById([going, coming, ...picked]),
+          say: `I'm sorry \u2014 I want to get this right rather than keep swapping. You've got the ${sizeful(going)}. Take your time and tell me which one you want, and I'll sort the cart out then.`,
+          hint: "I'll wait. Name the one you want.",
+          source: "local"
+        };
+      }
+
+      return {
+        action: "replace",
+        aisle: shelf.id,
+        products: [coming],
+        outgoing: going,
+        say: "",
+        hint: "",
+        source: "local"
+      };
+    }
+
+    /** "Take that back out." */
+    case "REMOVE": {
+      // Named it? Take that one, not whatever went in last: a cart with the
+      // chocolate and the half gallon in it has two right answers otherwise.
+      const shelf = shelfById(req.shelf);
+      const named = shelf ? narrowShelf(shelf, req.text) : [];
+      const spoken =
+        named.length === 1 ? context.cart.find((p) => p.id === named[0].id) ?? null : null;
+      const going = spoken ?? lastFromCart(context.cart, req.shelf);
+      if (!going) {
+        return {
+          ...base,
+          action: "chat",
+          say: context.cart.length
+            ? "Which one would you like me to take out?"
+            : "There's nothing in your cart yet.",
+          hint: context.cart.length ? "Name it and it's gone." : "Ask me for a grocery to start."
+        };
+      }
+      return {
+        ...base,
+        action: "remove",
+        outgoing: going,
+        say: "",
+        hint: ""
+      };
+    }
+
+    /*
+     * "I'm lactose intolerant."
+     *
+     * Not a doctor and not going to pretend: say what each carton is and let
+     * them choose. One of each kind, because lactose free and a2 are different
+     * things and the difference is the useful part.
+     */
+    case "MILK_ADVICE":
+      return {
+        action: "show",
+        aisle: "milk",
+        products: milkForLactose(),
+        say: LACTOSE_LINE,
+        hint: "Lactaid and Prairie Farms: lactose broken down. fairlife: ultra filtered. a2: a2 protein only, not lactose free.",
+        source: "local"
+      };
 
     case "SHOW_STAPLES":
       return {
