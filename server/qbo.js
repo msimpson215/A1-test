@@ -79,6 +79,17 @@ function htmlPage(title, body) {
 </body>`;
 }
 
+function connectLandingHtml() {
+  return `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">
+<body style="font-family:system-ui,-apple-system,sans-serif;background:#071a4e;color:#eaf4ff;padding:1.6rem;line-height:1.5;max-width:28rem">
+<h1 style="font-size:1.35rem;margin:0 0 1rem">Connect QuickBooks</h1>
+<p>On iPhone this has to open in <b>Safari</b>. Mail and text messages break it.</p>
+<p>If you are in Mail or a text: tap the share arrow, then <b>Open in Safari</b>. Then tap Continue.</p>
+<p style="margin:1.5rem 0"><a href="/api/qbo/connect?go=1" style="display:inline-block;background:#fff;color:#071a4e;font-weight:800;text-decoration:none;padding:.95rem 1.3rem;border-radius:999px">Continue</a></p>
+<p>Log into QuickBooks. Tap Allow. One time. Don’t send anyone your password.</p>
+</body>`;
+}
+
 async function exchangeCode(code, state) {
   const exp = pendingStates.get(state);
   pendingStates.delete(state);
@@ -254,6 +265,7 @@ module.exports = {
   isConnected,
   authorizeUrl,
   htmlPage,
+  connectLandingHtml,
   saveFromCallback,
   profitAndLoss,
   status,
