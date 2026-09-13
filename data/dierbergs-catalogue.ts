@@ -696,13 +696,24 @@ export function findProducts(
 /**
  * The store as an index, which is all the assistant needs to hold.
  *
- * Aisle names and the kinds in each, so it knows where things live and what
- * words are worth searching. This is the part that stays a few hundred tokens
- * whether the store has four cells or a thousand.
+ * Aisle names and, where there is room, the kinds and brands in each, so it
+ * knows where things live and what words are worth searching.
+ *
+ * This is the one part of the prompt that grows with the store, so it is
+ * capped. Spelling out kinds and brands costs about two hundred characters an
+ * aisle: fine for four aisles, forty-eight thousand tokens at a thousand, sent
+ * on every session. Past the cap the detail is dropped a layer at a time and
+ * the aisle names alone go down. Nothing is lost by that — find_products
+ * searches the whole store either way, and never reads this — so the shopper
+ * sees the same answers whether their store has four aisles or a thousand.
  */
-export function aisleIndex(): string {
-  return shelves
-    .map((shelf) => {
+const INDEX_BUDGET = 2000;
+
+export function aisleIndexFrom(list: Shelf[], budget = INDEX_BUDGET): string {
+  // Richest first: names with kinds and brands, then names with kinds, then
+  // the bare list of aisles, which always fits.
+  const layers: Array<(shelf: Shelf) => string> = [
+    (shelf) => {
       const kinds = [...new Set(shelf.products.map((p) => p.subcategory).filter(Boolean))];
       const brands = [...new Set(shelf.products.map((p) => p.brand).filter(Boolean))];
       return [
@@ -712,8 +723,43 @@ export function aisleIndex(): string {
       ]
         .filter(Boolean)
         .join(" | ");
-    })
-    .join("\n");
+    },
+    (shelf) => {
+      const kinds = [...new Set(shelf.products.map((p) => p.subcategory).filter(Boolean))];
+      return kinds.length
+        ? `${shelf.id}: ${shelf.products.length} items | kinds: ${kinds.join(", ")}`
+        : `${shelf.id}: ${shelf.products.length} items`;
+    },
+    (shelf) => `${shelf.id}: ${shelf.products.length} items`
+  ];
+
+  let text = "";
+  for (const layer of layers) {
+    text = list.map(layer).join("\n");
+    if (text.length <= budget) return text;
+  }
+  /*
+   * Even bare aisle names can overrun once a store is listed cell by cell. Say
+   * how many were left out rather than trailing off, so the assistant knows to
+   * search for what it cannot see instead of assuming the store ends here.
+   */
+  const names = list.map(layers[2]);
+  const tail = (n: number) => `…and ${n} more aisles: search for anything not listed here.`;
+  // The note about what was cut counts against the budget like everything else.
+  const room = Math.max(0, budget - tail(names.length).length - 1);
+  const kept: string[] = [];
+  let used = 0;
+  for (const name of names) {
+    if (used + name.length + 1 > room) break;
+    kept.push(name);
+    used += name.length + 1;
+  }
+  const rest = names.length - kept.length;
+  return rest > 0 ? `${kept.join("\n")}\n${tail(rest)}` : kept.join("\n");
+}
+
+export function aisleIndex(): string {
+  return aisleIndexFrom(shelves);
 }
 
 export function shelfRespondsTo(shelf: Shelf, text: string): boolean {

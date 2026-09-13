@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { packshotSource } from "@/lib/dierbergs-packshot";
 import { speak, voiceReport } from "@/lib/dierbergs-speech";
+import { money, spendReport } from "@/lib/dierbergs-spend";
 import {
   NEURAL_VOICES,
   getNeuralVoice,
@@ -28,6 +29,7 @@ type Props = {
 export default function DemoDiagnostics({ build, state, lastHeard, lastError, engine }: Props) {
   const [open, setOpen] = useState(false);
   const [report, setReport] = useState<ReturnType<typeof voiceReport> | null>(null);
+  const [spend, setSpend] = useState(spendReport());
   const [key, setKey] = useState("");
   const [voice, setVoice] = useState<NeuralVoice>(NEURAL_VOICES[0]);
   const [saved, setSaved] = useState(false);
@@ -38,7 +40,10 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError, en
   }, []);
 
   useEffect(() => {
-    const tick = () => setReport(voiceReport());
+    const tick = () => {
+      setReport(voiceReport());
+      setSpend(spendReport());
+    };
     tick();
     const id = window.setInterval(tick, 1500);
     return () => window.clearInterval(id);
@@ -89,6 +94,32 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError, en
             {/* Where the pictures come from, since that is the first question
                 a retailer asks about a catalogue this size. */}
             <div><dt>packshots</dt><dd>{packshotSource()}</dd></div>
+            {/* What the conversation cost, from the usage the API reports on
+                every turn. The only question a store asks twice. */}
+            {spend.turns > 0 ? (
+              <>
+                <div>
+                  <dt>this talk</dt>
+                  <dd>
+                    {spend.total.toLocaleString()} tokens over {spend.turns}{" "}
+                    {spend.turns === 1 ? "turn" : "turns"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>of which voice</dt>
+                  <dd>
+                    {(spend.tokens.audioIn + spend.tokens.audioOut).toLocaleString()} audio,{" "}
+                    {(spend.tokens.textIn + spend.tokens.cachedIn + spend.tokens.textOut).toLocaleString()} words
+                  </dd>
+                </div>
+                <div>
+                  <dt>cost so far</dt>
+                  <dd>
+                    {money(spend.dollars)} — {money(spend.dollars / spend.turns)} a turn
+                  </dd>
+                </div>
+              </>
+            ) : null}
             <div><dt>state</dt><dd>{state}</dd></div>
             <div><dt>last heard</dt><dd>{lastHeard || "—"}</dd></div>
             <div><dt>last error</dt><dd>{lastError || neuralLastError() || "—"}</dd></div>

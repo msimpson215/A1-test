@@ -1,6 +1,7 @@
 import { aisleIndex, specialFor, specialPriceFor, type ShelfId } from "@/data/dierbergs-catalogue";
 import type { DemoProduct } from "@/data/dierbergs-demo-products";
 import { forSpeaking } from "./dierbergs-pronounce";
+import { recordUsage } from "./dierbergs-spend";
 
 /**
  * A spoken line to the OpenAI Realtime API.
@@ -389,6 +390,10 @@ export async function connectShopper(
     if (type === "response.done") {
       responding = false;
       handlers.onState("listening");
+      // The API prices its own turn here. Keep the tally so the cost of a
+      // conversation is a reading rather than a guess.
+      const done = msg.response as { usage?: unknown } | undefined;
+      if (done?.usage) recordUsage(done.usage);
       if (queued) {
         queued = false;
         requestResponse();
