@@ -118,7 +118,7 @@ const bought = await settle(async () => /1 item/.test(await cart()));
 clearInterval(watch);
 check("asking for it puts it in the cart", bought, await cart());
 check("  and the package flies there", flew);
-check("  and it is the whole milk at $4.44", /1 item \$4\.44/.test(await cart()), await cart());
+check("  and it is the whole milk, charged at the ad price", /1 item \$3\.49/.test(await cart()), await cart());
 
 // Plurals, in the place they used to fail.
 await say("what cheeses do you have");

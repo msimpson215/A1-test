@@ -109,6 +109,12 @@ export default function DemoDiagnostics({
             ) : (
               <div><dt>also had</dt><dd>{report.runnersUp.join(", ") || "nothing else"}</dd></div>
             )}
+            {/* When the good voice is not being used, say why in words. A
+                rejected key and an empty account look identical from the
+                outside, and guessing between them wastes an afternoon. */}
+            {neuralLastError() ? (
+              <div><dt>voice fell back</dt><dd>{neuralLastError()}</dd></div>
+            ) : null}
             {/* Where the pictures come from, since that is the first question
                 a retailer asks about a catalogue this size. */}
             <div><dt>packshots</dt><dd>{packshotSource()}</dd></div>

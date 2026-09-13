@@ -236,6 +236,17 @@ function locally(said: string, context: TurnContext): Turn {
     swapping = null;
   }
 
+  /*
+   * "No, I meant rye" is a correction when a loaf is already in the cart and
+   * plain browsing when nothing is. With an empty cart it must still narrow
+   * the shelf to the rye rather than falling back to the whole aisle, or a
+   * shopper who changes their mind before buying anything gets less than one
+   * who never spoke.
+   */
+  if (req.intent === "REPLACE" && !lastFromCart(context.cart, req.shelf)) {
+    req.intent = "SHOW";
+  }
+
   switch (req.intent) {
     case "SHOW":
     case "ADD": {

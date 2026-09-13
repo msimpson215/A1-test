@@ -182,7 +182,7 @@ const open = async (mode, key, voice) => {
     await new Promise((r) => setTimeout(r, 250));
     return document.querySelector(".demo-diag-body")?.textContent ?? "";
   });
-  check("the panel says the key was rejected", /401/.test(diag), diag.slice(0, 100));
+  check("the panel says in words that the key was rejected", /key rejected \(401\)/i.test(diag), diag.slice(0, 140));
   await page.close();
 }
 
@@ -207,7 +207,7 @@ const open = async (mode, key, voice) => {
     if ((await page.evaluate(() => window.__script.length)) === 0) break;
   }
   await wait(3500);
-  check("the spoken loop still reaches 1 item $4.44", (await cart()) === "1 item $4.44", await cart());
+  check("the spoken loop still reaches the cart, at the ad price", (await cart()) === "1 item $3.49", await cart());
   check("every line went through the neural voice", (await page.evaluate(() => window.__spoken.length)) === 0);
   await page.close();
 }

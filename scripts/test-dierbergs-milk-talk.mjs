@@ -160,21 +160,23 @@ await type("I'm lactose intolerant");
 said = await lastSpoken();
 let shelf = await names();
 check(
-  "lactose intolerance gets an answer, and not a diagnosis",
-  /not a doctor/i.test(said) && /lactose/i.test(said),
+  "lactose intolerance gets the labels, and no advice at all",
+  /not a dietitian/i.test(said) && /lactose/i.test(said),
   said.slice(0, 120)
 );
 check(
-  "and it shows one of each kind, a2 included",
+  // a2 is named in the words as the thing people mistake for lactose free,
+  // but it stays off a shelf where one tap would buy it.
+  "and the shelf holds only what the label says is lactose free",
   shelf.some((n) => /lactaid/i.test(n)) &&
     shelf.some((n) => /prairie farms/i.test(n)) &&
     shelf.some((n) => /fairlife/i.test(n)) &&
-    shelf.some((n) => /a2/i.test(n)),
+    !shelf.some((n) => /a2/i.test(n)),
   shelf.join(" | ").slice(0, 140)
 );
 check(
   "and it says plainly that a2 is not lactose free",
-  /a2 isn.t lactose free/i.test(said),
+  /a2 is not lactose free/i.test(said),
   said.slice(0, 200)
 );
 

@@ -326,8 +326,15 @@ export function asksAboutLactose(raw: string): boolean {
  * Lactose free and a2 are not the same thing and the difference is the useful
  * part, so one of each goes up rather than five cartons of Lactaid.
  */
+/*
+ * Only cartons whose own label says lactose free.
+ *
+ * a2 gets mistaken for lactose free constantly, and it is worth saying out loud
+ * that it is not — but it does not belong on this shelf, where one tap adds it
+ * to the cart. The caution goes in the words; the shelf stays true to the ask.
+ */
 export function milkForLactose(): DemoProduct[] {
-  const wanted = ["milk-lactaid-2", "milk-pf-lf-whole", "milk-fairlife-2", "milk-a2-whole"];
+  const wanted = ["milk-lactaid-2", "milk-pf-lf-whole", "milk-fairlife-2"];
   const milk = shelfById("milk")?.products ?? [];
   return wanted
     .map((id) => milk.find((p) => p.id === id))
@@ -441,24 +448,35 @@ export function cheeseForLactose(): DemoProduct[] {
     .filter((p): p is DemoProduct => Boolean(p));
 }
 
+/*
+ * Said to anyone who mentions a condition, an allergy or a diet.
+ *
+ * A grocer is not a clinic, and a shop assistant who tells someone what their
+ * body will do with a food has taken on something no shop wants and no shopper
+ * asked for. So these lines describe the product and stop: what the label says,
+ * what the process does, what it costs. The judgement is the shopper's, and if
+ * they have been advised by someone qualified, that advice wins without
+ * argument.
+ */
+export const DIET_DISCLAIMER =
+  "Label information only \u2014 read the packet, and go by what your dietitian or doctor has told you.";
+
 export const GLUTEN_LINE =
-  "I'm not a doctor, so I'll just tell you what we stock. " +
-  "Canyon Bakehouse and Udi's are both gluten free \u2014 Udi's is the softer sandwich loaf and the cheaper of the two, " +
-  "Canyon does a seven grain if you want something heartier. " +
-  "Carbonaut is gluten free as well and low carb with it. " +
-  "Fair warning: they run two to three times the price of ordinary bread, and a couple live in the freezer case. " +
-  "Which sounds closest?";
+  "Three of our loaves are labelled gluten free. " +
+  "Udi's is the softer sandwich loaf and the cheaper of the two; Canyon Bakehouse does a white and a seven grain. " +
+  "Carbonaut is labelled gluten free and low carb both. " +
+  "Two things worth knowing: they run two to three times the price of ordinary bread, and some of them are in the freezer case. " +
+  "I'm not a dietitian, so read the packet yourself \u2014 recipes change. Which would you like to see?";
 
 export const CARB_LINE =
-  "Two low carb loaves: Nature's Own Keto, which is the cheaper and eats like normal soft bread, " +
-  "and Carbonaut, which is lower again and gluten free too. " +
-  "Not the same thing as gluten free, so tell me if you need both.";
+  "Two loaves labelled low carb: Nature's Own Keto is the cheaper, and Carbonaut is lower again and labelled gluten free with it. " +
+  "Low carb and gluten free are different labels, so say if you need both. The carb counts are printed on the packet.";
 
 export const CHEESE_LACTOSE_LINE =
-  "Good news on cheese \u2014 aged hard cheeses lose almost all their lactose in the making, " +
-  "so sharp cheddar and swiss usually sit fine even when milk doesn't. " +
-  "The Cabot extra sharp and the aged Sargento slices are both well aged, and the Essential Everyday swiss is the cheapest way in. " +
-  "If you'd rather not chance it, the Kraft shredded cheddar is labelled lactose free outright.";
+  "Going by the labels: one Kraft shredded cheddar is marked lactose free outright. " +
+  "Beyond that, aging breaks lactose down, so aged cheeses are naturally low in it \u2014 " +
+  "the Cabot extra sharp and the aged Sargento slices are the well aged ones here, and the Essential Everyday swiss is the cheapest way in. " +
+  "I'm not a dietitian, so what to do with that is yours to decide, and the packet has the detail.";
 
 export type DietaryAdvice = {
   aisle: ShelfId;
@@ -482,14 +500,14 @@ export function dietaryAdvice(raw: string, aisle?: ShelfId | null): DietaryAdvic
         aisle: "cheese",
         products: cheeseForLactose(),
         line: CHEESE_LACTOSE_LINE,
-        hint: "Aged cheddar and swiss are naturally very low in lactose. One bag is labelled lactose free."
+        hint: `Aging breaks lactose down; one bag is labelled lactose free. ${DIET_DISCLAIMER}`
       };
     }
     return {
       aisle: "milk",
       products: milkForLactose(),
       line: LACTOSE_LINE,
-      hint: "Lactaid and Prairie Farms: lactose broken down. fairlife: ultra filtered. a2: a2 protein only, not lactose free."
+      hint: `Lactaid and Prairie Farms: lactose broken down. fairlife: ultra filtered. a2: a2 protein only, not lactose free. ${DIET_DISCLAIMER}`
     };
   }
   if (asksAboutGluten(raw)) {
@@ -497,7 +515,7 @@ export function dietaryAdvice(raw: string, aisle?: ShelfId | null): DietaryAdvic
       aisle: "bread",
       products: breadForGluten(),
       line: GLUTEN_LINE,
-      hint: "Udi's is the cheaper soft loaf. Canyon does seven grain. Both run two to three times ordinary bread."
+      hint: `Udi's is the cheaper soft loaf. Canyon does seven grain. Both run two to three times ordinary bread. ${DIET_DISCLAIMER}`
     };
   }
   if (asksAboutCarbs(raw)) {
@@ -505,7 +523,7 @@ export function dietaryAdvice(raw: string, aisle?: ShelfId | null): DietaryAdvic
       aisle: "bread",
       products: breadForCarbs(),
       line: CARB_LINE,
-      hint: "Nature's Own Keto is the cheaper. Carbonaut is lower carb and gluten free with it."
+      hint: `Nature's Own Keto is the cheaper. Carbonaut is lower carb and gluten free with it. ${DIET_DISCLAIMER}`
     };
   }
   return null;
@@ -513,11 +531,11 @@ export function dietaryAdvice(raw: string, aisle?: ShelfId | null): DietaryAdvic
 
 /** Said out loud with them. Not advice — what each carton is. */
 export const LACTOSE_LINE =
-  "I'm not a doctor, so I won't tell you what to drink \u2014 but here's what we carry. " +
-  "Lactaid and Prairie Farms are ordinary milk with the lactose already broken down, so they taste like milk. " +
-  "fairlife is ultra filtered: lactose free, more protein, less sugar. " +
-  "a2 isn't lactose free at all \u2014 it's milk with only the a2 protein, which some people say sits easier. " +
-  "Any of those sound right?";
+  "Here's what the cartons say. " +
+  "Lactaid and Prairie Farms Lactose Free are ordinary milk with the lactose already broken down, so they taste like milk. " +
+  "fairlife is ultra filtered \u2014 labelled lactose free, with more protein and less sugar. " +
+  "a2 is not lactose free at all: it's milk from cows whose protein is only the a2 kind. " +
+  "I'm not a dietitian, so if you've had advice, go by that. Any of those you'd like to see?";
 
 function milkCapsulePool(text: string, all: DemoProduct[]): DemoProduct[] {
   if (milkTurnedDownStore(text)) {

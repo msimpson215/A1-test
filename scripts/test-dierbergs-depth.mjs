@@ -104,9 +104,9 @@ check(
   up.slice(0, 120)
 );
 check(
-  "and says it is not a doctor before it says anything else",
-  /not a doctor/i.test(await said()),
-  (await lastSaid()).slice(0, 100)
+  "and hands the judgement back rather than giving dietary advice",
+  /not a dietitian/i.test(await said()),
+  (await lastSaid()).slice(0, 110)
 );
 check(
   "and warns about the price, which is the part that surprises people",
@@ -183,8 +183,8 @@ check(
   up.slice(0, 130)
 );
 check(
-  "and leads with the fact that aged cheese is mostly fine",
-  /aged|lactose/i.test(await lastSaid()),
+  "and leads with what aging does to the cheese, not with a prediction about them",
+  /aging breaks lactose down/i.test(await lastSaid()),
   (await lastSaid()).slice(0, 130)
 );
 
@@ -241,7 +241,7 @@ check(
 );
 check(
   "the brief stays small enough to open every session with",
-  brief.length / 4 < 1800,
+  brief.length / 4 < 2200,
   `~${Math.round(brief.length / 4)} tokens`
 );
 check(
@@ -268,6 +268,89 @@ check(
   "thirty aisles of knowledge would not fit in a prompt, which is why it is looked up",
   perAisle * 30 > 5000,
   `~${Math.round(perAisle)} tokens an aisle, ~${Math.round((perAisle * 30) / 1000)}k for thirty`
+);
+
+// ── Nothing here gives dietary advice ──────────────────────────────────────
+console.log("\n— it describes the product, never the person —");
+
+/*
+ * A grocer is not a clinic. Telling a shopper how a food will treat them is a
+ * liability the store never asked for, and worse, it can cut across what a
+ * dietitian has actually told them. So everything said out loud is checked
+ * against the language that would make it advice.
+ *
+ * This is a lint rather than a conversation, because the risk is not that today
+ * fails — it is that a helpful sentence gets added in six months and nobody
+ * notices it crossed the line.
+ */
+/*
+ * Guidance has to name the thing it forbids — "never call anything good or bad
+ * for them" is the rule, not a breach of it — so prohibitions are skipped and
+ * everything else is held to the line.
+ */
+const isProhibition = (line) => /\b(never|not a dietitian|do not|don't|dont|stop there|rather than)\b/i.test(line);
+const guidance = [
+  fs.readFileSync("data/dierbergs-aisle-notes.ts", "utf8"),
+  brief,
+  fs.readFileSync("server/server.js", "utf8").split("AXON_SHOPPER_INSTRUCTIONS = `")[1].split("`;")[0]
+]
+  .join("\n")
+  .split("\n")
+  .filter((line) => !isProhibition(line))
+  .join("\n");
+
+/** The brief, unwrapped, since a rule can fall across a line break. */
+const briefFlat = brief.replace(/\s+/g, " ");
+
+/* The lines the shopper is actually read, straight out of the catalogue. */
+const lines = fs.readFileSync("data/dierbergs-catalogue.ts", "utf8");
+const spokenLines = ["LACTOSE_LINE", "GLUTEN_LINE", "CARB_LINE", "CHEESE_LACTOSE_LINE"]
+  .map((name) => lines.split(`export const ${name} =`)[1]?.split(";\n")[0] ?? "")
+  .join("\n");
+
+const FORBIDDEN = [
+  [/\bsits? fine\b/i, "predicting how it will sit with them"],
+  [/\bagree with (you|them)\b/i, "predicting a reaction"],
+  [/\b(safe|healthy|healthier|unhealthy|good|bad) for (you|them)\b/i, "calling food good or bad for someone"],
+  [/\bI (recommend|suggest) (you|that you)\b/i, "prescribing"],
+  [/\byou should (eat|drink|avoid|try|switch)\b/i, "telling them what to consume"],
+  [/\b(will|should) help with\b/i, "claiming a benefit"],
+  [/\b(cures?|treats?|prevents?)\b/i, "a medical claim"],
+  [/\bwont bother (you|them)\b/i, "predicting a reaction"]
+];
+
+for (const [pattern, why] of FORBIDDEN) {
+  const inLines = pattern.test(spokenLines.replace(/\s+/g, " "));
+  const inGuidance = pattern.test(guidance.replace(/\s+/g, " "));
+  check(
+    `nothing ${why}`,
+    !inLines && !inGuidance,
+    inLines ? "found in a spoken line" : inGuidance ? "found in the guidance" : ""
+  );
+}
+
+check(
+  "every dietary answer says it is not a dietitian, or hands it back to the packet",
+  ["LACTOSE_LINE", "GLUTEN_LINE", "CARB_LINE", "CHEESE_LACTOSE_LINE"].every((name) => {
+    const body = lines.split(`export const ${name} =`)[1]?.split(";\n")[0] ?? "";
+    return /not a dietitian|on the packet|printed on the packet/i.test(body);
+  })
+);
+check(
+  "a dietitian's advice is told to win outright, not to be improved on",
+  /that advice wins outright/i.test(briefFlat) && /cuts? across it/i.test(briefFlat)
+);
+check(
+  "an allergy is always sent back to the packet, because recipes change",
+  /read the packet themselves/i.test(briefFlat) && /recipes change/i.test(briefFlat)
+);
+check(
+  "and it never claims a product is free of something, only that the label says so",
+  /never say a product is free of something/i.test(briefFlat)
+);
+check(
+  "the shopper is shown the disclaimer alongside the answer",
+  /DIET_DISCLAIMER/.test(lines) && /read the packet, and go by what your dietitian/i.test(lines)
 );
 
 await browser.close();

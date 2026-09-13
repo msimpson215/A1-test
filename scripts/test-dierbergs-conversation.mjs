@@ -119,7 +119,7 @@ const watch = setInterval(async () => {
 
 await say("put a gallon of whole milk in the cart");
 await wait(1200);
-check("whole milk goes in the cart", /1 item \$4\.44/.test(await cart()), await cart());
+check("whole milk goes in the cart at the ad price", /1 item \$3\.49/.test(await cart()), await cart());
 check("  and it flies there", flew);
 
 /* "Cheeses" is the plural that used to need teaching. It is also a question
