@@ -8,6 +8,7 @@ import { dietaryAdvice, findProducts, payCents, shelfById, type ShelfId } from "
 import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
+import { countIn } from "@/lib/dierbergs-demo-intents";
 import {
   connectShopper,
   productsForModel,
@@ -295,8 +296,19 @@ export default function DierbergsDemo() {
     return null;
   }, []);
 
+  /*
+   * `quiet` puts it in the cart without saying so.
+   *
+   * Two cartons is one decision, and confirming each of them separately is the
+   * doubling-up that made it sound like it was not listening. So a run of adds
+   * speaks once, at the end, when the total is finally true.
+   */
   const addProduct = useCallback(
-    async (product: DemoProduct) => {
+    async (product: DemoProduct, quiet = false) => {
+      if (quiet) {
+        dropIn(product);
+        return;
+      }
       /*
        * Wait for the card before giving up on it. A swap puts the new carton on
        * the shelf and adds it in the same breath, and the card is one render
@@ -334,17 +346,15 @@ export default function DierbergsDemo() {
     [cardFor, confirmAdd, dropIn]
   );
 
-  const onFlightDone = useCallback(() => {
-    setFlight(null);
-    setSelectedId(null);
-  }, []);
+  /** Several of one thing, confirmed once at the end rather than each time. */
+  const addMany = useCallback(
+    async (product: DemoProduct, count: number) => {
+      for (let i = 0; i < count - 1; i += 1) await addProduct(product, true);
+      await addProduct(product);
+    },
+    [addProduct]
+  );
 
-  /*
-   * Taking something back out.
-   *
-   * "No, not that one" is half of shopping, and until now the only way out of
-   * the cart was to reload the page, which threw the whole cart away.
-   */
   const removeFromCart = useCallback((id: string): string => {
     const product = productById(id);
     const now = cartNow.current;
@@ -363,6 +373,43 @@ export default function DierbergsDemo() {
       next.length === 1 ? "item" : "items"
     }, $${(total / 100).toFixed(2)}.`;
   }, []);
+
+  /*
+   * Makes the cart hold as many as they asked for.
+   *
+   * A number is the count they want, not an instruction to add. "Make it two
+   * half gallons" said over a cart that already holds one is the case the model
+   * gets wrong about one time in three: it decides there is nothing to do and
+   * leaves it at one, which looks exactly like the feature not working.
+   *
+   * Only ever acts on a number the shopper actually said, and only on the item
+   * the turn was already about, so it enforces their words rather than
+   * second-guessing them.
+   */
+  const settleCount = useCallback(async (heard: string, subject?: DemoProduct) => {
+    const wanted = countIn(heard);
+    if (wanted < 2) return;
+    const item = subject ?? cartNow.current[cartNow.current.length - 1];
+    if (!item) return;
+    const held = cartNow.current.filter((p) => p.id === item.id).length;
+    if (held === 0 || held === wanted) return;
+    for (let i = held; i < wanted; i += 1) await addProduct(item, true);
+    for (let i = held; i > wanted; i -= 1) removeFromCart(item.id);
+    setPulse(true);
+    window.setTimeout(() => setPulse(false), 240);
+  }, [addProduct, removeFromCart]);
+
+  const onFlightDone = useCallback(() => {
+    setFlight(null);
+    setSelectedId(null);
+  }, []);
+
+  /*
+   * Taking something back out.
+   *
+   * "No, not that one" is half of shopping, and until now the only way out of
+   * the cart was to reload the page, which threw the whole cart away.
+   */
 
   const handleUtterance = useCallback(
     async (text: string) => {
@@ -408,14 +455,14 @@ export default function DierbergsDemo() {
       const many = Math.min(Math.max(turn.quantity ?? 1, 1), 12);
 
       if (turn.action === "add" && turn.products.length === 1) {
-        // addProduct speaks its own confirmation, because it is the only thing
-        // that knows the cart total once this has gone in.
-        for (let i = 0; i < many; i += 1) await addProduct(turn.products[0]);
+        // addMany speaks the confirmation itself, because it is the only thing
+        // that knows the cart total once all of this has gone in.
+        await addMany(turn.products[0], many);
       } else if (turn.action === "replace" && turn.outgoing && turn.products.length === 1) {
         // The old one goes as the new one arrives, so a change of mind about
         // the size leaves one carton in the cart rather than two.
         removeFromCart(turn.outgoing.id);
-        for (let i = 0; i < many; i += 1) await addProduct(turn.products[0]);
+        await addMany(turn.products[0], many);
       } else if (turn.action === "remove" && turn.outgoing) {
         const gone = turn.outgoing;
         removeFromCart(gone.id);
@@ -431,13 +478,15 @@ export default function DierbergsDemo() {
         await say(turn.say, turn.hint);
       }
 
+      await settleCount(text, turn.products[0] ?? turn.outgoing);
+
       // Clear only once the answer is out, so the shopper sees what was heard
       // while it is being handled, and a second request starts from empty.
       setQuery("");
       exitBusy();
       log("done", turn.action);
     },
-    [addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, removeFromCart, say, view]
+    [addMany, addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, removeFromCart, say, settleCount, view]
   );
 
   /*
@@ -632,6 +681,8 @@ export default function DierbergsDemo() {
             log("heard (live)", text);
             setLastHeard(text);
             dietaryShelfBackstop(text);
+            // Same wait as the shelf: Axon gets first go at it.
+            window.setTimeout(() => void settleCount(text), 2600);
           },
           onSaid: (text) => {
             setPrompt(text);
