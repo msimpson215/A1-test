@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { packshotSource } from "@/lib/dierbergs-packshot";
 import { speak, voiceReport } from "@/lib/dierbergs-speech";
 import {
   NEURAL_VOICES,
@@ -85,6 +86,9 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError, en
             ) : (
               <div><dt>also had</dt><dd>{report.runnersUp.join(", ") || "nothing else"}</dd></div>
             )}
+            {/* Where the pictures come from, since that is the first question
+                a retailer asks about a catalogue this size. */}
+            <div><dt>packshots</dt><dd>{packshotSource()}</dd></div>
             <div><dt>state</dt><dd>{state}</dd></div>
             <div><dt>last heard</dt><dd>{lastHeard || "—"}</dd></div>
             <div><dt>last error</dt><dd>{lastError || neuralLastError() || "—"}</dd></div>

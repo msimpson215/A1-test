@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { specialPriceFor } from "@/data/dierbergs-catalogue";
 import type { DemoProduct } from "@/data/dierbergs-demo-products";
 
@@ -22,10 +24,39 @@ export default function DierbergsProductCard({
   onAdd
 }: Props) {
   const deal = specialPriceFor(product.id);
+  /*
+   * Packshots are fetched by item number, and in a store this size some of them
+   * will be missing. A product without a photograph is still a product: the
+   * tile keeps its shape, says what it is, and can still go in the cart. The
+   * image element stays mounted either way, so the package still flies from the
+   * right place on the shelf.
+   */
+  const [noPhoto, setNoPhoto] = useState(false);
+  useEffect(() => setNoPhoto(false), [product.image]);
+
   return (
     <article className={`db-card${selected ? " is-selected" : ""}${inCart ? " is-in-cart" : ""}`}>
-      <div className="db-card-media">
-        <img ref={imageRef} src={product.image} alt={product.name} />
+      <div className={`db-card-media${noPhoto ? " is-blank" : ""}`}>
+        <img
+          ref={imageRef}
+          src={product.image}
+          alt={product.name}
+          onError={() => setNoPhoto(true)}
+        />
+        {noPhoto ? (
+          <span className="db-no-photo">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+                d="M3.5 7.5L12 3l8.5 4.5v9L12 21l-8.5-4.5z M3.5 7.5L12 12l8.5-4.5M12 12v9"
+              />
+            </svg>
+            {product.brand}
+          </span>
+        ) : null}
         {inCart ? (
           <span className="db-in-cart-badge" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="18" height="18">

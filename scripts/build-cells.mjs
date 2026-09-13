@@ -243,17 +243,26 @@ for (const [cell, rows] of Object.entries(CELLS)) {
       missing.push(`${cell}: ${name}`);
       continue;
     }
-    const file = `${IMAGES}/${id}.png`;
+    /*
+     * The packshot is named after the item number, not after our slug, because
+     * that is how it is fetched: a row with a SKU has a picture and nobody
+     * hand-names an image file. Swap these for Dierbergs' own numbers and the
+     * same convention reads straight off their image host.
+     */
+    const sku = id.toUpperCase().replace(/-/g, "");
+    const file = `${IMAGES}/${sku}.png`;
     if (!existsSync(file)) {
       try {
         execFileSync("curl", ["-sfL", "--max-time", "40", "-o", file, found.image]);
       } catch {
-        console.error(`  image failed for ${id}`);
+        // A product with no packshot still ships: the tile says so and still
+        // sells it, which is what happens across a catalogue this size.
+        console.error(`  no packshot for ${sku}`);
       }
     }
     const product = {
       id,
-      sku: id.toUpperCase().replace(/-/g, ""),
+      sku,
       name: found.name,
       shortName: shorten(found.name),
       brand: attrs.brand,
@@ -265,7 +274,6 @@ for (const [cell, rows] of Object.entries(CELLS)) {
       priceCents: found.priceCents,
       form: attrs.form,
       dietary: found.dietary,
-      image: `/dierbergs/products/${id}.png`,
       aisle: AISLES[cell]
     };
     if (attrs.count) product.count = attrs.count;
@@ -301,7 +309,7 @@ function render(p) {
     `    form: ${q(p.form)}`,
     p.count ? `    count: ${p.count}` : null,
     `    dietary: ${arr(p.dietary)}`,
-    `    image: asset(${q(p.image)})`,
+    `    image: packshot(${q(p.sku)})`,
     `    aisle: ${q(p.aisle)}`,
     `    keywords: ${arr(p.keywords)}`
   ].filter(Boolean);
@@ -324,7 +332,7 @@ const body = Object.entries(out)
 
 writeFileSync(
   "data/dierbergs-cells.ts",
-  `import { asset } from "@/lib/asset-base";
+  `import { packshot } from "@/lib/dierbergs-packshot";
 import type { DemoProduct } from "./dierbergs-demo-products";
 
 /**
@@ -336,6 +344,11 @@ import type { DemoProduct } from "./dierbergs-demo-products";
  * conversation can answer "is that gluten free" without guessing. There are no
  * ratings and no nutrition figures here because the storefront does not give
  * us any, and the shopper is told as much rather than told a number.
+ *
+ * Every row is keyed on its item number, and the packshot is fetched by it, so
+ * another aisle is rows in this file and nothing else. The numbers here are the
+ * demo's own: the public storefront does not hand out item numbers, and putting
+ * Dierbergs' real ones in is one column of a feed.
  *
  * Edit the curation list in the script, not this file.
  */

@@ -1,4 +1,4 @@
-import { asset } from "@/lib/asset-base";
+import { packshot } from "@/lib/dierbergs-packshot";
 
 export type DemoProduct = {
   id: string;
@@ -18,11 +18,18 @@ export type DemoProduct = {
    */
   keywords: string[];
   /**
-   * Dierbergs' own item number, once there is a catalogue to take it from.
-   * Until then the demo's own id doubles as one, so a record can be swapped
-   * for a real one without changing its shape.
+   * The item number, which is what identifies this thing to a store system.
+   *
+   * Load-bearing: the packshot is fetched by it, so a row with a SKU has a
+   * picture and needs no image file named after it. That is what makes another
+   * aisle data entry instead of development.
+   *
+   * These values are the demo's own, derived from the slug, because the public
+   * storefront does not hand out item numbers. Swapping in Dierbergs' real ones
+   * is a column in the feed, and then the packshots come from their image host
+   * rather than from this repository. Nothing in the code changes.
    */
-  sku?: string;
+  sku: string;
   /** Milk only: how much fat, and how big the jug is. */
   variety?: "whole" | "2%" | "1%" | "skim";
   volume?: "gallon" | "half gallon";
@@ -74,11 +81,13 @@ function milkProduct(
   id: string,
   variety: NonNullable<DemoProduct["variety"]>,
   volume: NonNullable<DemoProduct["volume"]>,
-  priceCents: number,
-  file: string
+  priceCents: number
 ): DemoProduct {
   const label = variety === "whole" ? "Whole" : variety === "skim" ? "Skim" : variety;
   const jug = volume === "gallon" ? "Gallon" : "Half Gallon";
+  const sku = `MILKDB${variety.replace("%", "PCT").toUpperCase()}${
+    volume === "gallon" ? "GAL" : "HALF"
+  }`;
   return {
     id,
     name: `Dierbergs ${label} Milk - ${jug}`,
@@ -87,12 +96,12 @@ function milkProduct(
     price: `$${(priceCents / 100).toFixed(2)}`,
     priceCents,
     category: "milk",
-    image: asset(`/dierbergs/products/${file}.png`),
+    image: packshot(sku),
     aisle: "Aisle 12 - A",
     keywords: [...VARIETY_WORDS[variety], ...VOLUME_WORDS[volume], "dierbergs", "store brand"],
     variety,
     volume,
-    sku: `MILKDB${variety.replace("%", "PCT").toUpperCase()}${volume === "gallon" ? "GAL" : "HALF"}`,
+    sku,
     brand: "Dierbergs",
     subcategory: variety,
     type: ["store brand"],
@@ -101,15 +110,15 @@ function milkProduct(
   };
 }
 
-export const milkWholeGallon = milkProduct("dierbergs-whole-gal", "whole", "gallon", 444, "milk-whole-gal");
-export const milkTwoGallon = milkProduct("dierbergs-2pct-gal", "2%", "gallon", 424, "milk-2pct-gal");
-export const milkOneGallon = milkProduct("dierbergs-1pct-gal", "1%", "gallon", 424, "milk-1pct-gal");
-export const milkSkimGallon = milkProduct("dierbergs-skim-gal", "skim", "gallon", 424, "milk-skim-gal");
+export const milkWholeGallon = milkProduct("dierbergs-whole-gal", "whole", "gallon", 444);
+export const milkTwoGallon = milkProduct("dierbergs-2pct-gal", "2%", "gallon", 424);
+export const milkOneGallon = milkProduct("dierbergs-1pct-gal", "1%", "gallon", 424);
+export const milkSkimGallon = milkProduct("dierbergs-skim-gal", "skim", "gallon", 424);
 
-export const milkWholeHalf = milkProduct("dierbergs-whole-half", "whole", "half gallon", 269, "milk-whole-half");
-export const milkTwoHalf = milkProduct("dierbergs-2pct-half", "2%", "half gallon", 269, "milk-2pct-half");
-export const milkOneHalf = milkProduct("dierbergs-1pct-half", "1%", "half gallon", 269, "milk-1pct-half");
-export const milkSkimHalf = milkProduct("dierbergs-skim-half", "skim", "half gallon", 269, "milk-skim-half");
+export const milkWholeHalf = milkProduct("dierbergs-whole-half", "whole", "half gallon", 269);
+export const milkTwoHalf = milkProduct("dierbergs-2pct-half", "2%", "half gallon", 269);
+export const milkOneHalf = milkProduct("dierbergs-1pct-half", "1%", "half gallon", 269);
+export const milkSkimHalf = milkProduct("dierbergs-skim-half", "skim", "half gallon", 269);
 
 export const milkGallons = [milkWholeGallon, milkTwoGallon, milkOneGallon, milkSkimGallon];
 export const milkHalfGallons = [milkWholeHalf, milkTwoHalf, milkOneHalf, milkSkimHalf];
@@ -128,7 +137,7 @@ export const eggsLarge: DemoProduct = {
   price: "$1.79",
   priceCents: 179,
   category: "eggs",
-  image: asset("/dierbergs/products/eggs-dierbergs-large.png"),
+  image: packshot("DBEGGSLG"),
   aisle: "Aisle 12 - A",
   keywords: ["large", "dierbergs", "regular", "grade a"],
   sku: "DBEGGSLG",
@@ -148,7 +157,7 @@ export const eggsExtraLarge: DemoProduct = {
   price: "$1.94",
   priceCents: 194,
   category: "eggs",
-  image: asset("/dierbergs/products/eggs-dierbergs-xl.png"),
+  image: packshot("DBEGGSXL"),
   aisle: "Aisle 12 - A",
   keywords: ["extra large", "xl", "dierbergs", "grade a"],
   sku: "DBEGGSXL",
@@ -168,7 +177,7 @@ export const eggsJumbo: DemoProduct = {
   price: "$2.04",
   priceCents: 204,
   category: "eggs",
-  image: asset("/dierbergs/products/eggs-dierbergs-jumbo.png"),
+  image: packshot("DBEGGSJUMBO"),
   aisle: "Aisle 12 - A",
   keywords: ["jumbo", "biggest", "dierbergs", "grade a"],
   sku: "DBEGGSJUMBO",
@@ -188,7 +197,7 @@ export const eggsEgglands: DemoProduct = {
   price: "$5.48",
   priceCents: 548,
   category: "eggs",
-  image: asset("/dierbergs/products/eggs-egglands-large.png"),
+  image: packshot("EBLARGE12"),
   aisle: "Aisle 12 - A",
   keywords: ["egglands", "egglands best", "classic", "white", "name brand"],
   sku: "EBLARGE12",
@@ -212,7 +221,7 @@ export const bread: DemoProduct = {
   price: "$2.09",
   priceCents: 209,
   category: "bread",
-  image: asset("/dierbergs/products/bread-bunny.png"),
+  image: packshot("BUNNYWHITE"),
   aisle: "Aisle 9 - C",
   keywords: ["bunny", "original", "soft twist", "cheapest"],
   sku: "BUNNYWHITE",
@@ -231,7 +240,7 @@ export const breadEssential: DemoProduct = {
   price: "$2.56",
   priceCents: 256,
   category: "bread",
-  image: asset("/dierbergs/products/bread-essential.png"),
+  image: packshot("EEWHITE"),
   aisle: "Aisle 9 - C",
   keywords: ["essential", "everyday", "essential everyday", "store brand"],
   sku: "EEWHITE",
@@ -250,7 +259,7 @@ export const breadWonder: DemoProduct = {
   price: "$3.68",
   priceCents: 368,
   category: "bread",
-  image: asset("/dierbergs/products/bread-wonder.png"),
+  image: packshot("WONDERWHITE"),
   aisle: "Aisle 9 - C",
   keywords: ["wonder", "classic", "sandwich"],
   sku: "WONDERWHITE",
@@ -269,7 +278,7 @@ export const breadNaturesOwn: DemoProduct = {
   price: "$5.25",
   priceCents: 525,
   category: "bread",
-  image: asset("/dierbergs/products/bread-natures-own.png"),
+  image: packshot("NOTHICK"),
   aisle: "Aisle 9 - C",
   keywords: ["natures own", "nature", "thick", "thick sliced", "texas toast"],
   sku: "NOTHICK",
@@ -292,7 +301,7 @@ export const borden: DemoProduct = {
   price: "$3.91",
   priceCents: 391,
   category: "cheese",
-  image: asset("/dierbergs/products/cheese-borden.png"),
+  image: packshot("BORDENXSHARP"),
   aisle: "Aisle 12 - B",
   keywords: ["borden", "shredded", "finely shredded", "extra sharp", "cheapest", "3.91"],
   sku: "BORDENXSHARP",
@@ -311,7 +320,7 @@ export const sargento: DemoProduct = {
   price: "$4.36",
   priceCents: 436,
   category: "cheese",
-  image: asset("/dierbergs/products/cheese-sargento.png"),
+  image: packshot("SARGENTOSHARP"),
   aisle: "Aisle 12 - B",
   keywords: ["sargento", "sliced", "slices", "ultra thin", "4.36"],
   sku: "SARGENTOSHARP",
@@ -330,7 +339,7 @@ export const landOLakes: DemoProduct = {
   price: "$4.69",
   priceCents: 469,
   category: "cheese",
-  image: asset("/dierbergs/products/cheese-landolakes.png"),
+  image: packshot("LOLXSHARP"),
   aisle: "Aisle 12 - B",
   keywords: ["land o lakes", "land o", "white cheddar", "white", "4.69"],
   sku: "LOLXSHARP",
@@ -349,7 +358,7 @@ export const cabot: DemoProduct = {
   price: "$4.80",
   priceCents: 480,
   category: "cheese",
-  image: asset("/dierbergs/products/cheese-cabot.png"),
+  image: packshot("CABOTXSHARP"),
   aisle: "Aisle 12 - B",
   keywords: ["cabot", "block", "4.80"],
   sku: "CABOTXSHARP",

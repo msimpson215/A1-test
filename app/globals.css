@@ -419,6 +419,28 @@ body { min-height: 100vh; }
   transition: opacity 220ms ease;
 }
 .db-card.is-in-cart .db-card-media img { opacity: 0.4; }
+
+/* No packshot for this item number yet. The tile keeps its shape and its
+   place: it is still a product, and it can still go in the cart. */
+.db-card-media.is-blank img { opacity: 0; }
+.db-no-photo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #f6f6f4;
+  border: 1px solid #e6e4df;
+  border-radius: 4px;
+  color: #8b8880;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0 10px;
+}
 .db-in-cart-badge {
   position: absolute;
   inset: 0;

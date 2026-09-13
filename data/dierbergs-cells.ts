@@ -1,4 +1,4 @@
-import { asset } from "@/lib/asset-base";
+import { packshot } from "@/lib/dierbergs-packshot";
 import type { DemoProduct } from "./dierbergs-demo-products";
 
 /**
@@ -10,6 +10,11 @@ import type { DemoProduct } from "./dierbergs-demo-products";
  * conversation can answer "is that gluten free" without guessing. There are no
  * ratings and no nutrition figures here because the storefront does not give
  * us any, and the shopper is told as much rather than told a number.
+ *
+ * Every row is keyed on its item number, and the packshot is fetched by it, so
+ * another aisle is rows in this file and nothing else. The numbers here are the
+ * demo's own: the public storefront does not hand out item numbers, and putting
+ * Dierbergs' real ones in is one column of a feed.
  *
  * Edit the curation list in the script, not this file.
  */
@@ -29,7 +34,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "loaf",
     dietary: ["low-fat"],
-    image: asset("/dierbergs/products/bread-natures-butter.png"),
+    image: packshot("BREADNATURESBUTTER"),
     aisle: "Aisle 9 - C",
     keywords: ["nature's own", "white", "loaf", "butter", "sliced", "low fat"]
   },
@@ -47,7 +52,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-pf-hearty-white.png"),
+    image: packshot("BREADPFHEARTYWHITE"),
     aisle: "Aisle 9 - C",
     keywords: ["pepperidge farm", "white", "loaf", "farmhouse", "hearty", "thick"]
   },
@@ -65,7 +70,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-db-split-white.png"),
+    image: packshot("BREADDBSPLITWHITE"),
     aisle: "Aisle 9 - C",
     keywords: ["dierbergs bakehouse", "white", "loaf", "split top", "store brand"]
   },
@@ -83,7 +88,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 335,
     form: "half loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-wonder-mini.png"),
+    image: packshot("BREADWONDERMINI"),
     aisle: "Aisle 9 - C",
     keywords: ["wonder", "white", "half loaf", "mini", "small"]
   },
@@ -101,7 +106,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-wonder-giant.png"),
+    image: packshot("BREADWONDERGIANT"),
     aisle: "Aisle 9 - C",
     keywords: ["wonder", "white", "loaf", "giant", "large", "big"]
   },
@@ -119,7 +124,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 399,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-sl-honey-wheat.png"),
+    image: packshot("BREADSLHONEYWHEAT"),
     aisle: "Aisle 9 - C",
     keywords: ["sara lee", "wheat", "loaf", "honey wheat", "sandwich"]
   },
@@ -137,7 +142,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 413,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-sl-whole-wheat.png"),
+    image: packshot("BREADSLWHOLEWHEAT"),
     aisle: "Aisle 9 - C",
     keywords: ["sara lee", "wheat", "loaf", "100% whole wheat", "whole grain", "sandwich"]
   },
@@ -155,7 +160,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 335,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-bunny-wheat.png"),
+    image: packshot("BREADBUNNYWHEAT"),
     aisle: "Aisle 9 - C",
     keywords: ["bunny bread", "wheat", "loaf", "whole wheat"]
   },
@@ -173,7 +178,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 250,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-bunny-honey-wheat.png"),
+    image: packshot("BREADBUNNYHONEYWHEAT"),
     aisle: "Aisle 9 - C",
     keywords: ["bunny bread", "wheat", "loaf", "honey wheat"]
   },
@@ -191,7 +196,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 599,
     form: "loaf",
     dietary: ["organic"],
-    image: asset("/dierbergs/products/bread-daves-21.png"),
+    image: packshot("BREADDAVES21"),
     aisle: "Aisle 9 - C",
     keywords: ["dave's killer bread", "whole grain", "loaf", "21 whole grains", "seeds", "organic"]
   },
@@ -209,7 +214,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 525,
     form: "loaf",
     dietary: ["low-fat"],
-    image: asset("/dierbergs/products/bread-natures-multigrain.png"),
+    image: packshot("BREADNATURESMULTIGRAIN"),
     aisle: "Aisle 9 - C",
     keywords: ["nature's own", "whole grain", "loaf", "multigrain", "thick sliced", "low fat"]
   },
@@ -227,7 +232,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-db-sourdough.png"),
+    image: packshot("BREADDBSOURDOUGH"),
     aisle: "Aisle 9 - C",
     keywords: ["dierbergs bakehouse", "sourdough", "loaf", "hearth", "store brand"]
   },
@@ -245,7 +250,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 256,
     form: "half loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-db-sourdough-half.png"),
+    image: packshot("BREADDBSOURDOUGHHALF"),
     aisle: "Aisle 9 - C",
     keywords: ["dierbergs bakehouse", "sourdough", "half loaf", "hearth", "small"]
   },
@@ -263,7 +268,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-pf-sourdough.png"),
+    image: packshot("BREADPFSOURDOUGH"),
     aisle: "Aisle 9 - C",
     keywords: ["pepperidge farm", "sourdough", "loaf", "farmhouse"]
   },
@@ -281,7 +286,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 637,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-rustik-sourdough.png"),
+    image: packshot("BREADRUSTIKSOURDOUGH"),
     aisle: "Aisle 9 - C",
     keywords: ["the rustik oven", "sourdough", "loaf", "artisan"]
   },
@@ -299,7 +304,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-db-rye.png"),
+    image: packshot("BREADDBRYE"),
     aisle: "Aisle 9 - C",
     keywords: ["dierbergs bakehouse", "rye", "loaf", "st louis rye", "store brand"]
   },
@@ -317,7 +322,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 559,
     form: "loaf",
     dietary: ["vegan"],
-    image: asset("/dierbergs/products/bread-pf-rye.png"),
+    image: packshot("BREADPFRYE"),
     aisle: "Aisle 9 - C",
     keywords: ["pepperidge farm", "rye", "loaf", "jewish rye", "seedless", "vegan"]
   },
@@ -335,7 +340,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "loaf",
     dietary: [],
-    image: asset("/dierbergs/products/bread-db-pumpernickel.png"),
+    image: packshot("BREADDBPUMPERNICKEL"),
     aisle: "Aisle 9 - C",
     keywords: ["dierbergs bakehouse", "rye", "loaf", "pumpernickel"]
   },
@@ -353,7 +358,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 312,
     form: "bagels",
     dietary: [],
-    image: asset("/dierbergs/products/bagel-db-plain.png"),
+    image: packshot("BAGELDBPLAIN"),
     aisle: "Aisle 9 - C",
     keywords: ["dierbergs bakehouse", "bagel", "bagels", "plain"]
   },
@@ -371,7 +376,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 312,
     form: "bagels",
     dietary: [],
-    image: asset("/dierbergs/products/bagel-db-everything.png"),
+    image: packshot("BAGELDBEVERYTHING"),
     aisle: "Aisle 9 - C",
     keywords: ["dierbergs bakehouse", "bagel", "bagels", "everything"]
   },
@@ -389,7 +394,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 615,
     form: "bagels",
     dietary: ["kosher"],
-    image: asset("/dierbergs/products/bagel-thomas-mini.png"),
+    image: packshot("BAGELTHOMASMINI"),
     aisle: "Aisle 9 - C",
     keywords: ["thomas'", "bagel", "bagels", "mini", "plain", "kosher"]
   },
@@ -407,7 +412,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 783,
     form: "bagels",
     dietary: ["organic"],
-    image: asset("/dierbergs/products/bagel-daves-plain.png"),
+    image: packshot("BAGELDAVESPLAIN"),
     aisle: "Aisle 9 - C",
     keywords: ["dave's killer bread", "bagel", "bagels", "plain", "organic"]
   },
@@ -425,7 +430,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 1007,
     form: "loaf",
     dietary: ["gluten-free"],
-    image: asset("/dierbergs/products/bread-canyon-white-gf.png"),
+    image: packshot("BREADCANYONWHITEGF"),
     aisle: "Aisle 9 - C",
     keywords: ["canyon bakehouse", "white", "loaf", "gluten free", "sliced"]
   },
@@ -443,7 +448,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 783,
     form: "loaf",
     dietary: ["gluten-free"],
-    image: asset("/dierbergs/products/bread-udis-white-gf.png"),
+    image: packshot("BREADUDISWHITEGF"),
     aisle: "Aisle 9 - C",
     keywords: ["udi's", "white", "loaf", "gluten free", "sandwich", "frozen"]
   },
@@ -461,7 +466,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 1007,
     form: "loaf",
     dietary: ["gluten-free"],
-    image: asset("/dierbergs/products/bread-canyon-7grain-gf.png"),
+    image: packshot("BREADCANYON7GRAINGF"),
     aisle: "Aisle 9 - C",
     keywords: ["canyon bakehouse", "whole grain", "loaf", "gluten free", "7 grain", "frozen"]
   },
@@ -479,7 +484,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 928,
     form: "loaf",
     dietary: ["gluten-free", "keto"],
-    image: asset("/dierbergs/products/bread-carbonaut-lowcarb.png"),
+    image: packshot("BREADCARBONAUTLOWCARB"),
     aisle: "Aisle 9 - C",
     keywords: ["carbonaut", "white", "loaf", "low carb", "keto", "gluten free"]
   },
@@ -497,7 +502,7 @@ export const breadCellExtras: DemoProduct[] = [
     priceCents: 671,
     form: "loaf",
     dietary: ["keto", "low-fat"],
-    image: asset("/dierbergs/products/bread-natures-keto.png"),
+    image: packshot("BREADNATURESKETO"),
     aisle: "Aisle 9 - C",
     keywords: ["nature's own", "white", "loaf", "keto", "low carb", "low fat"]
   }
@@ -518,7 +523,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 357,
     form: "half gallon",
     dietary: [],
-    image: asset("/dierbergs/products/milk-db-choc-half.png"),
+    image: packshot("MILKDBCHOCHALF"),
     aisle: "Aisle 12 - A",
     keywords: ["dierbergs", "chocolate", "half gallon", "1%", "store brand"]
   },
@@ -536,7 +541,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 536,
     form: "half gallon",
     dietary: ["gluten-free"],
-    image: asset("/dierbergs/products/milk-pf-lf-whole.png"),
+    image: packshot("MILKPFLFWHOLE"),
     aisle: "Aisle 12 - A",
     keywords: ["prairie farms", "whole", "half gallon", "lactose free", "gluten free"]
   },
@@ -554,7 +559,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 536,
     form: "half gallon",
     dietary: ["gluten-free"],
-    image: asset("/dierbergs/products/milk-pf-lf.png"),
+    image: packshot("MILKPFLF"),
     aisle: "Aisle 12 - A",
     keywords: ["prairie farms", "2%", "half gallon", "lactose free", "gluten free"]
   },
@@ -572,7 +577,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 805,
     form: "carton",
     dietary: [],
-    image: asset("/dierbergs/products/milk-lactaid-2.png"),
+    image: packshot("MILKLACTAID2"),
     aisle: "Aisle 12 - A",
     keywords: ["lactaid", "2%", "carton", "lactose free", "reduced fat"]
   },
@@ -590,7 +595,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 559,
     form: "half gallon",
     dietary: ["gluten-free"],
-    image: asset("/dierbergs/products/milk-lactaid-1.png"),
+    image: packshot("MILKLACTAID1"),
     aisle: "Aisle 12 - A",
     keywords: ["lactaid", "1%", "half gallon", "lactose free", "lowfat", "gluten free"]
   },
@@ -608,7 +613,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 559,
     form: "carton",
     dietary: ["gluten-free", "fat-free"],
-    image: asset("/dierbergs/products/milk-lactaid-skim.png"),
+    image: packshot("MILKLACTAIDSKIM"),
     aisle: "Aisle 12 - A",
     keywords: ["lactaid", "skim", "carton", "lactose free", "fat free", "gluten free"]
   },
@@ -626,7 +631,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 1399,
     form: "gallon",
     dietary: ["organic"],
-    image: asset("/dierbergs/products/milk-horizon-2-gal.png"),
+    image: packshot("MILKHORIZON2GAL"),
     aisle: "Aisle 12 - A",
     keywords: ["horizon organic", "2%", "gallon", "organic", "reduced fat"]
   },
@@ -644,7 +649,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 637,
     form: "half gallon",
     dietary: ["organic", "low-fat"],
-    image: asset("/dierbergs/products/milk-horizon-1-half.png"),
+    image: packshot("MILKHORIZON1HALF"),
     aisle: "Aisle 12 - A",
     keywords: ["horizon organic", "1%", "half gallon", "organic", "lowfat", "low fat"]
   },
@@ -662,7 +667,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 693,
     form: "half gallon",
     dietary: ["organic"],
-    image: asset("/dierbergs/products/milk-ov-2.png"),
+    image: packshot("MILKOV2"),
     aisle: "Aisle 12 - A",
     keywords: ["organic valley", "2%", "half gallon", "organic"]
   },
@@ -680,7 +685,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 671,
     form: "half gallon",
     dietary: ["organic"],
-    image: asset("/dierbergs/products/milk-kalona-whole.png"),
+    image: packshot("MILKKALONAWHOLE"),
     aisle: "Aisle 12 - A",
     keywords: ["kalona supernatural", "whole", "half gallon", "organic", "grass fed"]
   },
@@ -698,7 +703,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 648,
     form: "carton",
     dietary: [],
-    image: asset("/dierbergs/products/milk-fairlife-whole.png"),
+    image: packshot("MILKFAIRLIFEWHOLE"),
     aisle: "Aisle 12 - A",
     keywords: ["fairlife", "whole", "carton", "ultra filtered", "lactose free", "high protein"]
   },
@@ -716,7 +721,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 648,
     form: "carton",
     dietary: [],
-    image: asset("/dierbergs/products/milk-fairlife-2.png"),
+    image: packshot("MILKFAIRLIFE2"),
     aisle: "Aisle 12 - A",
     keywords: ["fairlife", "2%", "carton", "ultra filtered", "lactose free", "high protein"]
   },
@@ -734,7 +739,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 559,
     form: "carton",
     dietary: [],
-    image: asset("/dierbergs/products/milk-a2-whole.png"),
+    image: packshot("MILKA2WHOLE"),
     aisle: "Aisle 12 - A",
     keywords: ["a2 milk", "whole", "carton", "a2 protein"]
   },
@@ -752,7 +757,7 @@ export const milkCellExtras: DemoProduct[] = [
     priceCents: 480,
     form: "half gallon",
     dietary: ["fat-free"],
-    image: asset("/dierbergs/products/milk-pf-skim.png"),
+    image: packshot("MILKPFSKIM"),
     aisle: "Aisle 12 - A",
     keywords: ["prairie farms", "skim", "half gallon", "fat free"]
   }
@@ -774,7 +779,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "18 count",
     count: 18,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-eb-large-18.png"),
+    image: packshot("EGGSEBLARGE18"),
     aisle: "Aisle 12 - A",
     keywords: ["eggland's best", "large", "18 count", "white", "classic", "18 pack"]
   },
@@ -793,7 +798,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-eb-xl-12.png"),
+    image: packshot("EGGSEBXL12"),
     aisle: "Aisle 12 - A",
     keywords: ["eggland's best", "extra large", "dozen", "white", "classic", "12 count"]
   },
@@ -812,7 +817,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "18 count",
     count: 18,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-eb-xl-18.png"),
+    image: packshot("EGGSEBXL18"),
     aisle: "Aisle 12 - A",
     keywords: ["eggland's best", "extra large", "18 count", "white", "18 pack"]
   },
@@ -831,7 +836,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-eb-cagefree-12.png"),
+    image: packshot("EGGSEBCAGEFREE12"),
     aisle: "Aisle 12 - A",
     keywords: ["eggland's best", "large", "dozen", "cage free", "brown", "12 count"]
   },
@@ -850,7 +855,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "18 count",
     count: 18,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-eb-cagefree-18.png"),
+    image: packshot("EGGSEBCAGEFREE18"),
     aisle: "Aisle 12 - A",
     keywords: ["eggland's best", "large", "18 count", "cage free", "brown", "18 pack"]
   },
@@ -869,7 +874,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: ["organic"],
-    image: asset("/dierbergs/products/eggs-eb-organic-12.png"),
+    image: packshot("EGGSEBORGANIC12"),
     aisle: "Aisle 12 - A",
     keywords: ["eggland's best", "large", "dozen", "organic", "brown", "12 count"]
   },
@@ -888,7 +893,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: ["organic"],
-    image: asset("/dierbergs/products/eggs-pg-organic-12.png"),
+    image: packshot("EGGSPGORGANIC12"),
     aisle: "Aisle 12 - A",
     keywords: ["pete & gerry's", "large", "dozen", "organic", "free range", "brown", "12 count"]
   },
@@ -907,7 +912,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: ["organic"],
-    image: asset("/dierbergs/products/eggs-pg-pasture-12.png"),
+    image: packshot("EGGSPGPASTURE12"),
     aisle: "Aisle 12 - A",
     keywords: ["pete & gerry's", "large", "dozen", "organic", "pasture raised", "12 count"]
   },
@@ -926,7 +931,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-vital-12.png"),
+    image: packshot("EGGSVITAL12"),
     aisle: "Aisle 12 - A",
     keywords: ["vital farms", "large", "dozen", "pasture raised", "grade a", "12 count"]
   },
@@ -945,7 +950,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-happy-12.png"),
+    image: packshot("EGGSHAPPY12"),
     aisle: "Aisle 12 - A",
     keywords: ["happy egg", "large", "dozen", "free range", "brown", "grade a", "12 count"]
   },
@@ -964,7 +969,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: ["organic"],
-    image: asset("/dierbergs/products/eggs-happy-organic-12.png"),
+    image: packshot("EGGSHAPPYORGANIC12"),
     aisle: "Aisle 12 - A",
     keywords: ["happy egg", "large", "dozen", "organic", "free range", "brown", "12 count"]
   },
@@ -983,7 +988,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "dozen",
     count: 12,
     dietary: ["non-gmo"],
-    image: asset("/dierbergs/products/eggs-benroberts-12.png"),
+    image: packshot("EGGSBENROBERTS12"),
     aisle: "Aisle 12 - A",
     keywords: ["ben roberts'", "large", "dozen", "non gmo", "grade a", "12 count"]
   },
@@ -1002,7 +1007,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "18 count",
     count: 18,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-benroberts-18.png"),
+    image: packshot("EGGSBENROBERTS18"),
     aisle: "Aisle 12 - A",
     keywords: ["ben roberts'", "large", "18 count", "grade a", "18 pack"]
   },
@@ -1021,7 +1026,7 @@ export const eggCellExtras: DemoProduct[] = [
     form: "6 count",
     count: 6,
     dietary: [],
-    image: asset("/dierbergs/products/eggs-eb-hardcooked.png"),
+    image: packshot("EGGSEBHARDCOOKED"),
     aisle: "Aisle 12 - A",
     keywords: ["eggland's best", "hard cooked", "6 count", "cage free", "peeled", "ready to eat"]
   }
@@ -1042,7 +1047,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-lol-sharp.png"),
+    image: packshot("CHEESELOLSHARP"),
     aisle: "Aisle 12 - B",
     keywords: ["land o lakes", "cheddar", "block", "sharp", "yellow"]
   },
@@ -1060,7 +1065,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-lol-sharp-white.png"),
+    image: packshot("CHEESELOLSHARPWHITE"),
     aisle: "Aisle 12 - B",
     keywords: ["land o lakes", "cheddar", "block", "sharp", "white"]
   },
@@ -1078,7 +1083,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-lol-medium.png"),
+    image: packshot("CHEESELOLMEDIUM"),
     aisle: "Aisle 12 - B",
     keywords: ["land o lakes", "cheddar", "block", "medium"]
   },
@@ -1096,7 +1101,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 200,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-ee-sharp-white.png"),
+    image: packshot("CHEESEEESHARPWHITE"),
     aisle: "Aisle 12 - B",
     keywords: ["essential everyday", "cheddar", "block", "sharp", "white", "store brand"]
   },
@@ -1114,7 +1119,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "shredded",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-lol-shred-sharp.png"),
+    image: packshot("CHEESELOLSHREDSHARP"),
     aisle: "Aisle 12 - B",
     keywords: ["land o lakes", "cheddar", "shredded", "sharp", "farmstyle cut"]
   },
@@ -1132,7 +1137,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "shredded",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-lol-shred-white.png"),
+    image: packshot("CHEESELOLSHREDWHITE"),
     aisle: "Aisle 12 - B",
     keywords: ["land o lakes", "cheddar", "shredded", "sharp", "white"]
   },
@@ -1150,7 +1155,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 335,
     form: "shredded",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-borden-shred-white.png"),
+    image: packshot("CHEESEBORDENSHREDWHITE"),
     aisle: "Aisle 12 - B",
     keywords: ["borden", "cheddar", "shredded", "sharp", "white", "finely shredded"]
   },
@@ -1168,7 +1173,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "shredded",
     dietary: ["fat-free"],
-    image: asset("/dierbergs/products/cheese-kraft-shred-ff.png"),
+    image: packshot("CHEESEKRAFTSHREDFF"),
     aisle: "Aisle 12 - B",
     keywords: ["kraft", "cheddar", "shredded", "fat free"]
   },
@@ -1186,7 +1191,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "shredded",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-kraft-shred-lf.png"),
+    image: packshot("CHEESEKRAFTSHREDLF"),
     aisle: "Aisle 12 - B",
     keywords: ["kraft", "cheddar", "shredded", "lactose free"]
   },
@@ -1204,7 +1209,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 525,
     form: "sliced",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-tillamook-slice-xsharp.png"),
+    image: packshot("CHEESETILLAMOOKSLICEXSHARP"),
     aisle: "Aisle 12 - B",
     keywords: ["tillamook", "cheddar", "sliced", "extra sharp", "white"]
   },
@@ -1222,7 +1227,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 525,
     form: "sliced",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-tillamook-slice-medium.png"),
+    image: packshot("CHEESETILLAMOOKSLICEMEDIUM"),
     aisle: "Aisle 12 - B",
     keywords: ["tillamook", "cheddar", "sliced", "medium", "white"]
   },
@@ -1240,7 +1245,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "sliced",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-sargento-slice-aged.png"),
+    image: packshot("CHEESESARGENTOSLICEAGED"),
     aisle: "Aisle 12 - B",
     keywords: ["sargento", "cheddar", "sliced", "aged", "white", "reserve"]
   },
@@ -1258,7 +1263,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "sliced",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-sargento-slice-smoke.png"),
+    image: packshot("CHEESESARGENTOSLICESMOKE"),
     aisle: "Aisle 12 - B",
     keywords: ["sargento", "cheddar", "sliced", "smokehouse", "smoked"]
   },
@@ -1276,7 +1281,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 559,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-tillamook-block-sharp.png"),
+    image: packshot("CHEESETILLAMOOKBLOCKSHARP"),
     aisle: "Aisle 12 - B",
     keywords: ["tillamook", "cheddar", "block", "sharp", "white"]
   },
@@ -1294,7 +1299,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "cubes",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-lol-cubes.png"),
+    image: packshot("CHEESELOLCUBES"),
     aisle: "Aisle 12 - B",
     keywords: ["land o lakes", "cheddar", "cubes", "extra sharp", "white"]
   },
@@ -1312,7 +1317,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 200,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-ee-swiss.png"),
+    image: packshot("CHEESEEESWISS"),
     aisle: "Aisle 12 - B",
     keywords: ["essential everyday", "swiss", "block", "store brand"]
   },
@@ -1330,7 +1335,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "sliced",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-sargento-swiss.png"),
+    image: packshot("CHEESESARGENTOSWISS"),
     aisle: "Aisle 12 - B",
     keywords: ["sargento", "swiss", "sliced", "slices"]
   },
@@ -1348,7 +1353,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 480,
     form: "sliced",
     dietary: ["gluten-free"],
-    image: asset("/dierbergs/products/cheese-cabot-swiss.png"),
+    image: packshot("CHEESECABOTSWISS"),
     aisle: "Aisle 12 - B",
     keywords: ["cabot", "swiss", "sliced", "slices", "gluten free"]
   },
@@ -1366,7 +1371,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 899,
     form: "deli",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-db-baby-swiss.png"),
+    image: packshot("CHEESEDBBABYSWISS"),
     aisle: "Aisle 12 - B",
     keywords: ["dierbergs", "swiss", "deli", "baby swiss", "store brand"]
   },
@@ -1384,7 +1389,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 256,
     form: "sliced",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-ee-provolone.png"),
+    image: packshot("CHEESEEEPROVOLONE"),
     aisle: "Aisle 12 - B",
     keywords: ["essential everyday", "provolone", "sliced", "non smoked", "store brand"]
   },
@@ -1402,7 +1407,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 300,
     form: "sliced",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-sargento-provolone.png"),
+    image: packshot("CHEESESARGENTOPROVOLONE"),
     aisle: "Aisle 12 - B",
     keywords: ["sargento", "provolone", "sliced", "smoked", "smoke flavor"]
   },
@@ -1420,7 +1425,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 525,
     form: "sliced",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-tillamook-provolone.png"),
+    image: packshot("CHEESETILLAMOOKPROVOLONE"),
     aisle: "Aisle 12 - B",
     keywords: ["tillamook", "provolone", "sliced", "farmstyle"]
   },
@@ -1438,7 +1443,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 200,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-ee-mozzarella.png"),
+    image: packshot("CHEESEEEMOZZARELLA"),
     aisle: "Aisle 12 - B",
     keywords: ["essential everyday", "mozzarella", "block", "part skim", "low moisture"]
   },
@@ -1456,7 +1461,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 699,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-ee-mozzarella-32.png"),
+    image: packshot("CHEESEEEMOZZARELLA32"),
     aisle: "Aisle 12 - B",
     keywords: ["essential everyday", "mozzarella", "block", "part skim", "family size", "biggest"]
   },
@@ -1474,7 +1479,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 350,
     form: "shredded",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-sargento-mozz-shred.png"),
+    image: packshot("CHEESESARGENTOMOZZSHRED"),
     aisle: "Aisle 12 - B",
     keywords: ["sargento", "mozzarella", "shredded", "whole milk", "traditional cut"]
   },
@@ -1492,7 +1497,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 559,
     form: "fresh",
     dietary: ["gluten-free"],
-    image: asset("/dierbergs/products/cheese-belgioioso-fresh.png"),
+    image: packshot("CHEESEBELGIOIOSOFRESH"),
     aisle: "Aisle 12 - B",
     keywords: ["belgioioso", "mozzarella", "fresh", "ball", "gluten free"]
   },
@@ -1510,7 +1515,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 200,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-ee-mild.png"),
+    image: packshot("CHEESEEEMILD"),
     aisle: "Aisle 12 - B",
     keywords: ["essential everyday", "cheddar", "block", "mild", "store brand"]
   },
@@ -1528,7 +1533,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 447,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-kraft-mild.png"),
+    image: packshot("CHEESEKRAFTMILD"),
     aisle: "Aisle 12 - B",
     keywords: ["kraft", "cheddar", "block", "mild", "natural"]
   },
@@ -1546,7 +1551,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 699,
     form: "block",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-ee-mild-32.png"),
+    image: packshot("CHEESEEEMILD32"),
     aisle: "Aisle 12 - B",
     keywords: ["essential everyday", "cheddar", "block", "mild", "family size", "biggest"]
   },
@@ -1564,7 +1569,7 @@ export const cheeseCellExtras: DemoProduct[] = [
     priceCents: 350,
     form: "shredded",
     dietary: [],
-    image: asset("/dierbergs/products/cheese-sargento-mild-shred.png"),
+    image: packshot("CHEESESARGENTOMILDSHRED"),
     aisle: "Aisle 12 - B",
     keywords: ["sargento", "cheddar", "shredded", "mild", "traditional cut"]
   }
