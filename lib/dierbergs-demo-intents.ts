@@ -49,6 +49,42 @@ export function normalizeUtterance(raw: string): string {
     .replace(/\s+/g, " ");
 }
 
+const NUMBER_WORDS: Record<string, number> = {
+  a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5,
+  six: 6, seven: 7, eight: 8, nine: 9, ten: 10, dozen: 12,
+  couple: 2, pair: 2
+};
+
+/**
+ * How many of it they asked for.
+ *
+ * "Two half gallons" is one carton wanted twice. The number has to be read off
+ * the sentence rather than assumed, and it has to ignore the numbers that are
+ * part of a product: 2% is a kind of milk, 18 count is a box of eggs, and
+ * neither is a quantity. Capped at a dozen, because past that they are not
+ * talking, they are misheard.
+ */
+export function countIn(raw: string): number {
+  const t = normalizeUtterance(raw)
+    // The numbers that describe the product, out of the way first. No trailing
+    // word boundary: "2%" is followed by a space, and % is not a word
+    // character, so a boundary there never matches and the 2 survives as a
+    // quantity — which is how "a gallon of 2% milk" asks for two gallons.
+    .replace(/\b\d+\s*(%|percent|count|ct|oz|ounces?|pack|inch)/g, " ")
+    .replace(/\bhalf (gallon|loaf|dozen)\b/g, " ");
+  const digits = t.match(/\b(\d{1,3})\b/);
+  if (digits) {
+    const n = Number(digits[1]);
+    // "Add 24 gallons" is a dozen, not one. Clamping keeps a misheard number
+    // from quietly becoming a single carton.
+    if (n >= 2) return Math.min(n, 12);
+  }
+  for (const [word, n] of Object.entries(NUMBER_WORDS)) {
+    if (n >= 2 && new RegExp(`\\b${word}\\b`).test(t)) return n;
+  }
+  return 1;
+}
+
 // The line between browsing and buying. "I need milk" asks to see milk; only an
 // explicit add, a cart, or a plain yes puts something in it. Verbs like "need"
 // and "get" stay out of this on purpose — they are how people ask to look.

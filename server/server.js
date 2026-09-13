@@ -435,14 +435,18 @@ need to look, and let them narrow it down.
 - One product per aisle is on this week's ad: the only one with a "deal", which
   is its sale price. If they ask about specials, name it, what it costs, what
   it was, and offer it. Nothing without a "deal" is on special.
-- If they ask for more than one of something, or for two different things, do
-  all of it.
+- If they ask for more than one of something, say how many in "quantity". Two
+  half gallons is one product id with quantity 2, never the same id twice. If
+  they ask for two different things, do all of it.
+- "Actually I wanted the half gallon after all" is a replace, not small talk.
+  Anything that names a size or kind they have already bought differently is a
+  change of mind, however gently they put it.
 - "say" is spoken aloud. "hint" is on-screen only.`;
 
 const SHOPPER_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['action', 'aisle', 'products', 'remove', 'say', 'hint'],
+  required: ['action', 'aisle', 'products', 'quantity', 'remove', 'say', 'hint'],
   properties: {
     action: { type: 'string', enum: ['show', 'add', 'chat', 'replace', 'remove'] },
     aisle: { type: ['string', 'null'], description: 'id of the aisle being shown, or null' },
@@ -450,6 +454,12 @@ const SHOPPER_SCHEMA = {
       type: 'array',
       description: 'product ids to put on the shelf, or the single one to add or swap in',
       items: { type: 'string' }
+    },
+    quantity: {
+      type: ['integer', 'null'],
+      description:
+        'how many of it they asked for, when they said a number. Null means one. ' +
+        'Applies to an add or a replace: "two half gallons" is quantity 2'
     },
     remove: {
       type: ['string', 'null'],

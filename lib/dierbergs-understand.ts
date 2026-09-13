@@ -19,7 +19,7 @@ import {
 } from "@/data/dierbergs-catalogue";
 import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { parseRequest } from "./dierbergs-demo-intents";
+import { countIn, parseRequest } from "./dierbergs-demo-intents";
 
 /**
  * What the shopper's words came to.
@@ -35,6 +35,8 @@ export type Turn = {
   products: DemoProduct[];
   /** What leaves the cart on a replace or a remove. */
   outgoing?: DemoProduct;
+  /** How many of it, when they asked for a number. One when unsaid. */
+  quantity?: number;
   /** Spoken aloud. */
   say: string;
   /** On screen only. */
@@ -179,11 +181,20 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
 
     remember(said, body.say);
 
+    /*
+     * A number they actually said, kept sane. Nobody talks their way into a
+     * hundred cartons, and a model that returns one has misread the sentence,
+     * so it is capped rather than trusted.
+     */
+    const asked = Number(body.quantity);
+    const quantity = Number.isFinite(asked) ? Math.min(Math.max(Math.round(asked), 1), 12) : 1;
+
     return {
       action,
       aisle: body.aisle ?? null,
       products,
       outgoing,
+      quantity,
       say: body.say,
       hint: body.hint,
       source: "model",
@@ -269,6 +280,7 @@ function locally(said: string, context: TurnContext): Turn {
       if (req.intent === "ADD" && one) {
         return {
           action: "add",
+          quantity: countIn(req.text),
           // Leave the shelf be when the choice came from the list rather than
           // the words: they are looking at four cheddars and buying one. A
           // size, though, is words, and the carton has to be on screen to fly

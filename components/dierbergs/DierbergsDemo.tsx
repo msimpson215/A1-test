@@ -392,15 +392,18 @@ export default function DierbergsDemo() {
         );
       }
 
+      // "Two half gallons" is one carton asked for twice, not two cartons.
+      const many = Math.min(Math.max(turn.quantity ?? 1, 1), 12);
+
       if (turn.action === "add" && turn.products.length === 1) {
         // addProduct speaks its own confirmation, because it is the only thing
         // that knows the cart total once this has gone in.
-        await addProduct(turn.products[0]);
+        for (let i = 0; i < many; i += 1) await addProduct(turn.products[0]);
       } else if (turn.action === "replace" && turn.outgoing && turn.products.length === 1) {
         // The old one goes as the new one arrives, so a change of mind about
         // the size leaves one carton in the cart rather than two.
         removeFromCart(turn.outgoing.id);
-        await addProduct(turn.products[0]);
+        for (let i = 0; i < many; i += 1) await addProduct(turn.products[0]);
       } else if (turn.action === "remove" && turn.outgoing) {
         const gone = turn.outgoing;
         removeFromCart(gone.id);

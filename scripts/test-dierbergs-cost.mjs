@@ -498,6 +498,39 @@ check(
 const diag = fs.readFileSync("components/dierbergs/DemoDiagnostics.tsx", "utf8");
 check("and the panel shows it, so nobody has to take my word for it", /spendReport\(/.test(diag));
 
+// ── Reading a number off a sentence ────────────────────────────────────────
+console.log("\n— two of something means two —");
+
+/*
+ * The hard part is not the counting, it is knowing which numbers are not
+ * counts. A grocery sentence is full of them: 2% is a kind of milk, 18 count
+ * is a box of eggs, 9 oz is a half loaf. Reading any of those as a quantity
+ * puts a second carton in someone's cart without being asked.
+ */
+{
+  const { countIn } = await import("../lib/dierbergs-demo-intents.ts");
+  const cases = [
+    ["two half gallons", 2],
+    ["make it two half gallons", 2],
+    ["give me a couple of loaves", 2],
+    ["two dozen eggs", 2],
+    ["I want 3 dozen eggs", 3],
+    // The numbers that are part of the product, not the order.
+    ["a gallon of 2% milk", 1],
+    ["I will take the 1% half gallon", 1],
+    ["18 count eggs please", 1],
+    ["the 9 oz half loaf", 1],
+    ["one half gallon", 1],
+    ["I need milk", 1],
+    // Misheard rather than meant.
+    ["add 24 gallons", 12]
+  ];
+  for (const [said, want] of cases) {
+    const got = countIn(said);
+    check(`"${said}" is ${want}`, got === want, got === want ? "" : `read as ${got}`);
+  }
+}
+
 const failed = results.filter((r) => !r).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);
