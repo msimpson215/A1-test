@@ -194,6 +194,12 @@ check("switching to cheese with a full cart still puts cheese up", shelf.length 
 bag = await cart();
 check("and the milk is still in the cart", bag === "1 item $2.69", bag);
 
+// ── And a reload no longer costs them the cart ──────────────────────────────
+await page.reload({ waitUntil: "networkidle0", timeout: 60000 });
+await wait(1200);
+bag = await cart();
+check("a reload keeps the cart", bag === "1 item $2.69", bag);
+
 const everything = await spoken();
 check(
   "nothing anywhere told the shopper a shelf was loading, or to refresh",

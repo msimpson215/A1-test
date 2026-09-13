@@ -66,6 +66,9 @@ const BUILD = process.env.NEXT_PUBLIC_BUILD_STAMP || "dev";
 const WELCOME = "Welcome to Dierbergs.";
 const SUBLINE = "How can I help you with your shopping today?";
 // Rotated so a run of additions does not sound like a recording.
+/** Where the cart waits out a reload. Per tab, on purpose. */
+const CART_KEY = "dierbergs-cart";
+
 const FOLLOW_UPS = [
   "What else can I get you?",
   "Anything else today?",
@@ -132,7 +135,31 @@ export default function DierbergsDemo() {
     // network round trip. The rest is fetched as the conversation reaches it.
     void prefetchNeural([SPOKEN_WELCOME]);
     log("ready", { voiceRecognition: speechRecognitionAvailable(), userAgent: navigator.userAgent });
+
+    /*
+     * The cart outlives a reload.
+     *
+     * Reloading the page used to empty it, so anyone who hit a snag paid for it
+     * twice: once in the snag and again in re-shopping. Per tab, so a fresh tab
+     * still starts empty.
+     */
+    try {
+      const saved = window.sessionStorage.getItem(CART_KEY);
+      if (!saved) return;
+      const back = (JSON.parse(saved) as string[])
+        .map((id) => productById(id))
+        .filter((p): p is DemoProduct => Boolean(p));
+      if (!back.length) return;
+      cartNow.current = back;
+      setCart(back);
+    } catch { /* a cart that will not come back is not worth an error */ }
   }, []);
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(CART_KEY, JSON.stringify(cart.map((p) => p.id)));
+    } catch { /* private browsing, or a full quota: the cart still works */ }
+  }, [cart]);
 
   // Depth-counted so a nested say() cannot drop the guard early. Whenever this
   // is above zero the microphone stays shut, which is what stops the shopper
