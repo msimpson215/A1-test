@@ -234,7 +234,13 @@ await wait(2800);
 clearInterval(watch);
 
 check("the jug visibly flies to the cart", sawFlyer);
-check("the cart waits until the jug lands", cartDuringFlight === "0 items $0.00", String(cartDuringFlight));
+// The flight is decoration: the cart is true the moment it is told, so nothing
+// — the shopper or the model — is kept waiting on an animation.
+check(
+  "and the cart is already right while it is in the air",
+  /1 item/.test(cartDuringFlight || ""),
+  String(cartDuringFlight)
+);
 check("cart reads 1 item $4.24", (await cart()) === "1 item $4.24", await cart());
 stripBoxes.push(await stripBox());
 check("the card shows it is in the cart", (await page.$(".db-add.is-added")) !== null);

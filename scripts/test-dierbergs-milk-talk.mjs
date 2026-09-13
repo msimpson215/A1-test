@@ -194,6 +194,31 @@ check("switching to cheese with a full cart still puts cheese up", shelf.length 
 bag = await cart();
 check("and the milk is still in the cart", bag === "1 item $2.69", bag);
 
+/*
+ * How long the cart takes to be true.
+ *
+ * It used to wait out the whole flight animation before it would answer, which
+ * on a live line is dead air in front of every add. The package can finish
+ * flying in its own time; the cart cannot.
+ */
+await type("switch to milk");
+const startedAt = Date.now();
+await page.$eval(".axon-strip-input", (el) => {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+  setter.call(el, "");
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+});
+await page.type(".axon-strip-input", "add the chocolate milk");
+await page.keyboard.press("Enter");
+await page.waitForFunction(
+  () => /2 items/.test(document.querySelector(".db-cart")?.innerText || ""),
+  { timeout: 8000 }
+);
+const tookMs = Date.now() - startedAt;
+check("the cart is true well inside a second of being told", tookMs < 900, `${tookMs}ms`);
+await wait(1400);
+await type("take the chocolate milk out");
+
 // ── And a reload no longer costs them the cart ──────────────────────────────
 await page.reload({ waitUntil: "networkidle0", timeout: 60000 });
 await wait(1200);

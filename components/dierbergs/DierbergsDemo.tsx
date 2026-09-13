@@ -116,8 +116,6 @@ export default function DierbergsDemo() {
   const imgRefs = useRef<Record<string, HTMLImageElement | null>>({});
   const recRef = useRef<SpeechRecognition | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const pendingAdd = useRef<DemoProduct | null>(null);
-  const landed = useRef<(() => void) | null>(null);
   const voiceAvailable = speechRecognitionAvailable();
 
   const axonOn = phase !== "idle";
@@ -293,49 +291,29 @@ export default function DierbergsDemo() {
       setPhase("adding");
       setPrompt(`Adding ${product.shortName}.`);
       setHint("Watch the cart.");
-      pendingAdd.current = product;
       setFlight({
         src: product.image,
         from: img.getBoundingClientRect(),
         to: cartEl.getBoundingClientRect()
       });
+
       /*
-       * Resolves when the package lands, so a caller can wait for the cart to
-       * be true before saying anything about it.
+       * The cart is true now, not when the package lands.
        *
-       * Whatever happens, this settles. An add that never came back left the
-       * assistant with no answer at all, and with nothing to report it decided
-       * the page must still be loading and told the shopper to refresh — which
-       * would have emptied their cart. Two guards: a waiter that is still
-       * pending is released before it is replaced, and the wait is bounded.
+       * It used to wait out the three quarters of a second the package spends
+       * in the air before it would even answer, and on a live line that is
+       * three quarters of a second of Axon holding its tongue on every single
+       * add. The flight is decoration. The cart is not.
        */
-      landed.current?.();
-      await new Promise<void>((resolve) => {
-        let done = false;
-        const settle = () => {
-          if (done) return;
-          done = true;
-          window.clearTimeout(timer);
-          landed.current = null;
-          resolve();
-        };
-        const timer = window.setTimeout(settle, 4500);
-        landed.current = settle;
-      });
+      await confirmAdd(product, dropIn(product));
     },
     [cardFor, confirmAdd, dropIn]
   );
 
-  const onFlightDone = useCallback(async () => {
-    const product = pendingAdd.current;
-    pendingAdd.current = null;
+  const onFlightDone = useCallback(() => {
     setFlight(null);
-    if (!product) return;
-
-    await confirmAdd(product, dropIn(product));
-    landed.current?.();
-    landed.current = null;
-  }, [confirmAdd, dropIn]);
+    setSelectedId(null);
+  }, []);
 
   /*
    * Taking something back out.
@@ -403,8 +381,8 @@ export default function DierbergsDemo() {
       }
 
       if (turn.action === "add" && turn.products.length === 1) {
-        // addProduct speaks its own confirmation, because the cart total is
-        // only true once the package has landed in it.
+        // addProduct speaks its own confirmation, because it is the only thing
+        // that knows the cart total once this has gone in.
         await addProduct(turn.products[0]);
       } else if (turn.action === "replace" && turn.outgoing && turn.products.length === 1) {
         // The old one goes as the new one arrives, so a change of mind about
@@ -460,12 +438,13 @@ export default function DierbergsDemo() {
       // "Two of those" is a normal thing to ask a person for. Capped so a
       // misheard number cannot fill the cart.
       const many = Math.min(Math.max(Math.round(quantity ?? 1) || 1, 1), 6);
-      // Make sure it is on screen: the package has to fly out of a card.
+      // Make sure it is on screen: the package has to fly out of a card. No
+      // fixed pause afterwards — addProduct waits for the card itself, and
+      // gives up the wait the moment it appears.
       if (!imgRefs.current[product.id]) {
         setView(product.category as ShelfId);
         setShelfItems([product]);
         setMerchHeading(`${product.name}.`);
-        await new Promise((r) => setTimeout(r, 420));
       }
       for (let i = 0; i < many; i += 1) await addProduct(product);
 
@@ -728,10 +707,8 @@ export default function DierbergsDemo() {
     fallback.current = false;
     outOfCredit.current = false;
     setEngine("off");
-    landed.current = null;
     stopListening(recRef.current);
     recRef.current = null;
-    pendingAdd.current = null;
     setPhase("idle");
     setView(null);
     setQuery("");

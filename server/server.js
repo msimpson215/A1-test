@@ -65,6 +65,7 @@ Talk the way you talk everywhere else: a real conversation, not a script and not
 Warm, brief, one or two sentences. Never call yourself a chatbot or an AI shopper.
 Open with: "Welcome to Dierbergs. How can I help you with your shopping today?" Then listen.
 You have tools to put products on the shelf, put one in the cart, take one out, and swap one for another. Use them. Do not invent products.
+Never ask them for a SKU, an item number or a product code. They cannot see those; everything is named the way it is said out loud.
 Follow the conversation. If they change their mind, swap what is in the cart rather than adding a second one.
 You cannot see a web page and you are never waiting on one: never say a shelf is loading or that a refresh would help, because a refresh would empty their cart.`;
 
@@ -79,7 +80,11 @@ function shopperSessionConfig() {
         transcription: { model: 'gpt-4o-mini-transcribe' },
         turn_detection: {
           type: 'semantic_vad',
-          eagerness: 'low',
+          // How long it hangs back before deciding you have finished. 'low' was
+          // the cure for talking over him, and it cost most of the lag on every
+          // single turn: it waits to be very sure. 'medium' still lets a pause
+          // for thought pass without being pounced on.
+          eagerness: 'medium',
           create_response: true,
           interrupt_response: true
         }
@@ -330,6 +335,8 @@ function versionOf(id) {
 }
 
 let chatModelPromise = null;
+/** Whether this account's chat model takes a reasoning dial. Set by trying it. */
+let speedDial = true;
 
 async function pickChatModel(apiKey) {
   if (process.env.SHOPPER_MODEL) return process.env.SHOPPER_MODEL;
@@ -369,7 +376,9 @@ Never call yourself an AI shopper.
 You are given the aisles this store has stocked and everything currently on the
 customer's screen and in their cart. Decide what should happen next.
 
-- Only ever choose products from the list you are given, by their exact id.
+- Only ever choose products from the list you are given, by their exact id. The
+  ids are yours, not theirs: never say one out loud and never ask for a SKU, an
+  item number or a code. Products are named by brand, kind and size.
 - "show" puts products on the shelf. "add" puts ONE product in the cart.
 - "replace" swaps one for another: put the id going IN in products, and the id
   coming OUT in "remove". Use it whenever they change their mind about a size,
@@ -441,30 +450,59 @@ app.post('/api/understand', async (req, res) => {
 
   try {
     const model = await pickChatModel(apiKey);
-    const upstream = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: SHOPPER_BRIEF },
-          {
-            role: 'system',
-            content:
-              `Aisles and products:\n${JSON.stringify(aisles)}\n\n` +
-              `Currently on the shelf: ${JSON.stringify(showing)}\n` +
-              `Already in the cart: ${JSON.stringify(cart)}\n` +
-              `Asked for earlier in this trip: ${JSON.stringify(req.body.asked || [])}`
-          },
-          ...history.slice(-6),
-          { role: 'user', content: said }
-        ],
-        response_format: {
-          type: 'json_schema',
-          json_schema: { name: 'shopper_turn', strict: true, schema: SHOPPER_SCHEMA }
-        }
-      })
-    });
+    const request = {
+      model,
+      /*
+       * Choosing a carton is not a reasoning problem.
+       *
+       * The newest model on the account answers this, and left to itself it
+       * will think about a half gallon of milk for several seconds while the
+       * shopper waits on a shelf that has not changed. Held low, and capped,
+       * because the answer is one sentence and a product id. Sent only to the
+       * models that take it, and dropped on a complaint.
+       */
+      ...(speedDial && /^gpt-5/.test(model) ? { reasoning_effort: 'low' } : {}),
+      // Room to spare. On these models the thinking is spent out of this
+      // allowance too, and a turn that runs out of it comes back empty, which
+      // would drop the shopper onto the parser mid-sentence.
+      max_completion_tokens: 2000,
+      messages: [
+        { role: 'system', content: SHOPPER_BRIEF },
+        {
+          role: 'system',
+          content:
+            `Aisles and products:\n${JSON.stringify(aisles)}\n\n` +
+            `Currently on the shelf: ${JSON.stringify(showing)}\n` +
+            `Already in the cart: ${JSON.stringify(cart)}\n` +
+            `Asked for earlier in this trip: ${JSON.stringify(req.body.asked || [])}`
+        },
+        ...history.slice(-6),
+        { role: 'user', content: said }
+      ],
+      response_format: {
+        type: 'json_schema',
+        json_schema: { name: 'shopper_turn', strict: true, schema: SHOPPER_SCHEMA }
+      }
+    };
+
+    const ask = (payload) =>
+      fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify(payload)
+      });
+
+    let upstream = await ask(request);
+    if (!upstream.ok && request.reasoning_effort) {
+      // This model does not take the dial. Losing the whole turn over a speed
+      // setting would drop the shopper onto the parser for no reason. Remembered
+      // so the retry is paid once and not on every sentence after it.
+      const complaint = await upstream.text();
+      console.error('Understand retry without reasoning_effort:', complaint.slice(0, 200));
+      speedDial = false;
+      delete request.reasoning_effort;
+      upstream = await ask(request);
+    }
 
     if (!upstream.ok) {
       const detail = await upstream.text();
@@ -473,7 +511,13 @@ app.post('/api/understand', async (req, res) => {
     }
 
     const body = await upstream.json();
-    const turn = JSON.parse(body.choices[0].message.content);
+    const choice = body.choices && body.choices[0];
+    const content = choice && choice.message && choice.message.content;
+    if (!content) {
+      console.error('Understand came back empty:', choice && choice.finish_reason);
+      return res.status(502).json({ error: 'understand empty' });
+    }
+    const turn = JSON.parse(content);
     res.json({ ...turn, model });
   } catch (error) {
     console.error('Understand request failed:', error);

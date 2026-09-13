@@ -176,7 +176,14 @@ const cheddars = await names();
 check("four cheddar cards", cheddars.length === 4, cheddars.join(" | "));
 check("also requested holds milk and bread", (await page.$$(".db-mini")).length === 2);
 
-/* The cart must not move until the package lands in it. */
+/*
+ * The package still flies, and the cart no longer waits for it.
+ *
+ * It used to hold at zero until the package landed, and answering the model
+ * took the whole flight with it — dead air in front of every add. The flight is
+ * decoration now: the cart is true as soon as it is told, and the count is
+ * already right while the package is still in the air.
+ */
 let sawFlyer = false;
 let cartDuringFlight = null;
 const watch = setInterval(async () => {
@@ -192,7 +199,11 @@ await type("Put the cheese in my cart.");
 await new Promise((r) => setTimeout(r, 2600));
 clearInterval(watch);
 check("package image flies to the cart", sawFlyer);
-check("cart holds until the package arrives", cartDuringFlight === "0 items $0.00", String(cartDuringFlight));
+check(
+  "the cart is already right while the package is in the air",
+  /1 item/.test(cartDuringFlight || ""),
+  String(cartDuringFlight)
+);
 check("cart reads 1 item $3.91", (await cart()) === "1 item $3.91", await cart());
 check("added card shows an in-cart state", (await page.$(".db-add.is-added")) !== null);
 
