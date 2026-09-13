@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
 import { findProducts, payCents, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
+import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
 import {
@@ -462,7 +463,19 @@ export default function DierbergsDemo() {
     setMerchHeading(
       products.length === 1 ? `${products[0].name}.` : shelfById(view)?.heading ?? "Here you are."
     );
-    return `on the shelf now: ${productsForModel(products)}`;
+    /*
+     * The aisle's knowledge rides along with its products, rather than sitting
+     * in the standing instructions. A paragraph an aisle is nothing at four
+     * aisles and an impossible prompt at a hundred, so it is looked up for the
+     * aisle in play — the same reason the catalogue is.
+     */
+    const notes = notesFor(view);
+    return [
+      `on the shelf now: ${productsForModel(products)}`,
+      notes ? `what you know about the ${view} aisle:\n${notes}` : ""
+    ]
+      .filter(Boolean)
+      .join("\n\n");
   }, []);
 
   const addToCart = useCallback(

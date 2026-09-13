@@ -1,5 +1,5 @@
 import {
-  asksAboutLactose,
+  dietaryAdvice,
   asksForSpecial,
   shelfById,
   shelfRespondsTo,
@@ -24,8 +24,8 @@ export type DemoIntent =
   | "REPLACE"
   /** "Take that back out." */
   | "REMOVE"
-  /** "I'm lactose intolerant" — a question about milk, not a product name. */
-  | "MILK_ADVICE"
+  /** "I'm lactose intolerant", "I'm gluten free" — what they cannot eat. */
+  | "DIET_ADVICE"
   | "UNKNOWN";
 
 export type ParsedRequest = {
@@ -123,11 +123,15 @@ export function parseRequest(raw: string, current: ShelfId | null = null): Parse
   const named = shelvesNamedIn(text);
   const aisle = named.length === 1 ? named[0].id : current;
 
-  // "I'm lactose intolerant" is a question about the milk case, and no keyword
-  // in it matches a carton.
-  if (asksAboutLactose(text)) {
-    return { intent: "MILK_ADVICE", shelf: "milk", text };
-  }
+  /*
+   * "I'm lactose intolerant", "I'm gluten free" — what they cannot eat. No
+   * keyword in any of it matches a product, so it has to be caught before the
+   * keyword match, and it is aisle-aware: the lactose answer in front of the
+   * cheese is a different and much better answer than the one in front of the
+   * milk.
+   */
+  const advice = dietaryAdvice(text, aisle);
+  if (advice) return { intent: "DIET_ADVICE", shelf: advice.aisle, text };
 
   /*
    * Second thoughts, before anything reads this as a fresh request. Whether

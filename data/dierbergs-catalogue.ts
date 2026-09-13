@@ -375,6 +375,142 @@ export function milkSwapForSize(
   return store ?? inSize.find(isDierbergsWhiteMilk) ?? null;
 }
 
+/**
+ * Bread they cannot eat.
+ *
+ * The same shape as the lactose question: not a product request, no keyword in
+ * it that matches a loaf, and the one thing a shopper most needs the aisle to
+ * know about them.
+ */
+export function asksAboutGluten(raw: string): boolean {
+  const text = plain(raw);
+  return (
+    /\bglutens?\b/.test(text) ||
+    /\bceliac|coeliac\b/.test(text) ||
+    /\b(cant|cannot|dont|do not) (eat|have) (wheat|gluten|bread)\b/.test(text) ||
+    /\bwheat (bothers|upsets|hurts)\b/.test(text)
+  );
+}
+
+/** Low carb rather than gluten: a different request that arrives in the same breath. */
+export function asksAboutCarbs(raw: string): boolean {
+  const text = plain(raw);
+  return /\b(keto|low carb|lowcarb|carbs|carb count|atkins|diabetic)\b/.test(text);
+}
+
+function breadBy(ids: string[]): DemoProduct[] {
+  const bread = shelfById("bread")?.products ?? [];
+  return ids
+    .map((id) => bread.find((p) => p.id === id))
+    .filter((p): p is DemoProduct => Boolean(p));
+}
+
+/** The gluten free loaves, cheapest way in first. */
+export function breadForGluten(): DemoProduct[] {
+  return breadBy([
+    "bread-udis-white-gf",
+    "bread-canyon-white-gf",
+    "bread-canyon-7grain-gf",
+    "bread-carbonaut-lowcarb"
+  ]);
+}
+
+/** The low carb loaves, which are not the same thing as the gluten free ones. */
+export function breadForCarbs(): DemoProduct[] {
+  return breadBy(["bread-natures-keto", "bread-carbonaut-lowcarb"]);
+}
+
+/**
+ * Cheese for someone who cannot drink milk.
+ *
+ * The useful fact, and one most people do not know: aged hard cheeses lose
+ * nearly all their lactose in the making, so cheddar and swiss are usually fine
+ * for someone who cannot manage a glass of milk. There is also one bag labelled
+ * lactose free outright, for anyone who would rather not take the chance.
+ */
+export function cheeseForLactose(): DemoProduct[] {
+  const cheese = shelfById("cheese")?.products ?? [];
+  const wanted = [
+    "cheese-kraft-shred-lf",
+    "cabot-extra-sharp",
+    "cheese-sargento-slice-aged",
+    "cheese-ee-swiss"
+  ];
+  return wanted
+    .map((id) => cheese.find((p) => p.id === id))
+    .filter((p): p is DemoProduct => Boolean(p));
+}
+
+export const GLUTEN_LINE =
+  "I'm not a doctor, so I'll just tell you what we stock. " +
+  "Canyon Bakehouse and Udi's are both gluten free \u2014 Udi's is the softer sandwich loaf and the cheaper of the two, " +
+  "Canyon does a seven grain if you want something heartier. " +
+  "Carbonaut is gluten free as well and low carb with it. " +
+  "Fair warning: they run two to three times the price of ordinary bread, and a couple live in the freezer case. " +
+  "Which sounds closest?";
+
+export const CARB_LINE =
+  "Two low carb loaves: Nature's Own Keto, which is the cheaper and eats like normal soft bread, " +
+  "and Carbonaut, which is lower again and gluten free too. " +
+  "Not the same thing as gluten free, so tell me if you need both.";
+
+export const CHEESE_LACTOSE_LINE =
+  "Good news on cheese \u2014 aged hard cheeses lose almost all their lactose in the making, " +
+  "so sharp cheddar and swiss usually sit fine even when milk doesn't. " +
+  "The Cabot extra sharp and the aged Sargento slices are both well aged, and the Essential Everyday swiss is the cheapest way in. " +
+  "If you'd rather not chance it, the Kraft shredded cheddar is labelled lactose free outright.";
+
+export type DietaryAdvice = {
+  aisle: ShelfId;
+  products: DemoProduct[];
+  line: string;
+  hint: string;
+};
+
+/**
+ * What to say when someone tells you what they cannot eat.
+ *
+ * Aisle-aware, because the same sentence has a different answer depending on
+ * where they are standing: "I'm lactose intolerant" in front of the milk means
+ * lactose free cartons, and in front of the cheese means the far more useful
+ * fact that most of the cheese was never a problem.
+ */
+export function dietaryAdvice(raw: string, aisle?: ShelfId | null): DietaryAdvice | null {
+  if (asksAboutLactose(raw)) {
+    if (aisle === "cheese") {
+      return {
+        aisle: "cheese",
+        products: cheeseForLactose(),
+        line: CHEESE_LACTOSE_LINE,
+        hint: "Aged cheddar and swiss are naturally very low in lactose. One bag is labelled lactose free."
+      };
+    }
+    return {
+      aisle: "milk",
+      products: milkForLactose(),
+      line: LACTOSE_LINE,
+      hint: "Lactaid and Prairie Farms: lactose broken down. fairlife: ultra filtered. a2: a2 protein only, not lactose free."
+    };
+  }
+  if (asksAboutGluten(raw)) {
+    return {
+      aisle: "bread",
+      products: breadForGluten(),
+      line: GLUTEN_LINE,
+      hint: "Udi's is the cheaper soft loaf. Canyon does seven grain. Both run two to three times ordinary bread."
+    };
+  }
+  if (asksAboutCarbs(raw)) {
+    return {
+      aisle: "bread",
+      products: breadForCarbs(),
+      line: CARB_LINE,
+      hint: "Nature's Own Keto is the cheaper. Carbonaut is lower carb and gluten free with it."
+    };
+  }
+  return null;
+}
+
 /** Said out loud with them. Not advice — what each carton is. */
 export const LACTOSE_LINE =
   "I'm not a doctor, so I won't tell you what to drink \u2014 but here's what we carry. " +
@@ -402,9 +538,14 @@ function milkScoreText(text: string): string {
   return text.replace(/\b(whole|full|entire)\s+(?=gallons?\b)/g, "");
 }
 
+// Chocolate sits alongside these as a kind of milk, but it is a flavour rather
+// than a fat: "the half gallon" plus "chocolate" is not a fat being named.
+const MILK_FATS = ["whole", "2%", "1%", "skim"];
+
 function namedMilkFat(text: string): string | null {
   const said = milkScoreText(text);
-  for (const [fat, words] of Object.entries(MILK_FAT_WORDS)) {
+  for (const fat of MILK_FATS) {
+    const words = KIND_WORDS.milk[fat] ?? [];
     if (words.some((word) => containsPhrase(said, word))) return fat;
   }
   return null;
@@ -583,10 +724,60 @@ function eggKind(product: DemoProduct): string {
 }
 
 /** How much of what was said this one product accounts for. */
+/*
+ * What they said they did not want.
+ *
+ * "A block of cheddar, not shredded" is a normal sentence, and reading it as
+ * two positive words put the shredded bags at the top of the shelf — the exact
+ * opposite of what was asked for. So the words after a "not" are pulled out of
+ * the query and counted against a product instead of for it.
+ *
+ * Deliberately short-sighted: it takes the two or three words following the
+ * negation, because "not shredded, I want a block" must not go on to treat
+ * "block" as unwanted too.
+ */
+const NEGATION = /\b(?:not|no|none|without|other than|dont want|do not want|nothing)\s+(?:the\s+|a\s+|any\s+)?([a-z%0-9]+(?:\s+[a-z%0-9]+)?)/g;
+
+function unwantedIn(text: string): string[] {
+  const out: string[] = [];
+  for (const match of text.matchAll(NEGATION)) {
+    const phrase = match[1]?.trim();
+    if (!phrase) continue;
+    out.push(phrase);
+    // "not finely shredded" should also rule out "shredded" on its own.
+    const words = phrase.split(/\s+/);
+    if (words.length > 1) out.push(...words);
+  }
+  return out;
+}
+
+/** The query with the unwanted words taken out, so they cannot score for. */
+function wantedText(text: string, unwanted: string[]): string {
+  let wanted = text;
+  for (const phrase of unwanted) {
+    wanted = wanted.replace(new RegExp(`(^|\\s)${phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\s|$)`, "g"), " ");
+  }
+  return wanted.replace(/\s+/g, " ").trim();
+}
+
 function score(product: DemoProduct, text: string): number {
-  return wordsFor(product)
-    .filter((k) => containsPhrase(text, k))
+  const unwanted = unwantedIn(text);
+  const words = wordsFor(product);
+  const positive = unwanted.length ? wantedText(text, unwanted) : text;
+
+  let value = words
+    .filter((k) => containsPhrase(positive, k))
     .reduce((sum, k) => sum + k.length, 0);
+
+  /*
+   * A product that is the thing they ruled out drops out of the running rather
+   * than merely ranking lower, or "not shredded" still shows shredded when the
+   * rest of the sentence matches it well.
+   */
+  for (const phrase of unwanted) {
+    if (words.some((k) => k === phrase || containsPhrase(k, phrase))) return 0;
+  }
+  return value;
 }
 
 /** True when the whole phrase appears, so "large" does not match "x-large". */
@@ -602,11 +793,75 @@ function containsPhrase(text: string, phrase: string): boolean {
  * product does not have to repeat "cheddar" in two places to be found by
  * someone asking for cheddar. Written once here rather than once per record.
  */
-const MILK_FAT_WORDS: Record<string, string[]> = {
-  whole: ["whole", "vitamin d", "full fat"],
-  "2%": ["2%", "2 percent", "two percent", "reduced fat"],
-  "1%": ["1%", "1 percent", "one percent", "lowfat", "low fat"],
-  skim: ["skim", "fat free", "nonfat", "non fat"]
+/*
+ * What a shopper calls it, against what the data calls it.
+ *
+ * This is most of what "knowing an aisle" actually means. Nobody asks for hard
+ * cooked eggs; they ask for hard boiled. Nobody asks for a low moisture part
+ * skim block; they ask for pizza cheese. The gap between the two vocabularies is
+ * where a search quietly fails and the assistant says the store does not carry
+ * something it has twelve of.
+ *
+ * One table per aisle, keyed on the kind, in the words people say out loud.
+ */
+const KIND_WORDS: Record<string, Record<string, string[]>> = {
+  milk: {
+    whole: ["whole", "vitamin d", "full fat"],
+    "2%": ["2%", "2 percent", "two percent", "reduced fat"],
+    "1%": ["1%", "1 percent", "one percent", "lowfat", "low fat"],
+    skim: ["skim", "fat free", "nonfat", "non fat"],
+    chocolate: ["chocolate", "choc", "chocolate milk"]
+  },
+  eggs: {
+    large: ["large"],
+    "extra large": ["extra large", "xl", "x large"],
+    jumbo: ["jumbo", "biggest", "largest"],
+    // Every shopper says hard boiled. No carton anywhere says it.
+    "hard cooked": [
+      "hard cooked",
+      "hard boiled",
+      "hardboiled",
+      "boiled",
+      "already cooked",
+      "peeled",
+      "ready to eat",
+      "no cooking"
+    ]
+  },
+  bread: {
+    white: ["white", "plain", "sandwich bread"],
+    wheat: ["wheat", "brown bread"],
+    "whole grain": ["whole grain", "whole wheat", "multigrain", "multi grain", "grainy", "seeds"],
+    sourdough: ["sourdough", "sour dough", "sour"],
+    // Pumpernickel and Jewish rye are on the loaves that are actually those
+    // things; listing them here would make every rye answer to both equally.
+    rye: ["rye", "deli bread"],
+    bagel: ["bagel", "bagels"]
+  },
+  cheese: {
+    cheddar: ["cheddar", "cheddar cheese"],
+    swiss: ["swiss", "swiss cheese"],
+    provolone: ["provolone"],
+    // "For pizza" is how the low moisture block is asked for far more often
+    // than by name, and nothing else in the store answers to it.
+    mozzarella: ["mozzarella", "mozarella", "mozzarela", "pizza cheese", "pizza"]
+  }
+};
+
+/** How it is packaged, in the words it is asked for. */
+const FORM_WORDS: Record<string, string[]> = {
+  shredded: ["shredded", "shred", "grated", "bag of shredded"],
+  sliced: ["sliced", "slices", "for sandwiches", "sandwich slices"],
+  block: ["block", "chunk", "brick", "bar", "hunk"],
+  cubes: ["cubes", "cubed", "snack cubes"],
+  fresh: ["fresh", "ball", "caprese"],
+  deli: ["deli", "from the counter", "cut to order", "sliced to order"],
+  loaf: ["loaf", "full loaf"],
+  "half loaf": ["half loaf", "small loaf", "little loaf", "half a loaf"],
+  bagels: ["bagels", "bagel"],
+  dozen: ["dozen", "twelve", "12 ct", "12 count"],
+  "18 count": ["18 count", "18 pack", "18 ct", "eighteen", "eighteen count", "big pack"],
+  "6 count": ["6 count", "half dozen", "six count", "small pack"]
 };
 
 function milkSizeWords(product: DemoProduct): string[] {
@@ -625,13 +880,14 @@ function brandWords(brand: string): string[] {
 }
 
 function wordsFor(product: DemoProduct): string[] {
-  const fat =
-    product.category === "milk" && product.subcategory
-      ? MILK_FAT_WORDS[product.subcategory] ?? []
-      : [];
+  const kind = product.subcategory
+    ? KIND_WORDS[product.category]?.[product.subcategory] ?? []
+    : [];
+  const form = product.form ? FORM_WORDS[product.form] ?? [] : [];
   return [...new Set([
     ...product.keywords,
-    ...fat,
+    ...kind,
+    ...form,
     ...milkSizeWords(product),
     ...(product.brand ? brandWords(product.brand) : []),
     ...(product.subcategory ? [product.subcategory] : []),

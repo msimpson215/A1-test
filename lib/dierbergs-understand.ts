@@ -1,6 +1,7 @@
 import {
   aisleIndex,
   allSpecialsLine,
+  dietaryAdvice,
   findProducts,
   LACTOSE_LINE,
   milkAskedForQuart,
@@ -16,6 +17,7 @@ import {
   specialPriceFor,
   type ShelfId
 } from "@/data/dierbergs-catalogue";
+import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
 import { parseRequest } from "./dierbergs-demo-intents";
 
@@ -148,6 +150,8 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
             ...context.onList
           ])
         ),
+        // What someone who works this aisle knows, for the aisle in play only.
+        notes: notesFor(findProducts(said, context.current, 12).aisle ?? context.current),
         showing: context.showing.map((p) => p.id),
         cart: context.cart.map((p) => p.id),
         asked: context.onList.map((p) => p.id),
@@ -429,21 +433,30 @@ function locally(said: string, context: TurnContext): Turn {
     }
 
     /*
-     * "I'm lactose intolerant."
+     * "I'm lactose intolerant." "I'm gluten free." "I'm doing keto."
      *
-     * Not a doctor and not going to pretend: say what each carton is and let
-     * them choose. One of each kind, because lactose free and a2 are different
-     * things and the difference is the useful part.
+     * Not a doctor and not going to pretend: say what each one is and let them
+     * choose. One of each kind, because lactose free and a2 are different
+     * things, and gluten free and low carb are different things, and the
+     * difference is the useful part.
      */
-    case "MILK_ADVICE":
+    case "DIET_ADVICE": {
+      // Aisle-aware, and the aisle the parser settled on is the one to answer in.
+      const advice = dietaryAdvice(req.text, req.shelf) ?? {
+        aisle: "milk" as ShelfId,
+        products: milkForLactose(),
+        line: LACTOSE_LINE,
+        hint: "Lactaid and Prairie Farms: lactose broken down. fairlife: ultra filtered. a2: a2 protein only, not lactose free."
+      };
       return {
         action: "show",
-        aisle: "milk",
-        products: milkForLactose(),
-        say: LACTOSE_LINE,
-        hint: "Lactaid and Prairie Farms: lactose broken down. fairlife: ultra filtered. a2: a2 protein only, not lactose free.",
+        aisle: advice.aisle,
+        products: advice.products,
+        say: advice.line,
+        hint: advice.hint,
         source: "local"
       };
+    }
 
     case "SHOW_STAPLES":
       return {

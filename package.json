@@ -9,7 +9,8 @@
     "demo:build": "next build",
     "demo:static": "bash scripts/build-demo-static.sh",
     "demo:test": "node scripts/test-dierbergs-demo.mjs && node scripts/test-dierbergs-voice-fallback.mjs",
-    "demo:cost": "node --experimental-strip-types --experimental-loader=./scripts/lib/ts-alias-loader.mjs scripts/test-dierbergs-cost.mjs"
+    "demo:cost": "node --experimental-strip-types --experimental-loader=./scripts/lib/ts-alias-loader.mjs scripts/test-dierbergs-cost.mjs",
+    "demo:verify": "bash scripts/verify-dierbergs.sh"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

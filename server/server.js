@@ -454,7 +454,8 @@ app.post('/api/understand', async (req, res) => {
   const said = String((req.body && req.body.said) || '').slice(0, 400);
   if (!said.trim()) return res.status(400).json({ error: 'nothing said' });
 
-  const { index = '', choices = [], showing = [], cart = [], history = [] } = req.body || {};
+  const { index = '', choices = [], showing = [], cart = [], history = [], notes = '' } =
+    req.body || {};
 
   try {
     const model = await pickChatModel(apiKey);
@@ -480,6 +481,9 @@ app.post('/api/understand', async (req, res) => {
           role: 'system',
           content:
             `The aisles this store has:\n${index}\n\n` +
+            // What someone who works this aisle knows. Sent for the aisle in
+            // play only, so a store of a hundred aisles costs no more than this.
+            (notes ? `What you know about this aisle:\n${notes}\n\n` : '') +
             `Products this could be about:\n${JSON.stringify(choices)}\n\n` +
             `Currently on the shelf: ${JSON.stringify(showing)}\n` +
             `Already in the cart: ${JSON.stringify(cart)}\n` +
