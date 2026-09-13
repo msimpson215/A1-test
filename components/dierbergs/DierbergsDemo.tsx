@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { payCents, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
+import { findProducts, payCents, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
 import {
   connectShopper,
+  productsForModel,
   realtimeSupported,
   type ShopperSession
 } from "@/lib/dierbergs-realtime";
@@ -431,6 +432,29 @@ export default function DierbergsDemo() {
     return `showing ${picked.map((p) => p.name).join(", ")}`;
   }, []);
 
+  /*
+   * The catalogue, asked rather than remembered.
+   *
+   * This is what makes the store's size somebody else's problem: the assistant
+   * holds an aisle index and looks products up, so the same code answers for a
+   * hundred items or forty thousand. What comes back is what is now on the
+   * shelf, so the conversation and the screen cannot disagree.
+   */
+  const findForModel = useCallback((query: string, aisle?: string): string => {
+    const { products, aisle: found } = findProducts(query, (aisle as ShelfId) || null);
+    if (!products.length) {
+      return `nothing in the store matches "${query}"; tell them it is not carried`;
+    }
+    const view = found ?? (products[0].category as ShelfId);
+    setView(view);
+    setShelfItems(products);
+    setRequested((was) => dedupe([...was, ...products]));
+    setMerchHeading(
+      products.length === 1 ? `${products[0].name}.` : shelfById(view)?.heading ?? "Here you are."
+    );
+    return `on the shelf now: ${productsForModel(products)}`;
+  }, []);
+
   const addToCart = useCallback(
     async (id: string, quantity?: number): Promise<string> => {
       const product = productById(id);
@@ -482,10 +506,10 @@ export default function DierbergsDemo() {
     [addToCart, removeFromCart]
   );
 
-  const tools = useRef({ showProducts, addToCart, removeFromCart, replaceInCart });
+  const tools = useRef({ findForModel, showProducts, addToCart, removeFromCart, replaceInCart });
   useEffect(() => {
-    tools.current = { showProducts, addToCart, removeFromCart, replaceInCart };
-  }, [showProducts, addToCart, removeFromCart, replaceInCart]);
+    tools.current = { findForModel, showProducts, addToCart, removeFromCart, replaceInCart };
+  }, [findForModel, showProducts, addToCart, removeFromCart, replaceInCart]);
 
   const goLive = useCallback(async () => {
     if (live.current) {
@@ -502,6 +526,7 @@ export default function DierbergsDemo() {
     try {
       const session = await connectShopper(
         {
+          findProducts: (query, aisle) => tools.current.findForModel(query, aisle),
           showProducts: (aisle, ids) => tools.current.showProducts(aisle, ids),
           addToCart: (id, quantity) => tools.current.addToCart(id, quantity),
           removeFromCart: (id) => tools.current.removeFromCart(id),

@@ -373,8 +373,14 @@ const SHOPPER_BRIEF = `You are Axon, helping this person shop on the Dierbergs g
 Talk like yourself: a real conversation, not a script. One or two sentences.
 Never call yourself an AI shopper.
 
-You are given the aisles this store has stocked and everything currently on the
+You are given an index of the aisles this store has stocked, a shortlist of the
+products this sentence could be about, and everything currently on the
 customer's screen and in their cart. Decide what should happen next.
+
+The shortlist is a search of the store's catalogue for what they just said, not
+the whole store: this store has thousands of items. If what they want is not on
+it, do not invent a product — say what the aisle does have, or that you will
+need to look, and let them narrow it down.
 
 - Only ever choose products from the list you are given, by their exact id. The
   ids are yours, not theirs: never say one out loud and never ask for a SKU, an
@@ -446,7 +452,7 @@ app.post('/api/understand', async (req, res) => {
   const said = String((req.body && req.body.said) || '').slice(0, 400);
   if (!said.trim()) return res.status(400).json({ error: 'nothing said' });
 
-  const { aisles = [], showing = [], cart = [], history = [] } = req.body || {};
+  const { index = '', choices = [], showing = [], cart = [], history = [] } = req.body || {};
 
   try {
     const model = await pickChatModel(apiKey);
@@ -471,7 +477,8 @@ app.post('/api/understand', async (req, res) => {
         {
           role: 'system',
           content:
-            `Aisles and products:\n${JSON.stringify(aisles)}\n\n` +
+            `The aisles this store has:\n${index}\n\n` +
+            `Products this could be about:\n${JSON.stringify(choices)}\n\n` +
             `Currently on the shelf: ${JSON.stringify(showing)}\n` +
             `Already in the cart: ${JSON.stringify(cart)}\n` +
             `Asked for earlier in this trip: ${JSON.stringify(req.body.asked || [])}`

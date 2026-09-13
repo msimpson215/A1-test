@@ -643,6 +643,79 @@ function wordsFor(product: DemoProduct): string[] {
 }
 
 /** True when anything on the shelf answers to what was said. */
+/**
+ * What the store has for these words.
+ *
+ * The whole point of this, and the only reason a thousand cells is possible:
+ * the assistant does not hold the catalogue, it asks. Handing a model every
+ * product costs about fifty tokens each, which is fine for a hundred and
+ * hopeless for forty thousand — and no amount of context makes reading the
+ * entire store on every sentence a good idea.
+ *
+ * Inside a cell this is exactly the narrowing that has always run, so the milk
+ * knows what it knows. Across cells it scores every product on its own words,
+ * which is the same scoring, just wider.
+ */
+export function findProducts(
+  query: string,
+  aisleHint?: ShelfId | null,
+  limit = 8
+): { products: DemoProduct[]; aisle: ShelfId | null } {
+  const text = plain(query);
+  const named = shelvesNamedIn(text);
+  const shelf =
+    named.length === 1
+      ? named[0]
+      : shelfById(aisleHint) ?? named.find((s) => shelfRespondsTo(s, text)) ?? null;
+
+  if (shelf) {
+    return { products: narrowShelf(shelf, text).slice(0, limit), aisle: shelf.id };
+  }
+
+  let best = 0;
+  const scored = shelves
+    .flatMap((s) => s.products)
+    .map((product) => {
+      const value = score(product, text);
+      best = Math.max(best, value);
+      return { product, value };
+    });
+  if (best === 0) return { products: [], aisle: null };
+
+  // Best matches first, and only real matches: a shelf of near misses is worse
+  // than saying the store does not carry it.
+  const products = scored
+    .filter((s) => s.value >= best * 0.7)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, limit)
+    .map((s) => s.product);
+  const aisles = new Set(products.map((p) => p.category));
+  return { products, aisle: aisles.size === 1 ? (products[0].category as ShelfId) : null };
+}
+
+/**
+ * The store as an index, which is all the assistant needs to hold.
+ *
+ * Aisle names and the kinds in each, so it knows where things live and what
+ * words are worth searching. This is the part that stays a few hundred tokens
+ * whether the store has four cells or a thousand.
+ */
+export function aisleIndex(): string {
+  return shelves
+    .map((shelf) => {
+      const kinds = [...new Set(shelf.products.map((p) => p.subcategory).filter(Boolean))];
+      const brands = [...new Set(shelf.products.map((p) => p.brand).filter(Boolean))];
+      return [
+        `${shelf.id}: ${shelf.products.length} items`,
+        kinds.length ? `kinds: ${kinds.join(", ")}` : "",
+        brands.length ? `brands: ${brands.join(", ")}` : ""
+      ]
+        .filter(Boolean)
+        .join(" | ");
+    })
+    .join("\n");
+}
+
 export function shelfRespondsTo(shelf: Shelf, text: string): boolean {
   if (CHEAPEST.test(text) || DEAREST.test(text)) return true;
   if (

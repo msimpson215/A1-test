@@ -1,4 +1,5 @@
-import { shelves, specialFor, specialPriceFor } from "@/data/dierbergs-catalogue";
+import { aisleIndex, specialFor, specialPriceFor, type ShelfId } from "@/data/dierbergs-catalogue";
+import type { DemoProduct } from "@/data/dierbergs-demo-products";
 import { forSpeaking } from "./dierbergs-pronounce";
 
 /**
@@ -16,7 +17,9 @@ import { forSpeaking } from "./dierbergs-pronounce";
 export type ShopperState = "connecting" | "idle" | "listening" | "thinking" | "speaking";
 
 export type ShopperTools = {
-  /** Put an aisle on the shelf. Returns what to tell the model happened. */
+  /** Look words up in the catalogue and put what turns up on the shelf. */
+  findProducts(query: string, aisle?: string): string;
+  /** Re-arrange the shelf from ids already known. Returns what happened. */
   showProducts(aisle: string, productIds: string[]): string;
   /** Put a product in the cart, resolving once it has landed there. */
   addToCart(productId: string, quantity?: number): Promise<string>;
@@ -58,15 +61,24 @@ yourself with that line.
 Open with: "Welcome to Dierbergs. How can I help you with your shopping
 today?" Then stop and listen.
 
-Your hands: show_products puts products on the shelf they can see. add_to_cart
-puts one in the cart. remove_from_cart takes one back out. replace_in_cart
-swaps one for another in a single move. Use them. Do not describe products
-they cannot see — show them.
+Your hands: find_products looks something up in the store's own catalogue,
+puts what it finds on the shelf they can see, and tells you exactly what is
+there — names, sizes, prices and any deal. add_to_cart puts one in the cart.
+remove_from_cart takes one back out. replace_in_cart swaps one for another in
+a single move. show_products re-arranges the shelf using ids you have already
+been told, for narrowing down what is in front of them.
+
+You do not hold the catalogue. You look things up, the way anyone working in a
+store this size does. So when they ask for something, search for it in their
+own words — "lactose free half gallon", "sharp cheddar sliced" — and talk
+about what comes back. Never name a product, a price or a size you have not
+been told by a search: this store has thousands of items and inventing one is
+worse than saying you will check.
 
 Speak in the same breath as you act: use the hand first, then say your line in
-that same turn, without waiting to hear how it went. You already know what is
-in the store, so you know what is about to be on the shelf. Waiting for the
-result before you start talking puts a silence in front of every single answer.
+that same turn. Say what you are doing rather than what you found — "let me
+pull up the half gallons" — because the words go out while the search is
+running. Then talk about what actually came back.
 
 You are not waiting on a web page and you cannot see one. Your hands work the
 instant you use them and they tell you what happened. So never say a shelf is
@@ -75,16 +87,17 @@ yet, or that a refresh would help. A refresh would throw away their whole
 cart. If a hand ever comes back with a problem, say plainly what did not work
 and offer to try it again.
 
-The shelves you have are below. Only those products exist. Never invent a
-product, a price, or a size this store does not sell. There is no Dierbergs
-quart.
+The aisles this store has stocked are listed below, with the kinds and brands
+in each, so you know where to look and what words are worth searching. The
+products themselves you get by searching. If a search comes back empty, this
+store does not carry it: say so plainly. There is no Dierbergs quart.
 
-One product in each aisle is on this week's ad. It is the only one with a
-"deal" on it, which is its sale price, and "dealThrough", which is the day it
-ends. If they ask whether there is a special, say what it is, what it costs,
-what it was, and when it ends, then offer it. Nothing without a "deal" is on
-special, however good the price looks. If they say yes to a special, add that
-product.
+One product in each aisle is on this week's ad. A search result marks it with
+a "deal", which is its sale price, and "dealThrough", the day it ends. That
+mark is the only thing that makes something a special, however good a price
+looks. If they ask whether there is a special, search the aisle, then say what
+it is, what it costs, what it was, and when it ends, and offer it. If they say
+yes, add that product.
 
 If they ask for more than one of something, add it that many times with the
 quantity. If they ask for two different things, do both.
@@ -130,8 +143,30 @@ If they ask for something this store does not carry, say so. Never invent.`;
 const TOOLS = [
   {
     type: "function",
+    name: "find_products",
+    description:
+      "Look something up in the store's catalogue and put what you find on the shelf. Say it the way the shopper said it. Returns the products now on the shelf, with their ids, sizes, prices and any deal.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "what they are after, in words: \"lactose free half gallon\", \"sharp cheddar sliced\", \"eighteen eggs\""
+        },
+        aisle: {
+          type: "string",
+          description: "id of the aisle to look in, when it is clear which one; leave out otherwise"
+        }
+      },
+      required: ["query"]
+    }
+  },
+  {
+    type: "function",
     name: "show_products",
-    description: "Put products on the Dierbergs shelf in front of the customer.",
+    description:
+      "Re-arrange the shelf using ids a search has already given you, to narrow down what is in front of them. To find something new, use find_products.",
     parameters: {
       type: "object",
       properties: {
@@ -139,7 +174,7 @@ const TOOLS = [
         product_ids: {
           type: "array",
           items: { type: "string" },
-          description: "product ids from the catalogue, in the order they should appear"
+          description: "ids you have been told by a search, in the order they should appear"
         }
       },
       required: ["aisle", "product_ids"]
@@ -197,31 +232,27 @@ const TOOLS = [
  * so that "the wheat one", "the cheaper one" and "shredded, not sliced" are
  * answerable from the data instead of from a guess at the product name.
  *
- * Keys are short because this rides in the session instructions on every
- * connection, and there are a hundred products.
+ * This is what a search hands back, not what the session opens with. A product
+ * costs about fifty tokens described this way: fine for the eight on a shelf,
+ * impossible for a store of forty thousand, which is why the catalogue is
+ * looked up rather than memorised.
  */
-function catalogueForModel(): string {
+export function productsForModel(products: DemoProduct[]): string {
   return JSON.stringify(
-    shelves.map((shelf) => {
-      const ad = specialFor(shelf.id);
-      return {
-        aisle: shelf.id,
-        products: shelf.products.map((p) => ({
-          id: p.id,
-          name: forSpeaking(p.name),
-          brand: p.brand,
-          kind: p.subcategory,
-          also: p.type?.length ? p.type : undefined,
-          form: p.form,
-          size: p.size,
-          price: p.price,
-          // Set on the one product on this week's ad, and on nothing else.
-          deal: specialPriceFor(p.id) ?? undefined,
-          dealThrough: specialPriceFor(p.id) ? ad?.special.through : undefined,
-          diet: p.dietary?.length ? p.dietary : undefined
-        }))
-      };
-    })
+    products.map((p) => ({
+      id: p.id,
+      name: forSpeaking(p.name),
+      brand: p.brand,
+      kind: p.subcategory,
+      also: p.type?.length ? p.type : undefined,
+      form: p.form,
+      size: p.size,
+      price: p.price,
+      // Set on the one product per aisle on this week's ad, and nothing else.
+      deal: specialPriceFor(p.id) ?? undefined,
+      dealThrough: specialPriceFor(p.id) ? specialFor(p.category as ShelfId)?.special.through : undefined,
+      diet: p.dietary?.length ? p.dietary : undefined
+    }))
   );
 }
 
@@ -319,7 +350,7 @@ export async function connectShopper(
       type: "session.update",
       session: {
         type: "realtime",
-        instructions: `${BRIEF}\n\nThe shelves:\n${catalogueForModel()}`,
+        instructions: `${BRIEF}\n\nThe aisles:\n${aisleIndex()}`,
         tools: TOOLS,
         tool_choice: "auto"
       }
@@ -406,7 +437,7 @@ export async function connectShopper(
        * not answer. That silence is what had the assistant telling the shopper
        * the page was still loading and offering a refresh.
        */
-      if (call.name === "show_products") {
+      if (call.name === "show_products" || call.name === "find_products") {
         await runTool(call);
       } else {
         const mine = toolChain.then(() => runTool(call));
@@ -423,6 +454,7 @@ export async function connectShopper(
   async function runTool(call: { call_id: string; name: string; arguments: string }) {
     let args: {
       aisle?: string;
+      query?: string;
       product_ids?: string[];
       product_id?: string;
       quantity?: number;
@@ -435,7 +467,9 @@ export async function connectShopper(
 
     let output = "done";
     try {
-      if (call.name === "show_products") {
+      if (call.name === "find_products") {
+        output = tools.findProducts(args.query || "", args.aisle);
+      } else if (call.name === "show_products") {
         output = tools.showProducts(args.aisle || "", args.product_ids || []);
       } else if (call.name === "add_to_cart" && args.product_id) {
         output = await tools.addToCart(args.product_id, args.quantity);

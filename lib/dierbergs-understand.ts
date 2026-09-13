@@ -1,5 +1,7 @@
 import {
+  aisleIndex,
   allSpecialsLine,
+  findProducts,
   LACTOSE_LINE,
   milkAskedForQuart,
   milkForLactose,
@@ -57,12 +59,19 @@ for (const shelf of shelves) {
 }
 for (const product of staplesProducts) everyProduct.set(product.id, product);
 
-// Only what the model needs to choose. Sending images and keywords would cost
-// tokens to say nothing: keywords exist for the parser's benefit, not a model's.
-const AISLE_PAYLOAD = shelves.map((shelf) => ({
-  id: shelf.id,
-  name: shelf.label,
-  products: shelf.products.map((p) => ({
+/*
+ * What the model is given to choose from.
+ *
+ * Only what it needs to choose: images and keywords would cost tokens to say
+ * nothing, since keywords exist for the parser's benefit rather than a model's.
+ *
+ * A shortlist, not the store. Every product costs about fifty tokens described
+ * this way, so a hundred of them is a big prompt and forty thousand is not a
+ * prompt at all. The search finds the handful this sentence could be about, and
+ * that is what goes over — which is the same cost whatever size the store is.
+ */
+function payload(products: DemoProduct[]) {
+  return products.map((p) => ({
     id: p.id,
     name: p.name,
     brand: p.brand,
@@ -71,12 +80,18 @@ const AISLE_PAYLOAD = shelves.map((shelf) => ({
     form: p.form,
     size: p.size,
     price: p.price,
+    aisle: p.category,
     // Only ever set on the one product per aisle that is on the ad, so the
     // model cannot decide anything else is a deal.
     deal: specialPriceFor(p.id) ?? undefined,
     diet: p.dietary?.length ? p.dietary : undefined
-  }))
-}));
+  }));
+}
+
+function uniqueById(products: DemoProduct[]): DemoProduct[] {
+  const seen = new Set<string>();
+  return products.filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)));
+}
 
 type Spoken = { role: "user" | "assistant"; content: string };
 
@@ -121,7 +136,18 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       signal: controller.signal,
       body: JSON.stringify({
         said,
-        aisles: AISLE_PAYLOAD,
+        // The aisle index is cheap and constant. The shortlist is what this
+        // sentence could be about, plus everything already in play, so "the
+        // other one" and "take the cheddar out" still have something to mean.
+        index: aisleIndex(),
+        choices: payload(
+          uniqueById([
+            ...findProducts(said, context.current, 12).products,
+            ...context.showing,
+            ...context.cart,
+            ...context.onList
+          ])
+        ),
         showing: context.showing.map((p) => p.id),
         cart: context.cart.map((p) => p.id),
         asked: context.onList.map((p) => p.id),
