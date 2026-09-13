@@ -5,7 +5,7 @@ import { packshotSource } from "@/lib/dierbergs-packshot";
 import { speak, voiceReport } from "@/lib/dierbergs-speech";
 import { money, spendReport } from "@/lib/dierbergs-spend";
 import { budgetNow } from "@/lib/dierbergs-budget";
-import { liftFrom } from "@/lib/dierbergs-lift";
+import { ledgerFrom, type SuggestedUnit } from "@/lib/dierbergs-trade";
 import {
   NEURAL_VOICES,
   getNeuralVoice,
@@ -26,7 +26,7 @@ type Props = {
   /** What is in the cart, which is what buys the spoken minutes. */
   cartCents?: number;
   /** What went in because Axon offered it, rather than being asked for. */
-  suggested?: { items: number; cents: number };
+  suggested?: SuggestedUnit[];
 };
 
 // A readout rather than a feature: this demo is driven on machines we cannot
@@ -39,13 +39,14 @@ export default function DemoDiagnostics({
   lastError,
   engine,
   cartCents = 0,
-  suggested = { items: 0, cents: 0 }
+  suggested = []
 }: Props) {
   const [open, setOpen] = useState(false);
   const [report, setReport] = useState<ReturnType<typeof voiceReport> | null>(null);
   const [spend, setSpend] = useState(spendReport());
   const [budget, setBudget] = useState(budgetNow(0));
-  const lift = liftFrom(suggested.cents, suggested.items, spend.dollars);
+  const suggestedCents = suggested.reduce((sum, u) => sum + u.cents, 0);
+  const ledger = ledgerFrom(suggested, spend.dollars);
   const [key, setKey] = useState("");
   const [voice, setVoice] = useState<NeuralVoice>(NEURAL_VOICES[0]);
   const [saved, setSaved] = useState(false);
@@ -145,17 +146,28 @@ export default function DemoDiagnostics({
                   </dd>
                 </div>
                 {/* The other side of the ledger: what the talking put in the
-                    basket that a search box would not have. */}
+                    basket that a search box would not have, and who ends up
+                    paying for the talking. */}
                 <div>
                   <dt>Axon suggested</dt>
                   <dd>
-                    {suggested.items > 0
-                      ? `${suggested.items} ${suggested.items === 1 ? "item" : "items"}, $${(
-                          suggested.cents / 100
-                        ).toFixed(2)} — ${money(lift.profit)} margin against ${money(lift.spent)} spent`
+                    {ledger.units > 0
+                      ? `${ledger.units} ${ledger.units === 1 ? "item" : "items"}, $${(
+                          suggestedCents / 100
+                        ).toFixed(2)} — ${money(ledger.storeMargin)} margin`
                       : "nothing yet"}
                   </dd>
                 </div>
+                {ledger.units > 0 ? (
+                  <div>
+                    <dt>who pays</dt>
+                    <dd>
+                      brands {money(ledger.brandOwes)} of {money(ledger.voiceCost)}
+                      {ledger.coversIt ? " — store pays nothing" : ` — store ${money(Math.max(0, ledger.voiceCost - ledger.brandOwes))}`}
+                      {`, up ${money(ledger.storeNet)} overall`}
+                    </dd>
+                  </div>
+                ) : null}
               </>
             ) : null}
             <div><dt>state</dt><dd>{state}</dd></div>

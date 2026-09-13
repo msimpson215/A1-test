@@ -26,6 +26,7 @@ import {
 import { prefetchNeural } from "@/lib/dierbergs-neural-voice";
 import { budgetNow } from "@/lib/dierbergs-budget";
 import { money } from "@/lib/dierbergs-spend";
+import type { SuggestedUnit } from "@/lib/dierbergs-trade";
 import DierbergsStaticBackground from "./DierbergsStaticBackground";
 import AxonNavControl from "./AxonNavControl";
 import AxonInteractionStrip from "./AxonInteractionStrip";
@@ -187,10 +188,13 @@ export default function DierbergsDemo() {
   /** The server answered with no key of its own, which is a fixable thing. */
   const noKey = useRef(false);
   const [liveOn, setLiveOn] = useState(false);
-  // What went in because Axon offered it. A ref alongside the state because two
-  // adds can land faster than a render, same as the cart.
-  const suggestedRef = useRef({ items: 0, cents: 0 });
-  const [suggested, setSuggested] = useState({ items: 0, cents: 0 });
+  /*
+   * What went in because Axon offered it, with the brand kept, because the brand
+   * is who gets invoiced for the referral. A ref alongside the state because two
+   * adds can land faster than a render, same as the cart.
+   */
+  const suggestedRef = useRef<SuggestedUnit[]>([]);
+  const [suggested, setSuggested] = useState<SuggestedUnit[]>([]);
   const [engine, setEngine] = useState<"off" | "realtime" | "browser">("off");
 
   const browserHint = () =>
@@ -484,10 +488,11 @@ export default function DierbergsDemo() {
        * in the basket that a search box would not have.
        */
       if (suggested) {
-        suggestedRef.current = {
-          items: suggestedRef.current.items + many,
-          cents: suggestedRef.current.cents + payCents(product) * many
-        };
+        const units = Array.from({ length: many }, () => ({
+          brand: product.brand,
+          cents: payCents(product)
+        }));
+        suggestedRef.current = [...suggestedRef.current, ...units];
         setSuggested(suggestedRef.current);
       }
 
@@ -806,8 +811,8 @@ export default function DierbergsDemo() {
     spokenRecently.current = [];
     setCart([]);
     cartNow.current = [];
-    suggestedRef.current = { items: 0, cents: 0 };
-    setSuggested({ items: 0, cents: 0 });
+    suggestedRef.current = [];
+    setSuggested([]);
     setPulse(false);
     setSelectedId(null);
     setFlight(null);

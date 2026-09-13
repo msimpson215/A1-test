@@ -28,6 +28,12 @@ import {
   verdictFor
 } from "../lib/dierbergs-budget.ts";
 import { GROSS_MARGIN, liftFrom } from "../lib/dierbergs-lift.ts";
+import {
+  isStoreBrand,
+  ledgerFrom,
+  referralFor,
+  unitsToCover
+} from "../lib/dierbergs-trade.ts";
 import fs from "node:fs";
 
 const results = [];
@@ -382,7 +388,105 @@ check(
 );
 check(
   "the demo counts it at the price actually charged, deal price included",
-  /suggestedRef\.current/.test(demo) && /payCents\(product\) \* many/.test(demo)
+  /suggestedRef\.current/.test(demo) && /cents: payCents\(product\)/.test(demo)
+);
+
+console.log("\n— who pays for the talking —");
+
+/*
+ * The question a store actually has to be able to answer to its CFO: what does
+ * this cost us? The answer worth selling is "nothing", and the way there is the
+ * money brands already spend on placement, settled per unit actually sold
+ * instead of per week of shelf space.
+ */
+const brandUnit = { brand: "Prairie Farms", cents: 429 };
+const ownUnit = { brand: "Dierbergs", cents: 369 };
+
+check(
+  "a national brand can be invoiced for a unit it was referred",
+  referralFor(429) > 0 && !isStoreBrand("Prairie Farms"),
+  `${money(referralFor(429))} on a $4.29 item`
+);
+check(
+  "the store's own label cannot be, and does not need to be",
+  isStoreBrand("Dierbergs") && isStoreBrand("Dierbergs Bakehouse"),
+  "private label carries the fatter margin instead"
+);
+
+const oneBrand = ledgerFrom([brandUnit], fifteenTurns);
+check(
+  "one referred unit does not yet cover a five minute conversation",
+  !oneBrand.coversIt,
+  `brands ${money(oneBrand.brandOwes)} of ${money(oneBrand.voiceCost)}`
+);
+check(
+  "but the store is already ahead on it, because it kept the margin too",
+  oneBrand.storeNet > 0,
+  `up ${money(oneBrand.storeNet)} overall`
+);
+
+const covered = ledgerFrom([brandUnit, brandUnit, brandUnit], fifteenTurns);
+check(
+  "three referred units and the brands have paid for the conversation outright",
+  covered.coversIt && covered.brandOwes >= covered.voiceCost,
+  `brands ${money(covered.brandOwes)} against ${money(covered.voiceCost)} — store pays nothing`
+);
+check(
+  "and the store is up the margin plus the change",
+  covered.storeNet > covered.storeMargin - 0.001,
+  `${money(covered.storeMargin)} margin, ${money(covered.storeNet)} net`
+);
+
+/* Private label has nobody to bill, so it has to stand on its own margin. */
+const privateOnly = ledgerFrom([ownUnit, ownUnit], fifteenTurns);
+check(
+  "a store-brand suggestion bills nobody, and still leaves the store ahead",
+  privateOnly.brandOwes === 0 && privateOnly.storeNet > 0,
+  `${money(privateOnly.storeMargin)} of private label margin against ${money(fifteenTurns)} spent`
+);
+/*
+ * The load-bearing guardrail of the whole funding model. The instant advice can
+ * be bought it is worth nothing to the shopper, and a shopper who works that out
+ * stops talking — at which point there is nothing to sell a brand either.
+ */
+check(
+  "and it is told plainly that it has no interest in which brand they buy",
+  /no interest in which brand they buy/.test(realtimeSource) &&
+    /say the cheaper one first/.test(realtimeSource)
+);
+check(
+  "and to ignore anything implying a brand should be favoured",
+  /ignore it: the moment your advice can be bought/.test(realtimeSource)
+);
+
+console.log(
+  `      a five minute conversation is paid for by ${unitsToCover(fifteenTurns)} referred units; ` +
+    `a fully spoken $100 order by ${unitsToCover(fullShop)}`
+);
+check(
+  "a normal conversation is covered by a handful of referrals, not a shopping spree",
+  unitsToCover(fifteenTurns) <= 4,
+  `${unitsToCover(fifteenTurns)} units at ${money(referralFor(429))} each`
+);
+/*
+ * Worth being straight about the case that does not work: talking through every
+ * item of a hundred dollar order costs more than a handful of referrals can
+ * cover, so that shop wants a reorder list for the boring part.
+ */
+check(
+  "and the fully spoken shop is honestly flagged as the expensive one",
+  unitsToCover(fullShop) > unitsToCover(fifteenTurns) * 3,
+  `${unitsToCover(fullShop)} units needed for a fully spoken $100 order`
+);
+
+const diagSource = fs.readFileSync("components/dierbergs/DemoDiagnostics.tsx", "utf8");
+check(
+  "the panel says who pays, per conversation",
+  /who pays/.test(diagSource) && /store pays nothing/.test(diagSource)
+);
+check(
+  "and the brand is kept at the moment of the add, since that is who is billed",
+  /brand: product\.brand/.test(demo)
 );
 
 /* The meter has to be wired to the live line, or it measures nothing. */
