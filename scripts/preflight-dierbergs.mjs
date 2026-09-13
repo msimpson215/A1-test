@@ -108,8 +108,13 @@ const type = async (q) => {
       break;
     }
   }
-  // The words come first and the shelf follows a beat later.
-  await wait(1200);
+  /*
+   * The words come first and the screen follows. The shelf backstop waits to
+   * see whether Axon moves the shelf itself before stepping in, so anything
+   * shorter than that check-and-fill reads the screen mid-thought and fails on
+   * a bug that is not there.
+   */
+  await wait(3600);
   replies.push({ said: q, took });
 };
 

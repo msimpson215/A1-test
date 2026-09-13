@@ -111,6 +111,8 @@ export default function DierbergsDemo() {
   // What is on the shelf right now. `shelfItems` is the narrowed-down set, so
   // a follow-up like "the jumbo ones" has something to refer back to.
   const [shelfItems, setShelfItems] = useState<DemoProduct[]>([]);
+  /** What is on the shelf this instant, for checks that run off a timer. */
+  const shelfNow = useRef<DemoProduct[]>([]);
   // What the shopper has asked for so far. This is what lets "the cheese" mean
   // something when four cheddars are on screen: it is the one already on their
   // list, not a guess between the four.
@@ -169,6 +171,10 @@ export default function DierbergsDemo() {
   useEffect(() => {
     viewNow.current = view;
   }, [view]);
+
+  useEffect(() => {
+    shelfNow.current = shelfItems;
+  }, [shelfItems]);
 
   // Depth-counted so a nested say() cannot drop the guard early. Whenever this
   // is above zero the microphone stays shut, which is what stops the shopper
@@ -478,9 +484,16 @@ export default function DierbergsDemo() {
     const standing = viewNow.current === "staples" ? null : viewNow.current;
     const advice = dietaryAdvice(heard, standing);
     if (!advice) return;
-    const shelfThen = viewNow.current;
+    const wanted = advice.products.map((p) => p.id);
     window.setTimeout(() => {
-      if (viewNow.current !== shelfThen) return;
+      /*
+       * Whether the right cartons are up, not merely whether the aisle
+       * changed. Axon has been known to move to the milk and then show the
+       * carton already in the cart, which is the wrong shelf in the right
+       * aisle.
+       */
+      const up = shelfNow.current.map((p) => p.id);
+      if (wanted.every((id) => up.includes(id))) return;
       setView(advice.aisle);
       setShelfItems(advice.products);
       setRequested((was) => dedupe([...was, ...advice.products]));

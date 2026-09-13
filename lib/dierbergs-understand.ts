@@ -180,7 +180,12 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
      */
     let aisle: Turn["aisle"] = body.aisle ?? null;
     const advice = dietaryAdvice(said, context.current);
-    if (advice && (products.length === 0 || aisle !== advice.aisle)) {
+    /*
+     * Only when the model is showing or talking. If it decided to put
+     * something in the cart, that came from the shopper and is none of this
+     * code's business.
+     */
+    if (advice && (body.action === "show" || body.action === "chat")) {
       products = advice.products;
       aisle = advice.aisle;
     }
