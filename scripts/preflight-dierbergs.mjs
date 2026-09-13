@@ -150,16 +150,27 @@ check(
 );
 check("and the gallon is charged at the ad price, not the shelf price", /3\.49/.test(await cart()), await cart());
 
+/*
+ * The third turn of mind on one carton. Axon is allowed either to swap again
+ * or to stop and ask which they actually want — being talked in circles is a
+ * thing it is meant to push back on. What it must never do is end up holding
+ * both cartons.
+ */
 await type("actually I wanted the half gallon after all");
+const afterThird = await cart();
 check(
-  "changing back again still leaves exactly one carton",
-  /1 item \$2\.69/.test(await cart()),
-  await cart()
+  "a third change of mind either swaps or asks, but never leaves two cartons",
+  /^1 item \$(2\.69|3\.49)$/.test(afterThird),
+  afterThird
 );
 
 // ── Two of something, which used to be impossible ───────────────────────────
 await type("make it two half gallons");
-check("it can be talked into two of the same thing", /2 items/.test(await cart()), await cart());
+check(
+  "it can be talked into two of the same thing",
+  /2 items \$5\.38/.test(await cart()),
+  await cart()
+);
 
 // ── The ad ─────────────────────────────────────────────────────────────────
 await type("is there a special on eggs");

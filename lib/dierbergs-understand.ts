@@ -164,9 +164,26 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
     if (!response.ok) throw new Error(`understand ${response.status}`);
     const body = await response.json();
 
-    const products = (body.products as string[])
+    let products = (body.products as string[])
       .map((id) => everyProduct.get(id))
       .filter((p): p is DemoProduct => Boolean(p));
+
+    /*
+     * The shelf has to follow the words.
+     *
+     * Told "I'm lactose intolerant", the model reliably says the right thing
+     * and then, often enough to matter, forgets to change the screen — so the
+     * shopper hears about four cartons of milk while looking at a box of eggs.
+     * This does not argue with the model, which is what made the old size
+     * guardrail so infuriating; it only fills in the shelf the model's own
+     * answer was about.
+     */
+    let aisle: Turn["aisle"] = body.aisle ?? null;
+    const advice = dietaryAdvice(said, context.current);
+    if (advice && (products.length === 0 || aisle !== advice.aisle)) {
+      products = advice.products;
+      aisle = advice.aisle;
+    }
 
     const outgoing = body.remove ? everyProduct.get(String(body.remove)) : undefined;
 
@@ -191,7 +208,7 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
 
     return {
       action,
-      aisle: body.aisle ?? null,
+      aisle,
       products,
       outgoing,
       quantity,

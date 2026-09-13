@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { findProducts, payCents, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
+import { dietaryAdvice, findProducts, payCents, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
 import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
@@ -93,6 +93,8 @@ const NO_KEY_HINT =
 export default function DierbergsDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
   const [view, setView] = useState<MerchView>(null);
+  /** The aisle on screen this instant, for checks that run off a timer. */
+  const viewNow = useRef<MerchView>(null);
   const [query, setQuery] = useState("");
   const [prompt, setPrompt] = useState(WELCOME);
   const [hint, setHint] = useState(SUBLINE);
@@ -163,6 +165,10 @@ export default function DierbergsDemo() {
       window.sessionStorage.setItem(CART_KEY, JSON.stringify(cart.map((p) => p.id)));
     } catch { /* private browsing, or a full quota: the cart still works */ }
   }, [cart]);
+
+  useEffect(() => {
+    viewNow.current = view;
+  }, [view]);
 
   // Depth-counted so a nested say() cannot drop the guard early. Whenever this
   // is above zero the microphone stays shut, which is what stops the shopper
@@ -454,6 +460,35 @@ export default function DierbergsDemo() {
    * hundred items or forty thousand. What comes back is what is now on the
    * shelf, so the conversation and the screen cannot disagree.
    */
+  /*
+   * Puts the right aisle up when someone mentions what they cannot eat.
+   *
+   * Axon is told to show whatever it names, and mostly does. When it does not,
+   * the shopper hears a good answer about milk while looking at a box of eggs,
+   * which reads as broken however right the words were. So this waits to see
+   * whether Axon changes the shelf itself, and only steps in if it has not.
+   *
+   * It never contradicts Axon and never touches the cart — it fills a screen
+   * Axon left behind. That is the difference between this and the old size
+   * guardrail, which overrode what the shopper had actually asked for.
+   */
+  const dietaryShelfBackstop = useCallback((heard: string) => {
+    // "staples" is the opening spread rather than a real aisle, so it counts as
+    // standing nowhere in particular.
+    const standing = viewNow.current === "staples" ? null : viewNow.current;
+    const advice = dietaryAdvice(heard, standing);
+    if (!advice) return;
+    const shelfThen = viewNow.current;
+    window.setTimeout(() => {
+      if (viewNow.current !== shelfThen) return;
+      setView(advice.aisle);
+      setShelfItems(advice.products);
+      setRequested((was) => dedupe([...was, ...advice.products]));
+      setMerchHeading(shelfById(advice.aisle)?.heading ?? "Here you are.");
+      setHint(advice.hint);
+    }, 2600);
+  }, []);
+
   const findForModel = useCallback((query: string, aisle?: string): string => {
     const { products, aisle: found } = findProducts(query, (aisle as ShelfId) || null);
     if (!products.length) {
@@ -583,6 +618,7 @@ export default function DierbergsDemo() {
           onHeard: (text) => {
             log("heard (live)", text);
             setLastHeard(text);
+            dietaryShelfBackstop(text);
           },
           onSaid: (text) => {
             setPrompt(text);
