@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { packshotSource } from "@/lib/dierbergs-packshot";
 import { speak, voiceReport } from "@/lib/dierbergs-speech";
 import { money, spendReport } from "@/lib/dierbergs-spend";
+import { budgetNow } from "@/lib/dierbergs-budget";
 import {
   NEURAL_VOICES,
   getNeuralVoice,
@@ -21,15 +22,25 @@ type Props = {
   lastHeard: string;
   lastError: string;
   engine?: string;
+  /** What is in the cart, which is what buys the spoken minutes. */
+  cartCents?: number;
 };
 
 // A readout rather than a feature: this demo is driven on machines we cannot
 // attach a debugger to, and one screenshot of this panel says which build is
 // loaded, which browser, and what the voice actually did.
-export default function DemoDiagnostics({ build, state, lastHeard, lastError, engine }: Props) {
+export default function DemoDiagnostics({
+  build,
+  state,
+  lastHeard,
+  lastError,
+  engine,
+  cartCents = 0
+}: Props) {
   const [open, setOpen] = useState(false);
   const [report, setReport] = useState<ReturnType<typeof voiceReport> | null>(null);
   const [spend, setSpend] = useState(spendReport());
+  const [budget, setBudget] = useState(budgetNow(0));
   const [key, setKey] = useState("");
   const [voice, setVoice] = useState<NeuralVoice>(NEURAL_VOICES[0]);
   const [saved, setSaved] = useState(false);
@@ -43,11 +54,12 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError, en
     const tick = () => {
       setReport(voiceReport());
       setSpend(spendReport());
+      setBudget(budgetNow(cartCents));
     };
     tick();
     const id = window.setInterval(tick, 1500);
     return () => window.clearInterval(id);
-  }, []);
+  }, [cartCents]);
 
   function save() {
     setVoiceKey(key);
@@ -116,6 +128,15 @@ export default function DemoDiagnostics({ build, state, lastHeard, lastError, en
                   <dt>cost so far</dt>
                   <dd>
                     {money(spend.dollars)} — {money(spend.dollars / spend.turns)} a turn
+                  </dd>
+                </div>
+                {/* What the basket has earned in spoken minutes, and what is
+                    left of it before the conversation moves to typing. */}
+                <div>
+                  <dt>voice allowance</dt>
+                  <dd>
+                    {money(budget.left)} left of {money(budget.allowance)}
+                    {budget.verdict === "spent" ? " — spent" : budget.verdict === "warn" ? " — running low" : ""}
                   </dd>
                 </div>
               </>

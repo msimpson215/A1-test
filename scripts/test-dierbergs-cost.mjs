@@ -20,6 +20,13 @@ import {
   resetSpend,
   spendReport
 } from "../lib/dierbergs-spend.ts";
+import {
+  BASE_ALLOWANCE,
+  CEILING,
+  allowanceFor,
+  leftFor,
+  verdictFor
+} from "../lib/dierbergs-budget.ts";
 import fs from "node:fs";
 
 const results = [];
@@ -135,20 +142,55 @@ check("sub-cent amounts are shown, not rounded to nothing", money(0.0031) === "$
 resetSpend();
 const TURNS = 15;
 /*
- * A turn re-sends the whole conversation, but everything already sent is
- * cached at a tenth of the rate, so what is charged in full is only the new
- * words: this turn's search result and its sentence. That is why the standing
- * instructions and the aisle index are paid for roughly once per session
- * rather than once per turn.
+ * A turn re-sends the whole conversation. Everything already sent is cached at
+ * a tenth of the rate, so what is charged in full is only what is new: their
+ * sentence, and the search result the answer is built from. The standing
+ * instructions and the aisle index are therefore paid for about once per
+ * session rather than once per turn.
+ *
+ * The detail lines are totals by modality with the cached part called out
+ * inside them, which is how the API reports it, so the history has to appear in
+ * both places or the arithmetic double counts.
  */
-const turn = (i) => ({
-  input_token_details: {
-    text_tokens: 250,
-    audio_tokens: 500,
-    cached_tokens: 1400 + i * 400
-  },
-  output_token_details: { text_tokens: 30, audio_tokens: 450 }
-});
+const FRESH_TEXT = 250; // the search result this turn's answer came from
+const FRESH_AUDIO = 500; // roughly ten seconds of someone talking
+const SAID_BACK = 450; // roughly nine seconds of answer
+const HISTORY_TEXT = 280; // what a turn leaves behind in words
+const HISTORY_AUDIO = FRESH_AUDIO + SAID_BACK; // and in voice
+const OPENING = 1350; // instructions plus the aisle index, cached after turn one
+
+const turn = (i) => {
+  const cachedText = OPENING + i * HISTORY_TEXT;
+  const cachedAudio = i * HISTORY_AUDIO;
+  return {
+    input_tokens: FRESH_TEXT + cachedText + FRESH_AUDIO + cachedAudio,
+    output_tokens: 30 + SAID_BACK,
+    input_token_details: {
+      text_tokens: FRESH_TEXT + cachedText,
+      audio_tokens: FRESH_AUDIO + cachedAudio,
+      cached_tokens: cachedText + cachedAudio,
+      cached_tokens_details: { text_tokens: cachedText, audio_tokens: cachedAudio }
+    },
+    output_token_details: { text_tokens: 30, audio_tokens: SAID_BACK }
+  };
+};
+
+/** The same conversation priced without touching the running meter. */
+const convoCost = (turns) => {
+  let total = 0;
+  for (let i = 0; i < turns; i += 1) {
+    const u = turn(i);
+    total += dollarsFor({
+      textIn: FRESH_TEXT,
+      audioIn: FRESH_AUDIO,
+      cachedIn: u.input_token_details.cached_tokens,
+      textOut: 30,
+      audioOut: SAID_BACK
+    });
+  }
+  return total;
+};
+
 for (let i = 0; i < TURNS; i += 1) recordUsage(turn(i));
 now = spendReport();
 console.log(
@@ -199,6 +241,69 @@ check(
     for (let i = 0; i < TURNS * 2; i += 1) recordUsage(turn(i));
     return spendReport().dollars > one;
   })()
+);
+
+console.log("\n— the basket buys the talking —");
+
+/*
+ * The two cases that decide whether this is sellable: someone with twenty
+ * dollars in the cart talking for ten minutes is a cost, and someone with three
+ * hundred talking for twenty is a customer. The allowance has to tell them
+ * apart on its own.
+ */
+check(
+  "an empty cart gets a short leash",
+  allowanceFor(0) === BASE_ALLOWANCE,
+  `${money(allowanceFor(0))} before anything is in the cart`
+);
+check(
+  "a bigger basket earns more talking",
+  allowanceFor(2000) < allowanceFor(10000) && allowanceFor(10000) < allowanceFor(30000),
+  `$20 -> ${money(allowanceFor(2000))}, $100 -> ${money(allowanceFor(10000))}, $300 -> ${money(allowanceFor(30000))}`
+);
+check(
+  "and no basket buys an unlimited session",
+  allowanceFor(10_000_00) === CEILING,
+  `capped at ${money(CEILING)}`
+);
+
+/* Ten minutes of talking is roughly thirty turns on the model above. */
+const tenMinutes = convoCost(30);
+const twentyMinutes = convoCost(60);
+check(
+  "$20 in the cart and ten minutes of talking: moved to typing",
+  verdictFor(tenMinutes, 2000) === "spent",
+  `${money(tenMinutes)} spent against ${money(allowanceFor(2000))} earned`
+);
+check(
+  "$300 in the cart and twenty minutes of talking: carry on",
+  verdictFor(twentyMinutes, 30000) === "fine",
+  `${money(twentyMinutes)} spent against ${money(allowanceFor(30000))} earned`
+);
+check(
+  "a warning comes before the switch, not with it",
+  verdictFor(allowanceFor(10000) * 0.8, 10000) === "warn" &&
+    verdictFor(allowanceFor(10000) * 0.5, 10000) === "fine"
+);
+check(
+  "putting something in the cart mid-conversation buys more time",
+  verdictFor(tenMinutes, 2000) === "spent" && verdictFor(tenMinutes, 12000) === "fine",
+  `same ${money(tenMinutes)} spent: spent at $20 in the cart, fine at $120`
+);
+check(
+  "and the store's exposure per conversation is a number, not a hope",
+  leftFor(CEILING, 10_000_00) === 0 && allowanceFor(30000) <= CEILING,
+  `worst case ${money(CEILING)} a session`
+);
+
+const demo = fs.readFileSync("components/dierbergs/DierbergsDemo.tsx", "utf8");
+check(
+  "the live line is actually governed by it",
+  /budgetNow\(/.test(demo) && /verdict !== "spent"/.test(demo)
+);
+check(
+  "and running out moves to typing rather than hanging up",
+  /Let's carry on in writing/.test(demo) && /setVoiceMode\(false\)/.test(demo)
 );
 
 /* The meter has to be wired to the live line, or it measures nothing. */

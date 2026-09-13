@@ -24,6 +24,8 @@ import {
   stopListening
 } from "@/lib/dierbergs-speech";
 import { prefetchNeural } from "@/lib/dierbergs-neural-voice";
+import { budgetNow } from "@/lib/dierbergs-budget";
+import { money } from "@/lib/dierbergs-spend";
 import DierbergsStaticBackground from "./DierbergsStaticBackground";
 import AxonNavControl from "./AxonNavControl";
 import AxonInteractionStrip from "./AxonInteractionStrip";
@@ -588,6 +590,44 @@ export default function DierbergsDemo() {
     }
   }, []);
 
+  /*
+   * The voice line against what the basket has earned.
+   *
+   * Spoken minutes are the cost of this whole idea, so they are metered. A
+   * growing cart keeps raising the allowance, which means a real shopper is
+   * never cut off; a cart that stays empty while the talking goes on hits the
+   * base allowance and the conversation moves to typing, which costs nothing.
+   */
+  const warned = useRef(false);
+  useEffect(() => {
+    if (!liveOn) {
+      warned.current = false;
+      return;
+    }
+    const id = window.setInterval(() => {
+      const { verdict, left } = budgetNow(cartTotalCents);
+      if (verdict === "warn" && !warned.current) {
+        warned.current = true;
+        log("voice budget low", money(left));
+        setHint("We can keep talking a little longer \u2014 or type, which is quicker anyway.");
+        return;
+      }
+      if (verdict !== "spent") return;
+      log("voice budget spent", money(budgetNow(cartTotalCents).spent));
+      live.current?.close();
+      live.current = null;
+      setLiveOn(false);
+      setVoiceMode(false);
+      setEngine("browser");
+      setMood("resting");
+      setListening(false);
+      setPrompt("Let's carry on in writing \u2014 your cart is exactly as you left it.");
+      setHint("Type below. Add something and I can pick the conversation back up.");
+      inputRef.current?.focus();
+    }, 2000);
+    return () => window.clearInterval(id);
+  }, [liveOn, cartTotalCents]);
+
   // Held in a ref so a state change mid-sentence cannot tear down and restart
   // the recogniser, which would swallow whatever the shopper was saying.
   const utteranceHandler = useRef(handleUtterance);
@@ -847,6 +887,7 @@ export default function DierbergsDemo() {
       <DemoDiagnostics
         build={BUILD}
         engine={engine}
+        cartCents={cartTotalCents}
         state={listening ? "listening" : busy ? "thinking or speaking" : phase}
         lastHeard={lastHeard}
         lastError={lastError}
