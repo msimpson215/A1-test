@@ -98,38 +98,75 @@ console.log("\n— the site serves the code that is committed —");
  * and not the bundle deploys nothing, says nothing, and looks exactly like a
  * fix that did not work.
  */
-const built = ["demo-static", "public/dierbergs-demo", "public/_next"];
-const sources = ["lib", "components", "data", "app"];
+/*
+ * Comparing files is no good here: the bundler stamps a fresh build id into the
+ * paths every time, so a rebuild always looks like a change even when nothing
+ * moved. What matters is not whether the files are identical but whether the
+ * rules Axon is meant to follow are actually inside the bundle that is
+ * committed — because that bundle, and not the source beside it, is what the
+ * browser downloads.
+ */
+const committedBundle = (() => {
+  const listing = execSync(
+    "git ls-tree -r --name-only HEAD -- demo-static/_next/static/chunks/app/dierbergs-demo",
+    { encoding: "utf8" }
+  )
+    .trim()
+    .split("\n")
+    .filter((f) => f.includes("/page-"));
+  if (!listing.length) return { file: null, text: "" };
+  const file = listing[listing.length - 1];
+  return { file, text: execSync(`git show HEAD:${file}`, { encoding: "utf8", maxBuffer: 64e6 }) };
+})();
 
-execSync("bash scripts/build-demo-static.sh", { stdio: "ignore" });
-const bundleDrift = execSync(`git status --porcelain -- ${built.join(" ")}`, { encoding: "utf8" }).trim();
-const sourceDrift = execSync(`git status --porcelain -- ${sources.join(" ")}`, { encoding: "utf8" }).trim();
+check(
+  "there is a committed bundle for the site to serve",
+  Boolean(committedBundle.file),
+  committedBundle.file ?? "none found in HEAD"
+);
 
 /*
- * Mid-edit, an out-of-date bundle is normal and means nothing. The failure
- * worth catching is a *commit* that changed the source and not the bundle: the
- * source is clean, the rebuild moves, and therefore what is committed cannot
- * be what the site serves.
+ * Taken from the rules as they read right now, not from a phrase written into
+ * this file. A hardcoded phrase is the version of this check that cannot fail:
+ * it goes on matching the old wording in the old bundle while the rule itself
+ * changes underneath, which is precisely the state it exists to catch.
+ *
+ * Quotes are avoided because the bundler re-escapes them.
  */
-if (sourceDrift) {
-  console.log("SKIP  bundle freshness — source is mid-edit, so nothing to compare against yet");
-} else {
-  check(
-    "what is committed is what the site serves",
-    bundleDrift === "",
-    bundleDrift
-      ? `${bundleDrift.split("\n").length} bundle files move on a rebuild, so the last commit shipped source without it`
-      : ""
-  );
-}
+const currentWording = (text) =>
+  text
+    .split(/(?<=\.)\s+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 30 && !/["'\u2019]/.test(sentence))
+    .sort((a, b) => b.length - a.length)[0];
 
-// A rule reaching the shipped bundle is the only proof the shopper hears it.
-const chunkDir = "demo-static/_next/static/chunks/app/dierbergs-demo";
-const chunk = fs.readdirSync(chunkDir).find((f) => f.startsWith("page-"));
-const shipped = fs.readFileSync(`${chunkDir}/${chunk}`, "utf8");
-for (const [name, phrase] of Object.entries(fingerprints)) {
-  // Phrases without quotes or apostrophes, which the bundler re-escapes.
-  check(`"${name}" reaches the shipped bundle`, shipped.includes(phrase), chunk);
+const everyRuleWording = Object.fromEntries(
+  named.map((name) => [name, currentWording(rules[name])]).filter(([, phrase]) => phrase)
+);
+
+check(
+  "each rule has a phrase distinctive enough to look for",
+  Object.keys(everyRuleWording).length >= 6,
+  `${Object.keys(everyRuleWording).length} of ${named.length}`
+);
+
+/*
+ * Only meaningful once everything is committed. Mid-edit the bundle is
+ * expected to lag, and that says nothing. The failure worth shouting about is
+ * a clean tree whose committed bundle predates its committed rules — a fix
+ * that was written, committed, and never actually shipped.
+ */
+const treeIsClean = execSync("git status --porcelain", { encoding: "utf8" }).trim() === "";
+if (!treeIsClean) {
+  console.log("SKIP  the committed bundle — still mid-edit, so it is expected to lag");
+} else {
+  for (const [name, phrase] of Object.entries(everyRuleWording)) {
+    check(
+      `"${name}" reached the bundle, and not only the source`,
+      committedBundle.text.includes(phrase),
+      committedBundle.text.includes(phrase) ? "" : "committed without rebuilding the bundle"
+    );
+  }
 }
 
 const failed = results.filter((r) => !r).length;
