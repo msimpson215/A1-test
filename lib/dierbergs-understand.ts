@@ -20,7 +20,7 @@ import {
 } from "@/data/dierbergs-catalogue";
 import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { countSaid, normalizeUtterance, parseRequest } from "./dierbergs-demo-intents";
+import { countSaid, parseRequest } from "./dierbergs-demo-intents";
 
 /**
  * What the shopper's words came to.
@@ -59,89 +59,15 @@ export type TurnContext = {
 const ENDPOINT = process.env.NEXT_PUBLIC_UNDERSTAND_ENDPOINT || "/api/understand";
 
 /*
- * How long to wait depends on what waiting costs.
+ * One number, because there is only one thing worth waiting for.
  *
- * Six seconds is right when the parser underneath has a real answer: giving up
- * early costs a little polish and nothing else. It is wrong for a question the
- * parser cannot answer at all, because then giving up does not fall back — it
- * changes the subject. Asked why organic milk costs more, a timeout replied
- * "Want to save money? Gallon or half gallon?", which is not a slower answer to
- * the question but a confident answer to a different one, and that is the kind
- * of reply someone repeats afterwards.
+ * This used to be two, and choosing between them meant asking a parser whether
+ * it had a good enough answer to be worth cutting the model off for. There is
+ * no such answer. Nothing here is allowed to reply in the model's place, so the
+ * only question left is how long a person will sit still, and twenty seconds is
+ * longer than anybody waits before saying something again.
  */
-/*
- * Both of these were far too short. Six seconds looked like a kindness and was
- * not: a shopper mid-conversation kept getting the parser's aisle line instead
- * of the answer, so a rambling sentence got "Which one would you like?" and
- * whatever the model was about to say was thrown away a moment before it
- * arrived. Waiting reads as slow. Being answered by the wrong thing reads as
- * broken, and the shopper cannot tell it happened.
- */
-const TIMEOUT_MS = 12000;
-const TIMEOUT_NOTHING_TO_FALL_BACK_ON_MS = 20000;
-
-/*
- * Whether there is anything to fall back on, asked of the fallback itself.
- *
- * The first version of this was a list of question shapes — why, how long,
- * what's the difference — and "what colour is milk" was not on it, which is the
- * whole problem with lists like that: they are never finished, and the hole is
- * always the sentence nobody thought of. So ask the parser instead. When all it
- * can offer is the line it opens an aisle with, it did not understand the
- * sentence, whatever shape the sentence was.
- */
-const AISLE_OPENINGS = new Set(shelves.map((shelf) => shelf.ask));
-
-/*
- * Asking for a thing, as opposed to asking about it. This is a list, and lists
- * are what went wrong above — but the two are not the same kind of list. There
- * are only so many ways to ask for a product, and the parser has needed all of
- * them since the first day; there is no end to the things a person can ask
- * about one. So the list of requests is closed and safe to write down, and the
- * questions are whatever is left over.
- */
-const REQUESTING =
-  /\b(i need|i want|id like|i would like|ill take|ill have|ill get|give me|show me|do you have|do you sell|do you carry|got any|looking for|wheres|where is|add|put|get me|take me)\b/;
-
-/*
- * An aisle opening answers "I need milk" well and "what colour is milk" not at
- * all, and the difference is not in the fallback — it is in whether they asked
- * for something or asked about it.
- */
-/* Filler, and the names of the aisles themselves. Take these out of "some milk
-   please" and nothing is left, which is how you know it asked for nothing more
-   than the aisle. */
-const JUST_THE_AISLE = new RegExp(
-  `\\b(${shelves.map((shelf) => shelf.id).join("|")}|dairy|a|an|the|some|any|please|of|and|i|id|like|need|want)\\b`,
-  "g"
-);
-
-function nothingToFallBackOn(said: string, fallback: Turn): boolean {
-  if (fallback.action === "add") return false;
-  // The same line with "Happy to." in front of it is the same line: a sentence
-  // that reads as a request gets the prefix, and "I didn't ask which cheese I
-  // want" reads as one.
-  if (!AISLE_OPENINGS.has(fallback.say.replace(/^Happy to\. /, ""))) return false;
-
-  /*
-   * The opening line is not proof it understood nothing. "The 2% please" and
-   * "skim milk" both come back with the opening sentence and the right cartons
-   * narrowed onto the shelf, and calling that a miss threw a good answer away.
-   * What settles it is the shelf: if it holds no more than the aisle would show
-   * to somebody who only said the aisle's name, the sentence taught it nothing.
-   */
-  const shelf = shelves.find((candidate) => candidate.id === fallback.aisle) ?? null;
-  if (shelf) {
-    const opening = narrowShelf(shelf, shelf.id).map((p) => p.id).join();
-    if (fallback.products.map((p) => p.id).join() !== opening) return false;
-  }
-
-  const text = normalizeUtterance(said);
-  if (REQUESTING.test(text)) return false;
-  // "Milk" is not a question, it is the aisle, and the opening line is the best
-  // answer there is to it.
-  return text.replace(JUST_THE_AISLE, "").trim().length > 0;
-}
+const TIMEOUT_MS = 20000;
 
 const everyProduct = new Map<string, DemoProduct>();
 for (const shelf of shelves) {
@@ -230,15 +156,9 @@ export function productById(id: string): DemoProduct | undefined {
  * safety net for a dropped connection, not the plan.
  */
 export async function understand(said: string, context: TurnContext): Promise<Turn> {
-  // Worked out before the call, and kept for the catch, so giving up costs
-  // nothing beyond the wait it already decided was worth it.
-  const fallback = locally(said, context);
   try {
     const controller = new AbortController();
-    const timer = setTimeout(
-      () => controller.abort(),
-      nothingToFallBackOn(said, fallback) ? TIMEOUT_NOTHING_TO_FALL_BACK_ON_MS : TIMEOUT_MS
-    );
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     const response = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -358,59 +278,50 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
     };
   } catch (why) {
     /*
-     * Without the model, this does not talk.
+     * Without GPT, this says one thing: that GPT is not there.
      *
-     * There is one brain here and it is GPT. What sat underneath it was a
+     * There is one brain and it is GPT. What used to sit underneath it was a
      * hand-written parser, and when the model could not be reached the parser
-     * answered in its place, in the assistant's voice, with no sign that
-     * anything had changed. That is where every embarrassing sentence came
-     * from: fourteen turns of aisle menus read out to somebody asking why
-     * cheese hardens; a food-safety question answered with "Want to save
-     * money?"; the demo reading out its own onboarding tutorial forty-seven
-     * turns into a conversation. None of that was the model. It was a pile of
-     * regular expressions doing an impression of one, and no amount of
-     * improving the impression makes it the right thing to have.
+     * answered in its place, in the same voice, with nothing on screen to say
+     * the brain had changed. Every embarrassing sentence came from there:
+     * aisle menus read out to somebody asking why cheese hardens, a food
+     * safety question answered with "Want to save money?", the onboarding
+     * tutorial recited forty turns into a conversation. None of it was the
+     * model. It was regular expressions doing an impression of one.
      *
-     * So the parser keeps the one job it is genuinely better at than nothing —
-     * putting the right products on the shelf when the words plainly name them
-     * — and loses the rest. It does not answer questions. It does not offer
-     * opinions. Above all it does not touch the cart: nothing is bought,
-     * swapped or taken out unless the model asked for it, which retires the
-     * whole class of faults where a complaint became an order.
+     * The impression is what has to go, not the quality of it. So nothing is
+     * shown, nothing is said beyond the failure itself, and above all nothing
+     * is bought: the cart cannot move unless GPT asked for it to.
      */
     modelMisses += 1;
 
     /*
      * The suites are the exception, and they are the only one.
      *
-     * Ten of them cut the network and drive the whole demo through the parser,
-     * which is how the cart, the shelves and the flying packshots get tested
-     * without a key or a bill. That is a fixture and it is a good one. What it
-     * must never be is what a shopper gets, so it is opt-in, off unless a test
-     * asks for it by name, and nothing in the product sets it.
+     * Ten of them cut the network and drive the demo through the parser, which
+     * is how the cart, the shelves and the flying packshots get tested without
+     * a key or a bill. That is a fixture and a good one. What it must never be
+     * is what a shopper gets, so it is opt-in, off unless a test names it, and
+     * nothing in the product sets it.
      */
     if (typeof window !== "undefined" && (window as { __parserAsBrain?: boolean }).__parserAsBrain) {
-      remember(said, fallback.say);
-      return fallback;
+      const fixture = locally(said, context);
+      remember(said, fixture.say);
+      return fixture;
     }
 
-    // The shelf, and only if the words actually named something on it.
-    const showing = nothingToFallBackOn(said, fallback) ? [] : fallback.products;
-
     const turn: Turn = {
-      action: showing.length ? "show" : "chat",
-      aisle: showing.length ? fallback.aisle : null,
-      products: showing,
+      action: "chat",
+      aisle: null,
+      products: [],
       outgoing: undefined,
       quantity: null,
-      say: /insufficient_quota|billing/i.test(String(why))
-        ? "The store's account for this has run out of credit, so I can't think at all until it's topped up."
+      say: /insufficient_quota|credit|billing|quota/i.test(String(why))
+        ? "I can't think at all right now \u2014 the store's OpenAI account is out of credit."
         : modelMisses >= 2
-          ? "I've still not got through \u2014 it's me, not the shelves. Give it a moment and ask me again."
-          : "Sorry \u2014 I can't reach the part of me that understands you just now.",
-      hint: showing.length
-        ? "That's what the name matches. I can't talk about it until I'm back."
-        : "Your cart is untouched. Nothing goes in or out while I'm like this.",
+          ? "I still can't reach GPT. It's the brain that's missing, not the shelves."
+          : "I can't reach GPT just now, and I won't guess in its place.",
+      hint: "Nothing goes in or out of your cart while I'm like this.",
       source: "local"
     };
     remember(said, turn.say);

@@ -7,6 +7,10 @@ const harness = (mode) => {
   window.__spoken = [];
   window.__script = [];
   window.__mode = mode;
+  // This suite cuts the network on purpose, and a shopper who loses the network
+  // now gets told so rather than answered by the parser. Drive the parser as a
+  // fixture instead, which is the only thing it is still for.
+  window.__parserAsBrain = true;
   // No microphone, so the live voice line cannot open. That is the point:
   // these suites cover the typed path a machine without one falls back to.
   Object.defineProperty(navigator, "mediaDevices", {
