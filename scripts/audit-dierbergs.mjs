@@ -346,7 +346,8 @@ for (const group of GROUPS) {
     }
     // Whatever went in, it had to be said out loud. A cart that grows quietly is
     // the one nobody notices until the total is wrong at the till.
-    if (cartAfter > cartBefore && !/cart|added|got it|in your/i.test(spoken)) {
+    const announced = /cart|basket|added|got it|in your|that.s \d+|\$\d/i.test(spoken);
+    if (cartAfter > cartBefore && !announced) {
       problems.push("cart grew without saying so");
     }
     if (item.noAdvice) {

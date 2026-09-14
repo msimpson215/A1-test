@@ -11,7 +11,8 @@
     "demo:test": "node scripts/test-dierbergs-demo.mjs && node scripts/test-dierbergs-voice-fallback.mjs",
     "demo:cost": "node --experimental-strip-types --experimental-loader=./scripts/lib/ts-alias-loader.mjs scripts/test-dierbergs-cost.mjs",
     "demo:verify": "bash scripts/verify-dierbergs.sh",
-    "demo:preflight": "node scripts/preflight-dierbergs.mjs"
+    "demo:preflight": "node scripts/preflight-dierbergs.mjs",
+    "demo:audit": "node scripts/audit-dierbergs.mjs"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

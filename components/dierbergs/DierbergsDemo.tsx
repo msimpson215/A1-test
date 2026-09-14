@@ -403,7 +403,20 @@ export default function DierbergsDemo() {
     for (let i = held; i > wanted; i -= 1) removeFromCart(item.id);
     setPulse(true);
     window.setTimeout(() => setPulse(false), 240);
-  }, [addProduct, removeFromCart]);
+
+    /*
+     * And say it. The adds here are deliberately quiet, so that settling three
+     * cartons does not confirm three times — but quiet all the way through
+     * means the cart changed while the answer talked about something else, and
+     * a total that moves without being mentioned is the one people check twice.
+     */
+    const left = cartNow.current;
+    const total = left.reduce((sum, p) => sum + payCents(p), 0);
+    await say(
+      `That's ${wanted} of the ${item.name.replace(/\s+-\s+/g, ", ")} now.`,
+      `${left.length} ${left.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`
+    );
+  }, [addProduct, removeFromCart, say]);
 
   const onFlightDone = useCallback(() => {
     setFlight(null);
@@ -484,7 +497,16 @@ export default function DierbergsDemo() {
         await say(turn.say, turn.hint);
       }
 
-      await settleCount(text, turn.products[0] ?? turn.outgoing);
+      /*
+       * The subject is only the subject when something was bought. On a turn
+       * that answers rather than buys, products[0] is whatever went up on the
+       * shelf — not in the cart at all — and settling the count against it
+       * finds none of it held and does nothing. Which is how "actually just
+       * one" left three in the cart: the sentence was understood, the shelf
+       * moved, and the count it named was measured against the wrong carton.
+       */
+      const bought = turn.action === "add" || turn.action === "replace";
+      await settleCount(text, bought ? turn.products[0] ?? turn.outgoing : undefined);
 
       // Clear only once the answer is out, so the shopper sees what was heard
       // while it is being handled, and a second request starts from empty.

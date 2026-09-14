@@ -17,6 +17,7 @@ export type DemoIntent =
   | "ADD_CURRENT"
   | "SHOW_STAPLES"
   | "HOW_IT_WORKS"
+  | "READ_BACK_CART"
   | "SEVERAL_ITEMS"
   /** "Is there a special on eggs?" — the week's ad, not the whole aisle. */
   | "SPECIAL"
@@ -108,6 +109,14 @@ const ADD_VERB = /\b(add|put|throw|toss|include|purchase|buy)\b/;
 const TAKE_PHRASE =
   /\b(ill take|i will take|ill have|ill get|ill grab|give me|i want|id like|i would like)\b/;
 const CART_WORD = /\b(cart|basket|bag|checkout)\b/;
+
+/*
+ * Reading the cart back. Deliberately narrow: it has to be a question about
+ * the cart as a whole, because "add the milk to my cart" also names the cart
+ * and must stay a purchase.
+ */
+const READ_BACK_CART =
+  /\b(whats|what is|what.s) (in|on) (my|the) (cart|basket|bag)\b|\b(read|run) (back |through )?(my|the) (cart|basket|list)\b|\bhow much (is|does) (my|the) (cart|basket|total)\b|\bmy (cart|basket) total\b|\bwhats my total\b/;
 const CONFIRM = /^(yes|yep|yeah|yup|sure|ok|okay|do it|go ahead|please|that one|this one|the first one)\b/;
 
 function wantsToAdd(t: string): boolean {
@@ -168,6 +177,10 @@ export function parseRequest(raw: string, current: ShelfId | null = null): Parse
   const text = normalizeUtterance(raw);
 
   if (HOW.test(text)) return { intent: "HOW_IT_WORKS", shelf: null, text };
+  // Asking what is in the cart is not asking for a product, and answering it
+  // with "which one would you like?" is how the fallback used to reply to a
+  // shopper checking their own basket.
+  if (READ_BACK_CART.test(text)) return { intent: "READ_BACK_CART", shelf: null, text };
   if (OPENING_A_LIST.test(text) || GOING_SHOPPING.test(text)) {
     return { intent: "SEVERAL_ITEMS", shelf: null, text };
   }

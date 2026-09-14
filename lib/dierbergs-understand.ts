@@ -10,6 +10,7 @@ import {
   milkTheyMean,
   milkWantedSize,
   narrowShelf,
+  payCents,
   shelfById,
   shelves,
   specialFor,
@@ -548,6 +549,23 @@ function locally(said: string, context: TurnContext): Turn {
         say: "Happy to help. What would you like to get first?",
         hint: "Name one thing at a time and I'll pull it up."
       };
+
+    case "READ_BACK_CART": {
+      const held = context.cart;
+      const total = held.reduce((sum, item) => sum + payCents(item), 0);
+      return {
+        ...base,
+        action: "chat",
+        say: held.length
+          ? `You have ${held.length} ${held.length === 1 ? "item" : "items"}: ${held
+              .map((item) => item.name.replace(/\s+-\s+/g, ", "))
+              .join(", ")}. That is $${(total / 100).toFixed(2)}.`
+          : "Your cart is empty at the moment.",
+        hint: held.length
+          ? "Say what else you need, or name something to take out."
+          : "Ask for a grocery and the shelves change."
+      };
+    }
 
     case "HOW_IT_WORKS":
       return {
