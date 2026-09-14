@@ -277,25 +277,42 @@ check(
   (await lastSaid()).slice(0, 130)
 );
 
+/*
+ * Asking is not buying. Saying "I need" something must show it and stop: a cart
+ * that grows because a sentence sounded keen is a cart nobody trusts, and it is
+ * the model's instinct to be helpful that has to be held back here.
+ */
+const beforeAsking = await cart();
 await type("I need hard boiled eggs");
 check(
   "shopper words reach the right box, whatever the label calls it",
   (await names()).some((n) => /cooked|hard/i.test(n)),
   (await names()).join(" | ").slice(0, 110)
 );
+check(
+  "and asking for them does not quietly buy them",
+  (await cart()) === beforeAsking,
+  `${beforeAsking} -> ${await cart()}`
+);
 
 // ── Taking something back out ───────────────────────────────────────────────
 console.log("\n  changing their mind about the cart");
 
+const items = async () => Number((await cart()).match(/^(\d+)/)?.[1] ?? 0);
+const beforeCheese = await items();
 await type("add the cheapest cheddar");
-const withCheese = await cart();
-check("a cheddar can be bought", /2 items|3 items/.test(withCheese), withCheese);
+const withCheese = await items();
+check(
+  "a cheddar can be bought, and adds exactly one thing",
+  withCheese === beforeCheese + 1,
+  `${beforeCheese} items -> ${withCheese} items`
+);
 
 await type("actually take the cheese back out");
 check(
   "and taken back out again without touching the milk",
-  (await cart()) !== withCheese && /item/.test(await cart()),
-  `${withCheese} -> ${await cart()}`
+  (await items()) === beforeCheese,
+  `${withCheese} items -> ${await items()} items`
 );
 
 // ── The refresh that used to lose everything ────────────────────────────────
