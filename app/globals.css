@@ -191,6 +191,24 @@ body { min-height: 100vh; }
   background: #fde8e8;
   color: #8a1f1f;
 }
+/* The brain, named. Same shape as the voice badge so they read as one row of
+   facts, and loud when there is no GPT behind the conversation at all. */
+.axon-brain {
+  flex: none;
+  align-self: center;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  background: #e6eefb;
+  color: #1b3f7a;
+  font: 700 10px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.axon-brain.is-down {
+  background: #8a1f1f;
+  color: #fff;
+}
 .axon-strip-copy {
   width: 360px;
   flex: none;

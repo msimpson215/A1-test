@@ -177,6 +177,14 @@ async function createRealtimeSession(sdp, res, desk, shopper) {
   fd.set('sdp', sdp);
   fd.set('session', shopper ? shopperSessionConfig() : realtimeSessionConfig(desk));
 
+  // Name the model on the way back, so the page can put it on screen instead of
+  // asserting that a live line is "Axon" and leaving the shopper to take it on
+  // trust. The SDP body has no room for it and a second request to ask would be
+  // a second round trip on the slowest moment in the demo.
+  const chosen = shopper ? shopperRealtimeModel() : desk ? deskRealtimeModel() : 'gpt-realtime-1.5';
+  res.setHeader('Access-Control-Expose-Headers', 'X-Realtime-Model');
+  res.setHeader('X-Realtime-Model', chosen);
+
   const response = await fetch('https://api.openai.com/v1/realtime/calls', {
     method: 'POST',
     headers: {

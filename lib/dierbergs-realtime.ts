@@ -49,6 +49,8 @@ export type ShopperHandlers = {
   onHeard(text: string): void;
   /** What the assistant said, for the strip. */
   onSaid(text: string): void;
+  /** Which model the line actually opened against, for the strip to name. */
+  onModel?(model: string): void;
   onError(message: string): void;
 };
 
@@ -585,7 +587,9 @@ export async function connectShopper(
     close();
     throw new Error(await answer.text());
   }
+  const model = answer.headers.get("X-Realtime-Model");
   await pc.setRemoteDescription({ type: "answer", sdp: await answer.text() });
+  if (model) handlers.onModel?.(model);
 
   return {
     send(text: string) {

@@ -213,6 +213,13 @@ export default function DierbergsDemo() {
   const suggestedRef = useRef<SuggestedUnit[]>([]);
   const [suggested, setSuggested] = useState<SuggestedUnit[]>([]);
   const [engine, setEngine] = useState<"off" | "realtime" | "browser">("off");
+  /*
+   * Which brain answered, named, or null when GPT could not be reached.
+   *
+   * undefined until something has been said, so the badge stays off during the
+   * greeting rather than announcing a model that has not been asked anything.
+   */
+  const [brain, setBrain] = useState<string | null | undefined>(undefined);
 
   const browserHint = () =>
     outOfCredit.current
@@ -447,6 +454,7 @@ export default function DierbergsDemo() {
       });
       log("heard", JSON.stringify(text), "->", turn.action, turn.aisle ?? "", `(${turn.source})`);
       setLastHeard(`${text} (${turn.action}${turn.aisle ? " " + turn.aisle : ""} \u00b7 ${turn.model ?? turn.source})`);
+      setBrain(turn.source === "model" ? turn.model ?? "GPT" : null);
 
       // Put the shelf up before speaking, so what the shopper is being told
       // about is already in front of them.
@@ -744,6 +752,7 @@ export default function DierbergsDemo() {
             setPrompt(text);
             setHint("Just talk \u2014 I'm listening.");
           },
+          onModel: (name) => setBrain(name),
           onError: (message) => {
             log("live error", message);
             setLastError(message);
@@ -984,6 +993,7 @@ export default function DierbergsDemo() {
     outOfCredit.current = false;
     noKey.current = false;
     setEngine("off");
+    setBrain(undefined);
     stopListening(recRef.current);
     recRef.current = null;
     setPhase("idle");
@@ -1051,6 +1061,7 @@ export default function DierbergsDemo() {
                   disabled={phase === "adding"}
                   live={liveOn}
                   engine={engine}
+                  brain={brain}
                 />
               </motion.div>
               <motion.div
