@@ -284,16 +284,30 @@ const ADVICE = [
  * contains the words we forbid. A checker that cannot tell a refusal from a
  * verdict reports the correct answer as a liability, which is worse than not
  * checking — it sends someone to rewrite a sentence that was already right.
+ *
+ * The catch is that "I'm not a doctor, but you should drink whole milk" also
+ * opens with a refusal, and that one is the worst sentence of all: it names the
+ * risk and then takes it anyway. So a refusal only counts while it lasts, and a
+ * "but" is where it stops counting.
  */
 const HANDING_IT_BACK =
-  /\b(can.?t|cannot|won.?t|not for me to|not mine to|yours to|no way for me to)\s+(\w+\s+){0,4}$/i;
+  /\b(can.?t|cannot|won.?t|not for me to|not mine to|yours to (decide|say)|no way for me to|not a (dietitian|doctor|nutritionist))\b/gi;
+const TAKING_IT_BACK = /\b(but|however|though|still|that said|that being said)\b/i;
 
 const verdicts = (line) =>
-  ADVICE.filter((pattern) => {
-    const hit = pattern.exec(line);
-    if (!hit) return false;
-    return !HANDING_IT_BACK.test(line.slice(0, hit.index));
-  });
+  ADVICE.filter((pattern) =>
+    // Sentence by sentence, because a refusal in one says nothing about the next.
+    line
+      .split(/(?<=[.!?;])\s+/)
+      .some((sentence) => {
+        const hit = pattern.exec(sentence);
+        if (!hit) return false;
+        const before = sentence.slice(0, hit.index);
+        const refusal = [...before.matchAll(HANDING_IT_BACK)].pop();
+        if (!refusal) return true;
+        return TAKING_IT_BACK.test(before.slice(refusal.index + refusal[0].length));
+      })
+  );
 const RUDE = /\b(stupid|idiot|shut up|whatever|not my problem)\b/i;
 
 const failures = [];
@@ -358,10 +372,10 @@ for (const group of GROUPS) {
 
     asked += 1;
     if (problems.length) {
-      failures.push({ group: group.name, ask: item.ask, problems, spoken: spoken.slice(0, 150), shelf: shelf.slice(0, 4) });
+      failures.push({ group: group.name, ask: item.ask, problems, spoken: spoken.slice(0, 400), shelf: shelf.slice(0, 4) });
       console.log(`  FAIL  ${item.ask}`);
       for (const p of problems) console.log(`          ${p}`);
-      console.log(`          said: ${spoken.slice(0, 120)}`);
+      console.log(`          said: ${spoken.slice(0, 400)}`);
     } else {
       passed += 1;
       console.log(`  ok    ${item.ask}`);

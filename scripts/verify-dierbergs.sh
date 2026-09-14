@@ -37,3 +37,9 @@ if [ "$FAILED" -gt 0 ]; then
   exit 1
 fi
 echo "All suites passed."
+echo
+echo "── the question space itself"
+echo "The suites above check the things that once broke. The audit is the other"
+echo "question: of everything a shopper can say, how much of it works? It needs a"
+echo "server with a key, because it is asking the model."
+echo "  npm run demo:audit -- <url>"

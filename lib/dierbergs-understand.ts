@@ -20,7 +20,7 @@ import {
 } from "@/data/dierbergs-catalogue";
 import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { countIn, parseRequest } from "./dierbergs-demo-intents";
+import { countIn, normalizeUtterance, parseRequest } from "./dierbergs-demo-intents";
 
 /**
  * What the shopper's words came to.
@@ -56,7 +56,66 @@ export type TurnContext = {
 };
 
 const ENDPOINT = process.env.NEXT_PUBLIC_UNDERSTAND_ENDPOINT || "/api/understand";
+
+/*
+ * How long to wait depends on what waiting costs.
+ *
+ * Six seconds is right when the parser underneath has a real answer: giving up
+ * early costs a little polish and nothing else. It is wrong for a question the
+ * parser cannot answer at all, because then giving up does not fall back — it
+ * changes the subject. Asked why organic milk costs more, a timeout replied
+ * "Want to save money? Gallon or half gallon?", which is not a slower answer to
+ * the question but a confident answer to a different one, and that is the kind
+ * of reply someone repeats afterwards.
+ */
 const TIMEOUT_MS = 6000;
+const TIMEOUT_NOTHING_TO_FALL_BACK_ON_MS = 15000;
+
+/*
+ * Whether there is anything to fall back on, asked of the fallback itself.
+ *
+ * The first version of this was a list of question shapes — why, how long,
+ * what's the difference — and "what colour is milk" was not on it, which is the
+ * whole problem with lists like that: they are never finished, and the hole is
+ * always the sentence nobody thought of. So ask the parser instead. When all it
+ * can offer is the line it opens an aisle with, it did not understand the
+ * sentence, whatever shape the sentence was.
+ */
+const AISLE_OPENINGS = new Set(shelves.map((shelf) => shelf.ask));
+
+/*
+ * Asking for a thing, as opposed to asking about it. This is a list, and lists
+ * are what went wrong above — but the two are not the same kind of list. There
+ * are only so many ways to ask for a product, and the parser has needed all of
+ * them since the first day; there is no end to the things a person can ask
+ * about one. So the list of requests is closed and safe to write down, and the
+ * questions are whatever is left over.
+ */
+const REQUESTING =
+  /\b(i need|i want|id like|i would like|ill take|ill have|ill get|give me|show me|do you have|do you sell|do you carry|got any|looking for|wheres|where is|which|add|put|get me|take me)\b/;
+
+/*
+ * An aisle opening answers "I need milk" well and "what colour is milk" not at
+ * all, and the difference is not in the fallback — it is in whether they asked
+ * for something or asked about it.
+ */
+/* Filler, and the names of the aisles themselves. Take these out of "some milk
+   please" and nothing is left, which is how you know it asked for nothing more
+   than the aisle. */
+const JUST_THE_AISLE = new RegExp(
+  `\\b(${shelves.map((shelf) => shelf.id).join("|")}|dairy|a|an|the|some|any|please|of|and|i|id|like|need|want)\\b`,
+  "g"
+);
+
+function nothingToFallBackOn(said: string, fallback: Turn): boolean {
+  if (fallback.action === "add") return false;
+  if (!AISLE_OPENINGS.has(fallback.say)) return false;
+  const text = normalizeUtterance(said);
+  if (REQUESTING.test(text)) return false;
+  // "Milk" is not a question, it is the aisle, and the opening line is the best
+  // answer there is to it.
+  return text.replace(JUST_THE_AISLE, "").trim().length > 0;
+}
 
 const everyProduct = new Map<string, DemoProduct>();
 for (const shelf of shelves) {
@@ -132,9 +191,15 @@ export function productById(id: string): DemoProduct | undefined {
  * safety net for a dropped connection, not the plan.
  */
 export async function understand(said: string, context: TurnContext): Promise<Turn> {
+  // Worked out before the call, and kept for the catch, so giving up costs
+  // nothing beyond the wait it already decided was worth it.
+  const fallback = locally(said, context);
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const timer = setTimeout(
+      () => controller.abort(),
+      nothingToFallBackOn(said, fallback) ? TIMEOUT_NOTHING_TO_FALL_BACK_ON_MS : TIMEOUT_MS
+    );
     const response = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -224,7 +289,7 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       model: body.model
     };
   } catch {
-    const turn = locally(said, context);
+    const turn = fallback;
     remember(said, turn.say);
     return turn;
   }
