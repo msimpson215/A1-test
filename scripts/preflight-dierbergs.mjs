@@ -271,9 +271,14 @@ check(
   gf.some((n) => /udi|canyon|carbonaut/i.test(n)),
   gf.join(" | ").slice(0, 130)
 );
+/*
+ * Gluten free bread costs two to three times ordinary bread, and the shopper
+ * should not find that out at the till. Either way of saying so counts: naming
+ * the price outright, or comparing it to the ordinary loaves.
+ */
 check(
-  "and it warns what it costs rather than just selling it",
-  /two to three times|more than|pricier|costs more|freezer/i.test(await lastSaid()),
+  "and the cost is out in the open, not left to the till",
+  /\$\d|two to three times|more than|pricier|costs more/i.test(await lastSaid()),
   (await lastSaid()).slice(0, 130)
 );
 
