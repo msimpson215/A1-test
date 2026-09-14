@@ -100,14 +100,20 @@ function shopperSessionConfig() {
     instructions: AXON_SHOPPER_INSTRUCTIONS,
     audio: {
       input: {
-        transcription: { model: 'gpt-4o-mini-transcribe' },
+        // The full transcription model, not the mini. This is the demo's ears,
+        // and a cheaper pair of them mishears sizes and brand names — "half
+        // gallon" for "gallon" is a wrong carton on screen, and the shopper has
+        // no way to tell whether it misheard or misunderstood. Wrong is dearer
+        // than the model is.
+        transcription: { model: process.env.SHOPPER_TRANSCRIBE_MODEL || 'gpt-4o-transcribe' },
         turn_detection: {
           type: 'semantic_vad',
-          // How long it hangs back before deciding you have finished. 'low' was
-          // the cure for talking over him, and it cost most of the lag on every
-          // single turn: it waits to be very sure. 'medium' still lets a pause
-          // for thought pass without being pounced on.
-          eagerness: 'medium',
+          // How long it hangs back before deciding you have finished. 'low'
+          // waits until it is very sure, which is the cure for talking over
+          // somebody mid-sentence, and it costs a beat on every turn. Being
+          // interrupted is the complaint that made this demo feel robotic, and a
+          // beat of latency has never once been mistaken for rudeness.
+          eagerness: 'low',
           create_response: true,
           interrupt_response: true
         }
@@ -366,8 +372,6 @@ function versionOf(id) {
 }
 
 let chatModelPromise = null;
-/** Whether this account's chat model takes a reasoning dial. Set by trying it. */
-let speedDial = true;
 
 async function pickChatModel(apiKey) {
   if (process.env.SHOPPER_MODEL) return process.env.SHOPPER_MODEL;
@@ -515,15 +519,16 @@ app.post('/api/understand', async (req, res) => {
     const request = {
       model,
       /*
-       * Choosing a carton is not a reasoning problem.
+       * Let it think.
        *
-       * The newest model on the account answers this, and left to itself it
-       * will think about a half gallon of milk for several seconds while the
-       * shopper waits on a shelf that has not changed. Held low, and capped,
-       * because the answer is one sentence and a product id. Sent only to the
-       * models that take it, and dropped on a complaint.
+       * This was pinned low on the grounds that choosing a carton is not a
+       * reasoning problem. Choosing a carton is not; following somebody who
+       * takes a half gallon, swaps it for a gallon, changes their mind back and
+       * then asks for chocolate instead is, and that is the conversation this
+       * has to survive. The dial bought a second a turn and paid for it in the
+       * turns that came back subtly wrong, which is the expensive kind of wrong
+       * because nobody can see it happen.
        */
-      ...(speedDial && /^gpt-5/.test(model) ? { reasoning_effort: 'low' } : {}),
       // Room to spare. On these models the thinking is spent out of this
       // allowance too, and a turn that runs out of it comes back empty, which
       // would drop the shopper onto the parser mid-sentence.
@@ -576,17 +581,6 @@ app.post('/api/understand', async (req, res) => {
       const pause = Number.isFinite(askedFor) && askedFor > 0 ? Math.min(askedFor, 4000) : 900 * (attempt + 1);
       console.error(`Understand rate limited, waiting ${pause}ms`);
       await new Promise((r) => setTimeout(r, pause));
-      upstream = await ask(request);
-    }
-
-    if (!upstream.ok && request.reasoning_effort) {
-      // This model does not take the dial. Losing the whole turn over a speed
-      // setting would drop the shopper onto the parser for no reason. Remembered
-      // so the retry is paid once and not on every sentence after it.
-      const complaint = await upstream.text();
-      console.error('Understand retry without reasoning_effort:', complaint.slice(0, 200));
-      speedDial = false;
-      delete request.reasoning_effort;
       upstream = await ask(request);
     }
 
