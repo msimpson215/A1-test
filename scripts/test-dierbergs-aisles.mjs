@@ -121,8 +121,10 @@ for (const aisle of aisles) {
   );
   check(
     `"${aisle.ask}" asks which one`,
+    // Milk opens on the store's own two jugs and says they are on special;
+    // every other aisle opens on a spread and asks which.
     milkAsk
-      ? /save money/i.test(await spoken())
+      ? /on special/i.test(await spoken())
       : /which would you like/i.test(await spoken())
   );
   check(`"${aisle.ask}" buys nothing on its own`, (await cart()) === "0 items $0.00", await cart());

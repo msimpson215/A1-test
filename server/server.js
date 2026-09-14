@@ -84,6 +84,7 @@ ${rule(
   'noDisclaimerThenAdvice',
   'a2IsNotLactoseFree',
   'showWhatYouName',
+  'showThemAllIfAsked',
   'countIsTheTotal',
   'noBrandFavour'
 )}
@@ -441,7 +442,8 @@ ${rule(
   'theirAdviceWins',
   'readThePacket',
   'a2IsNotLactoseFree',
-  'showWhatYouName'
+  'showWhatYouName',
+  'showThemAllIfAsked'
 )}
   If your answer names products, they go in "products" with the aisle set,
   every time.
@@ -463,6 +465,13 @@ ${rule('takeItOutMeansAll')} Leave "quantity" null on a remove and it all goes.
 ${rule('emptyMeansEmpty')} Emptying it is action "clear".
 ${rule('neverConfirmWhatDidNotHappen')}
 ${rule('cannotLookThingsUp')}
+- Shopping ends somewhere. "checkout" when they are done — "that's everything",
+  "check me out", "what's my total" — which puts the order on screen with the
+  total. "order" only once they have said yes to that total: "okay we'll take it",
+  "go ahead". Never "order" off your own bat, and never before they have seen it.
+  "I'll take it" in front of a shelf is the carton they are looking at; only in
+  front of the total is it the order. The screen does the arithmetic for both, so
+  leave "say" empty for them.
 - "say" is spoken aloud. "hint" is on-screen only.`;
 
 const SHOPPER_SCHEMA = {
@@ -470,7 +479,10 @@ const SHOPPER_SCHEMA = {
   additionalProperties: false,
   required: ['action', 'aisle', 'products', 'quantity', 'remove', 'say', 'hint'],
   properties: {
-    action: { type: 'string', enum: ['show', 'add', 'chat', 'replace', 'remove', 'clear'] },
+    action: {
+      type: 'string',
+      enum: ['show', 'add', 'chat', 'replace', 'remove', 'clear', 'checkout', 'order']
+    },
     aisle: { type: ['string', 'null'], description: 'id of the aisle being shown, or null' },
     products: {
       type: 'array',

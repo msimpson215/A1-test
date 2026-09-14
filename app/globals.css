@@ -396,6 +396,25 @@ body { min-height: 100vh; }
   overflow: hidden;
 }
 .merch-grid-spread .db-card-foot { padding-top: 6px; }
+/* A whole aisle asked for by name. Six across and short cards, so twenty-odd
+   cartons are a shelf you scan rather than a list you scroll. */
+.merch-grid-wall {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+.merch-grid-wall .db-card { padding: 6px 6px 8px; }
+.merch-grid-wall .db-card-media { height: 74px; margin-bottom: 4px; }
+.merch-grid-wall .db-price { font-size: 14px; }
+.merch-grid-wall .db-name {
+  font-size: 11px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.merch-grid-wall .db-card-foot { padding-top: 4px; }
 
 .also-requested {
   width: 252px;
@@ -674,3 +693,109 @@ body { min-height: 100vh; }
 }
 .demo-diag-voice button:hover { filter: brightness(1.08); }
 .demo-diag-note { margin: 7px 0 0; color: #a8a8a8; line-height: 1.45; }
+
+/* ---- Checkout ------------------------------------------------------------
+   The end of the shop. A receipt, because that is the shape everybody already
+   reads without being taught: what you chose, what the ad took off, what it
+   comes to. The saved line is set apart in green because it is the part a
+   grocer is selling and the part a shopper had no way of seeing before. */
+.db-checkout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 620px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 4px 2px 0;
+}
+.db-checkout-title {
+  margin: 0 0 14px;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.db-checkout-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+.db-checkout-line {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--db-line);
+  font-size: 14px;
+}
+.db-checkout-qty {
+  color: var(--db-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.db-checkout-name { line-height: 1.35; }
+.db-checkout-deal {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--db-ad-yellow);
+  border: 1px solid var(--db-ad-yellow-deep);
+  color: var(--db-ad-ink);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: 1px;
+}
+.db-checkout-line-price {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.db-checkout-sums { padding-top: 12px; }
+.db-checkout-sum {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 14px;
+}
+.db-checkout-saved { color: var(--db-green); font-weight: 600; }
+.db-checkout-grand {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 2px solid var(--db-ink);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.db-checkout-note {
+  margin: 12px 0 0;
+  color: var(--db-muted);
+  font-size: 13px;
+}
+.db-checkout-placed {
+  color: var(--db-green);
+  font-weight: 600;
+}
+.db-checkout-empty { justify-content: center; text-align: center; }
+.db-checkout-place {
+  margin-top: 14px;
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--db-red);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+.db-checkout-place:hover { background: var(--db-red-deep); }

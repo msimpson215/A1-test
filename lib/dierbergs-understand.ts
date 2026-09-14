@@ -28,7 +28,7 @@ import { countSaid, parseRequest } from "./dierbergs-demo-intents";
  * acting on a turn no matter which one answered.
  */
 export type Turn = {
-  action: "show" | "add" | "chat" | "replace" | "remove" | "clear";
+  action: "show" | "add" | "chat" | "replace" | "remove" | "clear" | "checkout" | "order";
   /** The aisle to put on the shelf. */
   aisle: ShelfId | "staples" | null;
   /** Products to show, the one to add, or the one to put in on a replace. */
@@ -53,6 +53,8 @@ export type TurnContext = {
   onList: DemoProduct[];
   /** The aisle already on the shelf, which is what makes "the jumbo ones" mean something. */
   current: ShelfId | null;
+  /** Whether the till is on screen, which is what makes "we'll take it" the order. */
+  atCheckout?: boolean;
 };
 
 const ENDPOINT = process.env.NEXT_PUBLIC_UNDERSTAND_ENDPOINT || "/api/understand";
@@ -374,7 +376,7 @@ const AISLE_AND = `${AISLE_NAMES.slice(0, -1).join(", ")} and ${AISLE_NAMES.at(-
 
 /** The parser, in the same shape, for when the model cannot be reached. */
 function locally(said: string, context: TurnContext): Turn {
-  const req = parseRequest(said, context.current);
+  const req = parseRequest(said, context.current, context.atCheckout ?? false);
   const base = { source: "local" as const, products: [] as DemoProduct[], aisle: null };
   // Anything that is not another correction ends the run of them.
   if (req.intent !== "REPLACE") {
@@ -664,6 +666,14 @@ function locally(said: string, context: TurnContext): Turn {
 
     case "EMPTY_CART":
       return { ...base, action: "clear", products: [], aisle: null, say: "", hint: "" };
+
+    /* The shell does the arithmetic and the speaking for both of these, because
+       it is the only thing that knows what is in the cart as of this moment. */
+    case "CHECKOUT":
+      return { ...base, action: "checkout", products: [], aisle: null, say: "", hint: "" };
+
+    case "PLACE_ORDER":
+      return { ...base, action: "order", products: [], aisle: null, say: "", hint: "" };
 
     case "READ_BACK_CART": {
       const held = context.cart;

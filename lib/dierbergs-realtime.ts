@@ -41,6 +41,10 @@ export type ShopperTools = {
   emptyCart(): string;
   /** Swap one product for another, so a change of mind leaves one, not two. */
   replaceInCart(outProductId: string, inProductId: string): Promise<string>;
+  /** Put the order on screen: every line, the ad savings, the total. */
+  showCheckout(): string;
+  /** Place it. Nothing is charged; it gives the shop an end and them a number. */
+  placeOrder(): string;
 };
 
 export type ShopperHandlers = {
@@ -166,11 +170,20 @@ ${rule("a2IsNotLactoseFree")}
 
 ${rule("showWhatYouName")}
 
+${rule("showThemAllIfAsked")}
+
 ${rule("countIsTheTotal")}
 
 ${rule("takeItOutMeansAll")}
 
 ${rule("emptyMeansEmpty")} That is what empty_cart is for.
+
+Shopping ends somewhere. When they are done — "that's everything", "check me out",
+"what's my total" — call show_checkout and read the total out, and the ad saving if
+there is one. Then wait. place_order only after they say yes to that total, and
+never on your own initiative. Mind which "I'll take it" you have: in front of a
+shelf it is the carton they are looking at, and only in front of the total is it
+the order.
 
 ${rule("neverConfirmWhatDidNotHappen")}
 
@@ -286,6 +299,20 @@ const TOOLS = [
       },
       required: ["out_product_id", "in_product_id"]
     }
+  },
+  {
+    type: "function",
+    name: "show_checkout",
+    description:
+      "Put the order on screen with every line, what the week's ad saved them, and the total. For \"that's everything\", \"check me out\", \"what's my total\", \"I'm done\". Read the total out; do not place it until they say yes.",
+    parameters: { type: "object", properties: {}, required: [] }
+  },
+  {
+    type: "function",
+    name: "place_order",
+    description:
+      "Place the order, once they have said yes to it: \"okay we'll take it\", \"go ahead\", \"that's it, order it\". Gives back an order number to read out. Never place an order they have not agreed to.",
+    parameters: { type: "object", properties: {}, required: [] }
   }
 ];
 
@@ -550,6 +577,10 @@ export async function connectShopper(
         output = tools.emptyCart();
       } else if (call.name === "replace_in_cart" && args.in_product_id) {
         output = await tools.replaceInCart(args.out_product_id || "", args.in_product_id);
+      } else if (call.name === "show_checkout") {
+        output = tools.showCheckout();
+      } else if (call.name === "place_order") {
+        output = tools.placeOrder();
       }
     } catch (error) {
       output = `that did not work: ${String(error)}`;

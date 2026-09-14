@@ -245,9 +245,16 @@ check(
   !/pasture raised/.test(brief) && !/pumpernickel/.test(brief) && !/dusted with starch/.test(brief),
   `brief is ${Math.round(brief.length / 4)} tokens`
 );
+/*
+ * The budget went from 2200 to 2450 when the shop got an ending: a checkout, an
+ * order, and the difference between "I'll take it" at a shelf and at the till.
+ * That is new function rather than the same rules said again, which is the only
+ * reason this number is ever allowed to move. Product knowledge still does not
+ * live here — the check above is what holds that line.
+ */
 check(
   "the brief stays small enough to open every session with",
-  brief.length / 4 < 2200,
+  brief.length / 4 < 2450,
   `~${Math.round(brief.length / 4)} tokens`
 );
 /*

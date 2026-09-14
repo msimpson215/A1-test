@@ -57,7 +57,8 @@ const everywhere = [
   "takeItOutMeansAll",
   "emptyMeansEmpty",
   "neverConfirmWhatDidNotHappen",
-  "cannotLookThingsUp"
+  "cannotLookThingsUp",
+  "showThemAllIfAsked"
 ];
 
 for (const name of everywhere) {

@@ -162,8 +162,17 @@ export const shelves: Shelf[] = [
     label: "milk",
     words: ["milk"],
     heading: "Our Dierbergs milk.",
-    ask: "Want to save money? Our Dierbergs milk comes in a gallon or a half gallon. Which size?",
-    askHint: "Name a size, or say if you want another brand.",
+    /*
+     * The opening offer, and the way out of it.
+     *
+     * Two jugs is the right thing to open with and it was the only thing anyone
+     * ever saw, because nothing on screen said the case held twenty more. Asked
+     * to see all the milks the shelf put the same two up again, so the store
+     * looked like it stocked two. The hint now names the sentence that opens the
+     * whole case, because a way out nobody is told about is not a way out.
+     */
+    ask: "Our own Dierbergs milk is on special right now \u2014 would you like to try that? Gallon or half gallon?",
+    askHint: "Name a size, or say \u201cshow me all the milks\u201d to see the whole case.",
     products: milkCell,
     kindOf: milkKind,
     spread: ["whole", "2%", "1%", "skim", "chocolate", "lactose-free", "organic", "filtered"],
@@ -606,6 +615,32 @@ export function shelvesNamedIn(text: string): Shelf[] {
 const CHEAPEST = /\b(cheapest|least expensive|lowest price|budget|on a budget)\b/;
 const DEAREST = /\b(most expensive|priciest|dearest|best one|nicest|fanciest)\b/;
 
+/*
+ * "Show me all the milks."
+ *
+ * Every aisle opens on a small, chosen handful, and that is the right way to
+ * open — twenty-two cartons at somebody who said "milk" is a wall, not an
+ * answer. But it left no way out. Asked to see all the milks the shelf put up
+ * the same two Dierbergs jugs it always did, so the store looked like it
+ * stocked two milks, and the more plainly you asked the more it insisted.
+ *
+ * So this is the escape hatch, and it is deliberately generous about how it
+ * might be said. Anyone who has been shown a handful and wants the rest asks in
+ * whatever words come to hand, and being ignored twice is how a person decides
+ * the thing is broken.
+ */
+const WANTS_THE_LOT =
+  /\b(all|every|everything|the lot|the rest|full (list|range|selection)|what else|anything else|others|rest of (them|the)|show me them all|see them all|whole (lot|range|selection))\b/;
+
+/** Whether they asked to be shown the whole aisle rather than a selection. */
+export function askedForWholeAisle(raw: string): boolean {
+  const text = plain(raw);
+  // "All of it" about one carton is not a request for the cooler, and neither is
+  // "is that all?" — a question about the shelf they are looking at.
+  if (/\bis that all\b/.test(text)) return false;
+  return WANTS_THE_LOT.test(text);
+}
+
 /**
  * Narrows an aisle down to what the shopper asked for.
  *
@@ -619,6 +654,13 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
 
   if (CHEAPEST.test(text)) return [least(pool)];
   if (DEAREST.test(text)) return [most(pool)];
+
+  /*
+   * Asked for the whole aisle, hand over the whole aisle — before any of the
+   * narrowing below, because "all the milks" names milk and would otherwise be
+   * scored as a request for the store's own two jugs.
+   */
+  if (askedForWholeAisle(text)) return shelf.products;
 
   /*
    * A named milk size is a size, not a prompt to put both jugs back. Asking
@@ -943,7 +985,15 @@ export function findProducts(
       : shelfById(aisleHint) ?? named.find((s) => shelfRespondsTo(s, text)) ?? null;
 
   if (shelf) {
-    return { products: narrowShelf(shelf, text).slice(0, limit), aisle: shelf.id };
+    /*
+     * The limit is there to keep a shelf readable, and it has to lose to somebody
+     * asking for the whole aisle. Trimming "show me all the milks" back to eight
+     * is the same answer as before with extra steps: they asked to see everything
+     * and got a selection, with nothing to say a selection was made.
+     */
+    const narrowed = narrowShelf(shelf, text);
+    const room = askedForWholeAisle(text) ? narrowed.length : limit;
+    return { products: narrowed.slice(0, room), aisle: shelf.id };
   }
 
   let best = 0;

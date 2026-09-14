@@ -38,7 +38,7 @@ import FlyingCartItem from "./FlyingCartItem";
 import type { OrbMood } from "./AxonOrb";
 
 export type DemoPhase = "idle" | "active" | "adding";
-export type MerchView = null | ShelfId | "staples";
+export type MerchView = null | ShelfId | "staples" | "checkout";
 
 // Left on deliberately: this demo is driven on machines we cannot attach a
 // debugger to, so the console is the only trace of where a run stopped.
@@ -172,6 +172,20 @@ export default function DierbergsDemo() {
     } catch { /* private browsing, or a full quota: the cart still works */ }
   }, [cart]);
 
+  /*
+   * Carry on shopping after saying yes, and the order re-opens.
+   *
+   * Otherwise the receipt goes on saying "Order placed" over a basket that kept
+   * growing, and the last thing anyone should be able to do here is hand
+   * somebody a confirmed order that is not the order they have.
+   */
+  useEffect(() => {
+    if (!orderRef.current) return;
+    if (cart.map((p) => p.id).join("|") === orderedIds.current) return;
+    orderRef.current = null;
+    setOrderNumber(null);
+  }, [cart]);
+
   useEffect(() => {
     viewNow.current = view;
   }, [view]);
@@ -220,6 +234,11 @@ export default function DierbergsDemo() {
    * greeting rather than announcing a model that has not been asked anything.
    */
   const [brain, setBrain] = useState<string | null | undefined>(undefined);
+  /* The order, once placed. A ref beside the state because a spoken "yes" and a
+     clicked button can both land before a render. */
+  const orderRef = useRef<string | null>(null);
+  const orderedIds = useRef("");
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
   const browserHint = () =>
     outOfCredit.current
@@ -441,6 +460,66 @@ export default function DierbergsDemo() {
     [addMany, addProduct, removeFromCart, say]
   );
 
+  /*
+   * The end of the shop, which the demo did not have.
+   *
+   * A cart was a number in the corner and there was nowhere for a conversation to
+   * finish, so five minutes of choosing milk ended with nothing to say yes to.
+   * The yes is the point: a store is not buying a nicer search box, it is buying
+   * completed baskets, and a demo that cannot be completed is not showing them
+   * the thing they would be paying for.
+   */
+  const showCheckout = useCallback((): string => {
+    const held = cartNow.current;
+    setView("checkout");
+    setMerchHeading("");
+    if (!held.length) return "the cart is empty, so there is nothing to check out";
+    const total = held.reduce((sum, p) => sum + payCents(p), 0);
+    const saved = held.reduce((sum, p) => sum + Math.max(0, p.priceCents - payCents(p)), 0);
+    return `showing the order: ${held.length} ${held.length === 1 ? "item" : "items"}, $${(
+      total / 100
+    ).toFixed(2)}${saved > 0 ? `, $${(saved / 100).toFixed(2)} saved on the ad` : ""}`;
+  }, []);
+
+  /*
+   * "Okay, we'll take it."
+   *
+   * No money moves and none pretends to. What it does is prove the conversation
+   * can reach an end, and give the shopper a number back — which is the moment a
+   * grocer recognises, because it is the only part of this they already have a
+   * process for.
+   */
+  const placeOrder = useCallback((): string => {
+    const held = cartNow.current;
+    if (!held.length) return "nothing in the cart, so no order was placed";
+    if (orderRef.current) return `order ${orderRef.current} is already placed`;
+    const number = `D${String(Math.floor(Math.random() * 9000) + 1000)}`;
+    orderRef.current = number;
+    orderedIds.current = held.map((p) => p.id).join("|");
+    setOrderNumber(number);
+    setView("checkout");
+    setMerchHeading("");
+    const total = held.reduce((sum, p) => sum + payCents(p), 0);
+    return `order ${number} placed: ${held.length} ${
+      held.length === 1 ? "item" : "items"
+    }, $${(total / 100).toFixed(2)}, ready for pickup`;
+  }, []);
+
+  /* The button on the receipt. Same order, same words back, so clicking and
+     saying it are the same act rather than two half-implemented ones. */
+  const placeOrderAloud = useCallback(async () => {
+    const held = cartNow.current;
+    if (!held.length || orderRef.current) return;
+    const total = held.reduce((sum, p) => sum + payCents(p), 0);
+    placeOrder();
+    await say(
+      `Done. Order ${orderRef.current}, $${(total / 100).toFixed(
+        2
+      )}, and it'll be ready for pickup. Thanks very much.`,
+      `Order ${orderRef.current}.`
+    );
+  }, [placeOrder, say]);
+
   const onFlightDone = useCallback(() => {
     setFlight(null);
     setSelectedId(null);
@@ -472,7 +551,10 @@ export default function DierbergsDemo() {
         showing: merchProducts,
         cart,
         onList: onTheList,
-        current: view === "staples" ? null : view
+        // Neither the staples shelf nor the checkout page is an aisle, so
+        // neither is the aisle a clipped follow-up is about.
+        current: view === "staples" || view === "checkout" ? null : view,
+        atCheckout: view === "checkout"
       });
       log("heard", JSON.stringify(text), "->", turn.action, turn.aisle ?? "", `(${turn.source})`);
       setLastHeard(`${text} (${turn.action}${turn.aisle ? " " + turn.aisle : ""} \u00b7 ${turn.model ?? turn.source})`);
@@ -543,6 +625,42 @@ export default function DierbergsDemo() {
           had ? "Right \u2014 your cart is empty again." : "Your cart is already empty.",
           "Start wherever you like."
         );
+      } else if (turn.action === "checkout") {
+        const held = cartNow.current;
+        showCheckout();
+        if (!held.length) {
+          await say("There's nothing in your cart yet.", "Ask me for a grocery and I'll pull it up.");
+        } else {
+          const total = held.reduce((sum, p) => sum + payCents(p), 0);
+          const saved = held.reduce((sum, p) => sum + Math.max(0, p.priceCents - payCents(p)), 0);
+          await say(
+            `That's ${held.length} ${held.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(
+              2
+            )}${
+              saved > 0 ? `, and this week's ad saved you $${(saved / 100).toFixed(2)}` : ""
+            }. Shall I place it?`,
+            "Say \u201Cokay, we\u2019ll take it\u201D, or keep shopping."
+          );
+        }
+      } else if (turn.action === "order") {
+        const held = cartNow.current;
+        if (!held.length) {
+          showCheckout();
+          await say("There's nothing to order yet.", "Ask me for a grocery and I'll pull it up.");
+        } else {
+          const total = held.reduce((sum, p) => sum + payCents(p), 0);
+          const already = orderRef.current;
+          if (!already) placeOrder();
+          const number = orderRef.current;
+          await say(
+            already
+              ? `That one's already in \u2014 order ${already}.`
+              : `Done. Order ${number}, $${(total / 100).toFixed(
+                  2
+                )}, and it'll be ready for pickup. Thanks very much.`,
+            `Order ${number}.`
+          );
+        }
       } else {
         await say(turn.say, turn.hint);
       }
@@ -595,9 +713,10 @@ export default function DierbergsDemo() {
    * guardrail, which overrode what the shopper had actually asked for.
    */
   const dietaryShelfBackstop = useCallback((heard: string) => {
-    // "staples" is the opening spread rather than a real aisle, so it counts as
-    // standing nowhere in particular.
-    const standing = viewNow.current === "staples" ? null : viewNow.current;
+    // Neither the opening spread nor the checkout page is a real aisle, so both
+    // count as standing nowhere in particular.
+    const standing =
+      viewNow.current === "staples" || viewNow.current === "checkout" ? null : viewNow.current;
     const advice = dietaryAdvice(heard, standing);
     if (!advice) return;
     const wanted = advice.products.map((p) => p.id);
@@ -722,7 +841,9 @@ export default function DierbergsDemo() {
     addToCart,
     removeFromCart,
     replaceInCart,
-    emptyCartForModel
+    emptyCartForModel,
+    showCheckout,
+    placeOrder
   });
   useEffect(() => {
     tools.current = {
@@ -731,9 +852,20 @@ export default function DierbergsDemo() {
       addToCart,
       removeFromCart,
       replaceInCart,
-      emptyCartForModel
+      emptyCartForModel,
+      showCheckout,
+      placeOrder
     };
-  }, [findForModel, showProducts, addToCart, removeFromCart, replaceInCart, emptyCartForModel]);
+  }, [
+    findForModel,
+    showProducts,
+    addToCart,
+    removeFromCart,
+    replaceInCart,
+    emptyCartForModel,
+    showCheckout,
+    placeOrder
+  ]);
 
   const goLive = useCallback(async () => {
     if (live.current) {
@@ -756,7 +888,9 @@ export default function DierbergsDemo() {
             tools.current.addToCart(id, quantity, suggested),
           removeFromCart: (id, howMany) => tools.current.removeFromCart(id, howMany),
           emptyCart: () => tools.current.emptyCartForModel(),
-          replaceInCart: (outId, inId) => tools.current.replaceInCart(outId, inId)
+          replaceInCart: (outId, inId) => tools.current.replaceInCart(outId, inId),
+          showCheckout: () => tools.current.showCheckout(),
+          placeOrder: () => tools.current.placeOrder()
         },
         {
           onState: (state) => {
@@ -1017,6 +1151,8 @@ export default function DierbergsDemo() {
     spokenRecently.current = [];
     setCart([]);
     cartNow.current = [];
+    setOrderNumber(null);
+    orderRef.current = null;
     suggestedRef.current = [];
     setSuggested([]);
     setPulse(false);
@@ -1102,8 +1238,11 @@ export default function DierbergsDemo() {
             alsoRequested={alsoRequested}
             selectedId={selectedId}
             cartIds={cartIds}
+            cart={cart}
+            orderNumber={orderNumber}
             onProductImage={setProductImage}
             onAdd={(p) => void addProduct(p)}
+            onPlaceOrder={() => void placeOrderAloud()}
           />
         </div>
       </div>

@@ -19,6 +19,10 @@ export type DemoIntent =
   | "HOW_IT_WORKS"
   | "READ_BACK_CART"
   | "EMPTY_CART"
+  /** "That's everything, check me out." Show the order; don't place it. */
+  | "CHECKOUT"
+  /** "Okay, we'll take it." Place the order that is on screen. */
+  | "PLACE_ORDER"
   | "SEVERAL_ITEMS"
   /** "Is there a special on eggs?" — the week's ad, not the whole aisle. */
   | "SPECIAL"
@@ -128,8 +132,43 @@ const CART_WORD = /\b(cart|basket|bag|checkout)\b/;
 const EMPTY_CART =
   /\b(empty|clear|scrap|dump|bin|cancel) (it|them|the (cart|basket|lot|whole lot|order)|my (cart|basket|order)|everything)\b|\bempty means empty\b|\bstart (again|over)\b|\b(scrap|forget) the (lot|whole lot|whole thing)\b|\bnothing in it\b|\btake (it |everything )?all (out|off)\b/;
 
+/*
+ * The end of the shop, in two halves, because they must never be one.
+ *
+ * CHECKOUT shows the order and stops. PLACE_ORDER is the yes. Reading "check me
+ * out" as consent would place an order nobody had seen the total of, which is
+ * the single worst thing this could do with somebody's money.
+ */
+const CHECKOUT =
+  /\b(check ?out|check me out|cash (me )?out|ring (me|it|them) up|thats (it|everything|all)|that is (it|everything|all)|im (done|finished|all set)|i am (done|finished)|were done|lets (check ?out|pay)|ready to (pay|check ?out)|pay (for it|now)|total (it|me) up|add it (all )?up)\b/;
+/*
+ * Asking the total is asking to see the till.
+ *
+ * These used to be read as "read my cart back to me", which answered in words
+ * over whatever shelf happened to be up — so the one question that most wants a
+ * total, an ad saving and a button on screen was the question that produced none
+ * of them.
+ */
+const ASKING_THE_TOTAL =
+  /\b((whats|what is|what.s) (my|the) total|how much (is|does) (my|the) (cart|basket|total|order)|my (cart|basket|order) total|whats the damage|how much (do i owe|is (that|it) altogether)|(what|how much) does that come to)\b/;
+/*
+ * Unambiguous either way: nobody says "place the order" about one carton.
+ */
+const PLACE_ORDER =
+  /\b(place (the |my )?order|submit (the |my )?order|go ahead and (order|place)|confirm (the |my )?order|complete (the |my )?order|order the (lot|whole lot))\b/;
+/*
+ * And the ones that depend entirely on what is on screen.
+ *
+ * "I'll take it" is the commonest sentence in the shop and it means the carton in
+ * front of them. In front of the till it means the order. Reading it as the order
+ * everywhere turned every "I'll take it" into a checkout and bought nothing —
+ * which is worse than having no checkout at all.
+ */
+const TAKING_THE_ORDER =
+  /\b((we|i)(ll| will) take (it|them|the lot)|thats it, order it|order it|yes place it|buy it all|do it)\b/;
+
 const READ_BACK_CART =
-  /\b(whats|what is|what.s) (in|on) (my|the) (cart|basket|bag)\b|\b(read|run) (back |through )?(my|the) (cart|basket|list)\b|\bhow much (is|does) (my|the) (cart|basket|total)\b|\bmy (cart|basket) total\b|\bwhats my total\b/;
+  /\b(whats|what is|what.s) (in|on) (my|the) (cart|basket|bag)\b|\b(read|run) (back |through )?(my|the) (cart|basket|list)\b/;
 const CONFIRM = /^(yes|yep|yeah|yup|sure|ok|okay|do it|go ahead|please|that one|this one|the first one)\b/;
 
 function wantsToAdd(t: string): boolean {
@@ -185,14 +224,29 @@ const GOING_SHOPPING = /\b(do some shopping|go shopping|start shopping|my shoppi
  * `current` is the aisle already on the shelf. It is what lets "two percent"
  * or "the jumbo ones" mean something on their own: an utterance that names no
  * aisle but answers to the one in front of the shopper is narrowing it.
+ *
+ * `atCheckout` is the same idea one step further on. In front of a shelf "I'll
+ * take it" is a carton; in front of the total it is the order.
  */
-export function parseRequest(raw: string, current: ShelfId | null = null): ParsedRequest {
+export function parseRequest(
+  raw: string,
+  current: ShelfId | null = null,
+  atCheckout = false
+): ParsedRequest {
   const text = normalizeUtterance(raw);
 
   if (HOW.test(text)) return { intent: "HOW_IT_WORKS", shelf: null, text };
   // Asking what is in the cart is not asking for a product, and answering it
   // with "which one would you like?" is how the fallback used to reply to a
   // shopper checking their own basket.
+  // The till, before the shelves: "what's my total" is not a request for a
+  // product, and answering it with "which one did you mean?" is what it used to do.
+  if (PLACE_ORDER.test(text) || (atCheckout && TAKING_THE_ORDER.test(text))) {
+    return { intent: "PLACE_ORDER", shelf: null, text };
+  }
+  if (CHECKOUT.test(text) || ASKING_THE_TOTAL.test(text)) {
+    return { intent: "CHECKOUT", shelf: null, text };
+  }
   if (READ_BACK_CART.test(text)) return { intent: "READ_BACK_CART", shelf: null, text };
   // Emptying it. Kept above everything that reads a product out of a sentence,
   // because the one thing this must never do is find an order inside a cancel.

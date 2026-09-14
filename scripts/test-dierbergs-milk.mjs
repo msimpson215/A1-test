@@ -179,10 +179,18 @@ check(
 );
 check("asking did not buy anything", (await cart()) === "0 items $0.00", await cart());
 check(
-  "it asks if they want to save money",
-  /save money/i.test(await page.evaluate(() => window.__spoken.join(" "))) &&
+  // The opening used to be "want to save money?", which said why the two jugs
+  // were up but not that the shopper was being shown a selection. Naming the
+  // special and naming the way past it are both the offer now.
+  "it offers the store's own on special, and a size",
+  /special/i.test(await page.evaluate(() => window.__spoken.join(" "))) &&
     /gallon/i.test(await page.evaluate(() => window.__spoken.join(" "))),
   await page.evaluate(() => window.__spoken.slice(-1)[0])
+);
+check(
+  "and the screen offers the whole case to anyone who wants it",
+  /all the milks/i.test(await page.$eval(".axon-strip-hint, .axon-strip-sub", (el) => el.innerText)),
+  await page.$eval(".axon-strip-hint, .axon-strip-sub", (el) => el.innerText)
 );
 check(
   "the input clears so the next request starts empty",
