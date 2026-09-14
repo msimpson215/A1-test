@@ -51,3 +51,20 @@ Smoked is a real preference: Sargento smokehouse cheddar and the smoked provolon
 export function notesFor(aisle: ShelfId | null | undefined): string {
   return aisle ? AISLE_NOTES[aisle] ?? "" : "";
 }
+
+/**
+ * Every aisle's notes at once.
+ *
+ * The per-aisle version above is the answer for a real store, and the reasoning
+ * holds: a hundred departments cannot all be in the prompt. This demo has four,
+ * and handing over one aisle's worth meant a question that crossed two of them —
+ * which cheeses are low in lactose if I can't drink milk, is the rye as soft as
+ * the white — was answered with half the knowledge and no sign of the other
+ * half. At four aisles the whole lot is about fifteen hundred tokens, which is
+ * nothing set against being wrong in front of somebody.
+ */
+export function allNotes(): string {
+  return (Object.keys(AISLE_NOTES) as ShelfId[])
+    .map((aisle) => `${aisle}:\n${AISLE_NOTES[aisle]}`)
+    .join("\n\n");
+}

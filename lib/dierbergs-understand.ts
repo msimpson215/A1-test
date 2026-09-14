@@ -2,7 +2,6 @@ import {
   aisleIndex,
   allSpecialsLine,
   dietaryAdvice,
-  findProducts,
   LACTOSE_LINE,
   milkAskedForQuart,
   milkForLactose,
@@ -18,7 +17,7 @@ import {
   specialPriceFor,
   type ShelfId
 } from "@/data/dierbergs-catalogue";
-import { notesFor } from "@/data/dierbergs-aisle-notes";
+import { allNotes } from "@/data/dierbergs-aisle-notes";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
 import { countSaid, parseRequest } from "./dierbergs-demo-intents";
 
@@ -165,20 +164,27 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       signal: controller.signal,
       body: JSON.stringify({
         said,
-        // The aisle index is cheap and constant. The shortlist is what this
-        // sentence could be about, plus everything already in play, so "the
-        // other one" and "take the cheddar out" still have something to mean.
         index: aisleIndex(),
-        choices: payload(
-          uniqueById([
-            ...findProducts(said, context.current, 12).products,
-            ...context.showing,
-            ...context.cart,
-            ...context.onList
-          ])
-        ),
-        // What someone who works this aisle knows, for the aisle in play only.
-        notes: notesFor(findProducts(said, context.current, 12).aisle ?? context.current),
+        /*
+         * The whole store, because this store is a hundred and five items.
+         *
+         * This used to be a shortlist: the twelve products a search thought the
+         * sentence was about, plus whatever was on screen or in the cart. That
+         * is the right design for a real chain and the wrong one here, because
+         * every failure it causes looks like stupidity. Ask for something the
+         * search ranked thirteenth and the model is not choosing badly between
+         * the options — it never saw the thing, and it has no way to know that,
+         * so it answers confidently about the wrong carton.
+         *
+         * At fifty tokens each the lot comes to about five thousand, which is a
+         * fraction of a cent a turn. The shortlist machinery stays where it is
+         * for the store-sized version; it is simply not what a four-aisle demo
+         * should be gambling its answers on.
+         */
+        choices: payload(uniqueById([...everyProduct.values()])),
+        // Every aisle's knowledge, so a question that crosses two of them is not
+        // answered out of one.
+        notes: allNotes(),
         showing: context.showing.map((p) => p.id),
         cart: context.cart.map((p) => p.id),
         asked: context.onList.map((p) => p.id),
@@ -331,8 +337,15 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
 
 function remember(said: string, reply: string): void {
   history.push({ role: "user", content: said }, { role: "assistant", content: reply });
-  // Enough for "the cheapest one" to refer back, short enough to stay quick.
-  if (history.length > 12) history.splice(0, history.length - 12);
+  /*
+   * Six exchanges was enough for "the cheapest one" to refer back to and not
+   * much else. A conversation where somebody mentions being lactose intolerant
+   * at the start and asks about cheese ten turns later is an ordinary
+   * conversation, and forgetting the first half of it is the single most
+   * obviously-not-ChatGPT thing this could do. Forty messages of grocery talk is
+   * a few thousand tokens.
+   */
+  if (history.length > 40) history.splice(0, history.length - 40);
 }
 
 /**

@@ -250,9 +250,19 @@ check(
   brief.length / 4 < 2200,
   `~${Math.round(brief.length / 4)} tokens`
 );
+/*
+ * Every aisle's knowledge, not just the one on screen.
+ *
+ * Per-aisle lookup is the right design at a hundred departments and the wrong one
+ * at four. A shopper who says they cannot drink milk and then asks about cheese
+ * has crossed two aisles in one sentence, and handing over one aisle's notes
+ * meant answering that out of half the knowledge with nothing to say the other
+ * half existed. The per-aisle helper stays for the store-sized version, and the
+ * scaling arithmetic below still holds; the demo simply sends the lot.
+ */
 check(
-  "the search hands the aisle's knowledge over with its products",
-  /notesFor\(/.test(fs.readFileSync("components/dierbergs/DierbergsDemo.tsx", "utf8"))
+  "the search hands over every aisle's knowledge, not just the one on screen",
+  /allNotes\(\)/.test(fs.readFileSync("components/dierbergs/DierbergsDemo.tsx", "utf8"))
 );
 check(
   "and the model is told to trust it over what it thinks it knows",
@@ -260,7 +270,7 @@ check(
 );
 check(
   "the typed path gets the same knowledge as the spoken one",
-  /notes: notesFor\(/.test(fs.readFileSync("lib/dierbergs-understand.ts", "utf8")) &&
+  /notes: allNotes\(\)/.test(fs.readFileSync("lib/dierbergs-understand.ts", "utf8")) &&
     /What you know about this aisle/.test(fs.readFileSync("server/server.js", "utf8"))
 );
 
