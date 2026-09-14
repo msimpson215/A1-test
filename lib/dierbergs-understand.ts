@@ -101,7 +101,7 @@ const AISLE_OPENINGS = new Set(shelves.map((shelf) => shelf.ask));
  * questions are whatever is left over.
  */
 const REQUESTING =
-  /\b(i need|i want|id like|i would like|ill take|ill have|ill get|give me|show me|do you have|do you sell|do you carry|got any|looking for|wheres|where is|which|add|put|get me|take me)\b/;
+  /\b(i need|i want|id like|i would like|ill take|ill have|ill get|give me|show me|do you have|do you sell|do you carry|got any|looking for|wheres|where is|add|put|get me|take me)\b/;
 
 /*
  * An aisle opening answers "I need milk" well and "what colour is milk" not at
@@ -118,7 +118,10 @@ const JUST_THE_AISLE = new RegExp(
 
 function nothingToFallBackOn(said: string, fallback: Turn): boolean {
   if (fallback.action === "add") return false;
-  if (!AISLE_OPENINGS.has(fallback.say)) return false;
+  // The same line with "Happy to." in front of it is the same line: a sentence
+  // that reads as a request gets the prefix, and "I didn't ask which cheese I
+  // want" reads as one.
+  if (!AISLE_OPENINGS.has(fallback.say.replace(/^Happy to\. /, ""))) return false;
 
   /*
    * The opening line is not proof it understood nothing. "The 2% please" and
@@ -194,10 +197,23 @@ const history: Spoken[] = [];
 let swaps = 0;
 let swapping: ShelfId | null = null;
 
+/*
+ * How many turns in a row the model has not answered.
+ *
+ * One is a blip. Several in a row means it is not coming back this minute, and
+ * the shopper has to be told — because the alternative is what happened: the
+ * rate limit was spent, every request came back in a tenth of a second, and
+ * fourteen turns of a real conversation were answered with the aisle menu in a
+ * confident voice. Nothing looked broken from outside, which is exactly what
+ * made it unrecoverable: there was nothing for the shopper to react to.
+ */
+let modelMisses = 0;
+
 export function forgetConversation(): void {
   history.length = 0;
   swaps = 0;
   swapping = null;
+  modelMisses = 0;
 }
 
 /** Everything the store stocks, by the id the model chooses it with. */
@@ -250,7 +266,12 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       })
     }).finally(() => clearTimeout(timer));
 
-    if (!response.ok) throw new Error(`understand ${response.status}`);
+    if (!response.ok) {
+      // Carry the reason out, so "out of credit" can be said as that rather
+      // than shown as a shopper's assistant that has quietly gone simple.
+      const reason = await response.json().then((b) => b?.reason || "").catch(() => "");
+      throw new Error(reason ? `understand ${response.status} ${reason}` : `understand ${response.status}`);
+    }
     const body = await response.json();
 
     let products = (body.products as string[])
@@ -313,6 +334,7 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
         ? body.say
         : "Which one did you mean?";
 
+    modelMisses = 0;
     remember(said, say);
 
     /*
@@ -334,25 +356,63 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       source: "model",
       model: body.model
     };
-  } catch {
+  } catch (why) {
     /*
-     * The last hole in this, and the one that produced the worst sentence the
-     * demo has said: with the model unreachable and only an aisle opening to
-     * offer, asking why organic costs more got "Want to save money? Gallon or
-     * half gallon?". Saying nothing useful is forgivable and easily recovered
-     * from. Answering a different question with confidence is neither, because
-     * the shopper has no way of knowing it happened.
+     * Without the model, this does not talk.
+     *
+     * There is one brain here and it is GPT. What sat underneath it was a
+     * hand-written parser, and when the model could not be reached the parser
+     * answered in its place, in the assistant's voice, with no sign that
+     * anything had changed. That is where every embarrassing sentence came
+     * from: fourteen turns of aisle menus read out to somebody asking why
+     * cheese hardens; a food-safety question answered with "Want to save
+     * money?"; the demo reading out its own onboarding tutorial forty-seven
+     * turns into a conversation. None of that was the model. It was a pile of
+     * regular expressions doing an impression of one, and no amount of
+     * improving the impression makes it the right thing to have.
+     *
+     * So the parser keeps the one job it is genuinely better at than nothing —
+     * putting the right products on the shelf when the words plainly name them
+     * — and loses the rest. It does not answer questions. It does not offer
+     * opinions. Above all it does not touch the cart: nothing is bought,
+     * swapped or taken out unless the model asked for it, which retires the
+     * whole class of faults where a complaint became an order.
      */
-    const turn = nothingToFallBackOn(said, fallback)
-      ? {
-          ...fallback,
-          action: "chat" as const,
-          products: [],
-          aisle: null,
-          say: "Sorry — I missed that one. Say it again?",
-          hint: "I have milk, bread, eggs and cheese here."
-        }
-      : fallback;
+    modelMisses += 1;
+
+    /*
+     * The suites are the exception, and they are the only one.
+     *
+     * Ten of them cut the network and drive the whole demo through the parser,
+     * which is how the cart, the shelves and the flying packshots get tested
+     * without a key or a bill. That is a fixture and it is a good one. What it
+     * must never be is what a shopper gets, so it is opt-in, off unless a test
+     * asks for it by name, and nothing in the product sets it.
+     */
+    if (typeof window !== "undefined" && (window as { __parserAsBrain?: boolean }).__parserAsBrain) {
+      remember(said, fallback.say);
+      return fallback;
+    }
+
+    // The shelf, and only if the words actually named something on it.
+    const showing = nothingToFallBackOn(said, fallback) ? [] : fallback.products;
+
+    const turn: Turn = {
+      action: showing.length ? "show" : "chat",
+      aisle: showing.length ? fallback.aisle : null,
+      products: showing,
+      outgoing: undefined,
+      quantity: null,
+      say: /insufficient_quota|billing/i.test(String(why))
+        ? "The store's account for this has run out of credit, so I can't think at all until it's topped up."
+        : modelMisses >= 2
+          ? "I've still not got through \u2014 it's me, not the shelves. Give it a moment and ask me again."
+          : "Sorry \u2014 I can't reach the part of me that understands you just now.",
+      hint: showing.length
+        ? "That's what the name matches. I can't talk about it until I'm back."
+        : "Your cart is untouched. Nothing goes in or out while I'm like this.",
+      source: "local"
+    };
     remember(said, turn.say);
     return turn;
   }

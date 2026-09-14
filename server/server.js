@@ -551,6 +551,26 @@ app.post('/api/understand', async (req, res) => {
       });
 
     let upstream = await ask(request);
+
+    /*
+     * A rate limit is a queue, not an answer.
+     *
+     * These come back in about a tenth of a second, so a shopper mid-sentence
+     * got the parser's canned aisle line instantly and had no way of knowing
+     * the brain had not been asked. It happened for fourteen turns straight in
+     * one conversation and a page reload did not clear it, because nothing was
+     * broken — the minute's allowance was simply spent. Two short waits cost
+     * less than a conversation that goes on sounding confident with nothing
+     * behind it.
+     */
+    for (let attempt = 0; attempt < 2 && upstream.status === 429; attempt += 1) {
+      const askedFor = Number(upstream.headers.get('retry-after')) * 1000;
+      const pause = Number.isFinite(askedFor) && askedFor > 0 ? Math.min(askedFor, 4000) : 900 * (attempt + 1);
+      console.error(`Understand rate limited, waiting ${pause}ms`);
+      await new Promise((r) => setTimeout(r, pause));
+      upstream = await ask(request);
+    }
+
     if (!upstream.ok && request.reasoning_effort) {
       // This model does not take the dial. Losing the whole turn over a speed
       // setting would drop the shopper onto the parser for no reason. Remembered
@@ -565,7 +585,20 @@ app.post('/api/understand', async (req, res) => {
     if (!upstream.ok) {
       const detail = await upstream.text();
       console.error('Understand error:', upstream.status, detail.slice(0, 300));
-      return res.status(upstream.status).json({ error: 'understand failed' });
+      /*
+       * Say which 429 this is. Out of credit and asking too fast are the same
+       * status code and want opposite things from whoever is watching: one
+       * clears itself in a minute, the other never does until somebody pays.
+       * Reported for hours as a demo that had gone stupid, when the truth was
+       * a number on a billing page.
+       */
+      let reason = '';
+      try {
+        reason = String(JSON.parse(detail).error?.code || JSON.parse(detail).error?.type || '');
+      } catch {
+        reason = '';
+      }
+      return res.status(upstream.status).json({ error: 'understand failed', reason });
     }
 
     const body = await upstream.json();
