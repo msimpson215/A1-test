@@ -86,7 +86,11 @@ const SPOKEN_WELCOME =
 // person to completely different pages and only one of them is ever the fix.
 const CREDIT_HINT =
   "Browser voice \u2014 Axon cannot open. The OpenAI account has no credit. Add credit at platform.openai.com.";
-const LIVE_FAILED_HINT = "Browser voice \u2014 Axon did not connect.";
+// The other two hints name a fix. This one only named the fault, which leaves a
+// shopper looking at a dead voice line with nothing to try. Pressing the mic
+// again now retries the live line, so say that, and say typing works meanwhile.
+const LIVE_FAILED_HINT =
+  "Browser voice \u2014 Axon did not connect. Type below, or press the mic to try the live line again.";
 const NO_KEY_HINT =
   "Browser voice \u2014 the server has no OpenAI key. Set OPENAI_API_KEY on it.";
 
@@ -931,12 +935,28 @@ export default function DierbergsDemo() {
       setLiveOn(false);
       return;
     }
-    // Already on the browser path. Pressing the mic must toggle listening,
-    // not retry Realtime — that puts "Connecting…" over the conversation.
-    if (fallback.current || outOfCredit.current || !realtimeSupported()) {
+    // Turning it off is only ever turning it off.
+    if (voiceMode) {
+      cancelSpeech();
+      setVoiceMode(false);
+      return;
+    }
+
+    /*
+     * Turning it back on tries GPT's live line again.
+     *
+     * It did not, and that was the whole of the complaint. One dropped
+     * connection set fallback for the session, and after that the mic could
+     * only toggle the browser's own speech recognition — so somebody who
+     * asked for Realtime, got a blip, and pressed the button again stayed on
+     * the typed path until they reloaded, with nothing saying so. A blip is
+     * not a verdict. An empty balance, a missing key and a browser with no
+     * WebRTC are verdicts, and those are the only reasons to stop trying.
+     */
+    if (outOfCredit.current || noKey.current || !realtimeSupported()) {
       if (!voiceAvailable) return;
       cancelSpeech();
-      setVoiceMode((on) => !on);
+      setVoiceMode(true);
       return;
     }
     cancelSpeech();
@@ -962,6 +982,7 @@ export default function DierbergsDemo() {
     setLiveOn(false);
     fallback.current = false;
     outOfCredit.current = false;
+    noKey.current = false;
     setEngine("off");
     stopListening(recRef.current);
     recRef.current = null;
