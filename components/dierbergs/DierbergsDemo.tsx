@@ -409,15 +409,37 @@ export default function DierbergsDemo() {
   /*
    * Makes the cart hold as many as they asked for.
    *
-   * A number is the count they want, not an instruction to add. "Make it two
-   * half gallons" said over a cart that already holds one is the case the model
-   * gets wrong about one time in three: it decides there is nothing to do and
-   * leaves it at one, which looks exactly like the feature not working.
+   * A number they said is the number they want in the cart, not a number to pile
+   * on top of what is already in it. One chocolate milk and "actually make it two
+   * of the chocolate" ended with three: the model reported a quantity of two,
+   * correctly, and this added two more. That is the oldest complaint about this
+   * demo and it keeps coming back, so it stops depending on whether the model
+   * phrased the number as a total or an increment. Whatever number arrives, the
+   * cart ends holding exactly that many.
    *
-   * Only ever acts on a number the shopper actually said, and only on the item
-   * the turn was already about, so it enforces their words rather than
-   * second-guessing them.
+   * Only when a number was actually said, and only for the item the turn was
+   * already about. Silence means one more, because saying "add the cheddar" twice
+   * is somebody who wants two.
    */
+  const settleTo = useCallback(
+    async (product: DemoProduct, said: number | null | undefined, target: number) => {
+      if (said == null) return void (await addProduct(product));
+
+      const held = cartNow.current.filter((p) => p.id === product.id).length;
+      if (target > held) return void (await addMany(product, target - held));
+
+      for (let i = 0; i < held - target; i += 1) removeFromCart(product.id);
+      const now = cartNow.current;
+      const total = now.reduce((sum, p) => sum + payCents(p), 0);
+      await say(
+        target === 0
+          ? `${product.shortName} is out of your cart.`
+          : `You've got ${target} of the ${product.shortName}.`,
+        `${now.length} ${now.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`
+      );
+    },
+    [addMany, addProduct, removeFromCart, say]
+  );
 
   const onFlightDone = useCallback(() => {
     setFlight(null);
@@ -486,7 +508,7 @@ export default function DierbergsDemo() {
         // that knows the cart total once all of this has gone in. Several named
         // in one breath go in quietly and are confirmed once, together.
         for (const product of turn.products.slice(0, -1)) await addProduct(product, true);
-        await addMany(turn.products[turn.products.length - 1], many);
+        await settleTo(turn.products[turn.products.length - 1], turn.quantity, many);
       } else if (turn.action === "replace" && turn.outgoing && turn.products.length === 1) {
         // The old one goes as the new one arrives, so a change of mind about
         // the size leaves one carton in the cart rather than two.

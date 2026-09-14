@@ -466,6 +466,40 @@ if (skimIdx >= 0) {
 }
 check("skim goes in the cart", (await cart()) === "1 item $4.24", await cart());
 
+/*
+ * A stated number is the total in the cart, not an amount to add to it.
+ *
+ * This is the oldest complaint about the demo and it kept coming back, because
+ * what was covered was the number being read correctly out of the sentence and
+ * never what the cart did with it afterwards. One carton already in there and a
+ * stated count of two finished with three — the count was right and it was piled
+ * on top of the one already held.
+ */
+await page.click(".reset-demo");
+await wait(400);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(700);
+await type("I need milk.");
+await wait(1600);
+await type("A half gallon of two percent.");
+await wait(1800);
+const twoPct = await cards();
+const twoPctIdx = twoPct.findIndex((n) => /Dierbergs 2% Milk - Half/i.test(n));
+if (twoPctIdx >= 0) {
+  const btns = await page.$$(".db-card .db-add");
+  await btns[twoPctIdx].click();
+  await wait(2800);
+}
+check("one half gallon is in the cart to start", (await cart()) === "1 item $2.69", await cart());
+await type("I'll take two half gallons of two percent.");
+await wait(3000);
+check(
+  "a count of two over a cart holding one ends with two, not three",
+  (await cart()) === "2 items $5.38",
+  await cart()
+);
+
 // The hint line under the prompt comes and goes as the conversation moves on.
 // If the copy column is allowed to resize with it, the strip breathes on every
 // reply and the page twitches under the shopper's cursor.
