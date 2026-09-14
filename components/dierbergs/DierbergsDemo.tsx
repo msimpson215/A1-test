@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
 import { dietaryAdvice, findProducts, payCents, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
-import { notesFor } from "@/data/dierbergs-aisle-notes";
+import { allNotes } from "@/data/dierbergs-aisle-notes";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
 import {
@@ -609,18 +609,18 @@ export default function DierbergsDemo() {
       products.length === 1 ? `${products[0].name}.` : shelfById(view)?.heading ?? "Here you are."
     );
     /*
-     * The aisle's knowledge rides along with its products, rather than sitting
-     * in the standing instructions. A paragraph an aisle is nothing at four
-     * aisles and an impossible prompt at a hundred, so it is looked up for the
-     * aisle in play — the same reason the catalogue is.
+     * Every aisle's knowledge, not just the one on screen.
+     *
+     * Looking it up per aisle is right for a hundred departments and wrong for
+     * four: a shopper who says they cannot drink milk and then asks about cheese
+     * has crossed two aisles in one breath, and handing over one aisle's notes
+     * meant answering that out of half the knowledge with no sign the other half
+     * existed. The whole lot is about fifteen hundred tokens.
      */
-    const notes = notesFor(view);
     return [
       `on the shelf now: ${productsForModel(products)}`,
-      notes ? `what you know about the ${view} aisle:\n${notes}` : ""
-    ]
-      .filter(Boolean)
-      .join("\n\n");
+      `what you know about this store's aisles:\n${allNotes()}`
+    ].join("\n\n");
   }, []);
 
   const addToCart = useCallback(
@@ -795,40 +795,25 @@ export default function DierbergsDemo() {
   }, []);
 
   /*
-   * The voice line against what the basket has earned.
+   * The running cost of the live line, metered and reported and nothing else.
    *
-   * Spoken minutes are the cost of this whole idea, so they are metered. A
-   * growing cart keeps raising the allowance, which means a real shopper is
-   * never cut off; a cart that stays empty while the talking goes on hits the
-   * base allowance and the conversation moves to typing, which costs nothing.
+   * This used to close the line when the basket had not earned enough talking.
+   * That is a defensible thing to sell and an indefensible thing to demo: an
+   * empty cart buys about ninety seconds, so anyone actually testing it — asking
+   * what the milk is like, changing their mind twice, arguing — got hung up on
+   * mid-thought and moved to typing. From the outside that is exactly what a
+   * broken live model looks like, so the meter was making the demo lie about the
+   * product it exists to show.
+   *
+   * The numbers still run, and the diagnostics panel still reports them, because
+   * a store does need the cost as a bounded line item. It just does not get a
+   * vote on whether the conversation continues.
    */
-  const warned = useRef(false);
   useEffect(() => {
-    if (!liveOn) {
-      warned.current = false;
-      return;
-    }
+    if (!liveOn) return;
     const id = window.setInterval(() => {
-      const { verdict, left } = budgetNow(cartTotalCents);
-      if (verdict === "warn" && !warned.current) {
-        warned.current = true;
-        log("voice budget low", money(left));
-        setHint("We can keep talking a little longer \u2014 or type, which is quicker anyway.");
-        return;
-      }
-      if (verdict !== "spent") return;
-      log("voice budget spent", money(budgetNow(cartTotalCents).spent));
-      live.current?.close();
-      live.current = null;
-      setLiveOn(false);
-      setVoiceMode(false);
-      setEngine("browser");
-      setMood("resting");
-      setListening(false);
-      setPrompt("Let's carry on in writing \u2014 your cart is exactly as you left it.");
-      setHint("Type below. Add something and I can pick the conversation back up.");
-      inputRef.current?.focus();
-    }, 2000);
+      log("voice spend", money(budgetNow(cartTotalCents).spent));
+    }, 30000);
     return () => window.clearInterval(id);
   }, [liveOn, cartTotalCents]);
 
