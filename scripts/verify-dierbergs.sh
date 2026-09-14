@@ -22,7 +22,7 @@ npm run --silent demo:cost
 echo
 
 FAILED=0
-for suite in demo milk milk-talk depth packshots scale voice-fallback neural-voice cells aisles specials conversation realtime; do
+for suite in consistency demo milk milk-talk depth packshots scale voice-fallback neural-voice cells aisles specials conversation realtime; do
   file="scripts/test-dierbergs-${suite}.mjs"
   [ -f "$file" ] || continue
   echo "── ${suite}"

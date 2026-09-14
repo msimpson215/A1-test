@@ -14,6 +14,7 @@
  */
 import fs from "node:fs";
 import puppeteer from "puppeteer-core";
+import { expandRules, sourceWithRules } from "./lib/assembled-brief.mjs";
 
 const URL = process.argv[2] || "http://localhost:3001/dierbergs-demo";
 const results = [];
@@ -227,7 +228,7 @@ console.log("\n— knowledge is looked up, not memorised —");
 
 const notes = fs.readFileSync("data/dierbergs-aisle-notes.ts", "utf8");
 const realtime = fs.readFileSync("lib/dierbergs-realtime.ts", "utf8");
-const brief = realtime.split("const BRIEF = `")[1].split("`;")[0];
+const brief = expandRules(realtime.split("const BRIEF = `")[1].split("`;")[0]);
 
 check(
   "all four aisles have the deep knowledge written down",
@@ -292,7 +293,7 @@ const isProhibition = (line) => /\b(never|not a dietitian|do not|don't|dont|stop
 const guidance = [
   fs.readFileSync("data/dierbergs-aisle-notes.ts", "utf8"),
   brief,
-  fs.readFileSync("server/server.js", "utf8").split("AXON_SHOPPER_INSTRUCTIONS = `")[1].split("`;")[0]
+  sourceWithRules("server/server.js").split("AXON_SHOPPER_INSTRUCTIONS = `")[1].split("`;")[0]
 ]
   .join("\n")
   .split("\n")

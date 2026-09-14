@@ -250,6 +250,54 @@ check(
 );
 check("and asking for it buys nothing", (await cart()) === cartBefore, `${cartBefore} -> ${await cart()}`);
 
+// ── The other three aisles, to the same depth as the milk ───────────────────
+console.log("\n  the rest of the store");
+
+await type("what cheese do you have");
+const cheeses = await names();
+check("the cheese aisle opens on a spread", cheeses.length > 1, `${cheeses.length} cheeses`);
+
+await type("what do I want for pizza");
+check(
+  "pizza leads to mozzarella, not to a shrug",
+  (await names()).some((n) => /mozzarella/i.test(n)),
+  (await names()).join(" | ").slice(0, 110)
+);
+
+await type("do you have gluten free bread");
+const gf = await names();
+check(
+  "gluten free bread is found",
+  gf.some((n) => /udi|canyon|carbonaut/i.test(n)),
+  gf.join(" | ").slice(0, 130)
+);
+check(
+  "and it warns what it costs rather than just selling it",
+  /two to three times|more than|pricier|costs more|freezer/i.test(await lastSaid()),
+  (await lastSaid()).slice(0, 130)
+);
+
+await type("I need hard boiled eggs");
+check(
+  "shopper words reach the right box, whatever the label calls it",
+  (await names()).some((n) => /cooked|hard/i.test(n)),
+  (await names()).join(" | ").slice(0, 110)
+);
+
+// ── Taking something back out ───────────────────────────────────────────────
+console.log("\n  changing their mind about the cart");
+
+await type("add the cheapest cheddar");
+const withCheese = await cart();
+check("a cheddar can be bought", /2 items|3 items/.test(withCheese), withCheese);
+
+await type("actually take the cheese back out");
+check(
+  "and taken back out again without touching the milk",
+  (await cart()) !== withCheese && /item/.test(await cart()),
+  `${withCheese} -> ${await cart()}`
+);
+
 // ── The refresh that used to lose everything ────────────────────────────────
 const beforeReload = await cart();
 await page.reload({ waitUntil: "networkidle0", timeout: 120000 });

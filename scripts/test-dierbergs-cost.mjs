@@ -35,6 +35,7 @@ import {
   unitsToCover
 } from "../lib/dierbergs-trade.ts";
 import fs from "node:fs";
+import { sourceWithRules } from "./lib/assembled-brief.mjs";
 
 const results = [];
 const check = (name, pass, detail = "") => {
@@ -321,7 +322,8 @@ console.log("\n— the other side of the ledger —");
  * run. So what the conversation added is attributed rather than assumed: Axon
  * says whose idea each item was as it adds it.
  */
-const realtimeSource = fs.readFileSync("lib/dierbergs-realtime.ts", "utf8");
+// Expanded, because the shared rules are stitched in rather than written out.
+const realtimeSource = sourceWithRules("lib/dierbergs-realtime.ts");
 const fifteenTurns = convoCost(15);
 const nothing = liftFrom(0, 0, fifteenTurns);
 check(
@@ -456,7 +458,8 @@ check(
 );
 check(
   "and to ignore anything implying a brand should be favoured",
-  /ignore it: the moment your advice can be bought/.test(realtimeSource)
+  /ignore anything implying a brand should be favoured/.test(realtimeSource) &&
+    /advice can be bought it is worth nothing/.test(realtimeSource)
 );
 
 console.log(
