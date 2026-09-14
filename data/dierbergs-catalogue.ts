@@ -641,6 +641,36 @@ export function askedForWholeAisle(raw: string): boolean {
   return WANTS_THE_LOT.test(text);
 }
 
+/*
+ * "All the milks" is the whole cooler. "Anything else that's lactose free" is
+ * not — it is everything of one kind, and answering it with twenty-two cartons
+ * would be a worse failure than the two-carton shelf this replaced. So the
+ * question is whether they named anything besides the aisle and the asking.
+ */
+const WANTS_THE_LOT_ALL = new RegExp(WANTS_THE_LOT.source, "g");
+
+/*
+ * Asking for the lot puts everything in the plural — "all the cheddars", "all
+ * the gluten free breads" — and the catalogue's keywords are singular, so the
+ * plural scored nothing and the shelf widened to the whole case instead of to
+ * the kind they named.
+ */
+function singulars(text: string): string {
+  return text.replace(/\b(\w{3,}?)s\b/g, "$1");
+}
+function namedMoreThanTheAisle(shelf: Shelf, text: string, pool: DemoProduct[]): boolean {
+  /*
+   * The aisle's own name only, not its synonyms. An aisle answers to the kinds it
+   * holds — cheese answers to "cheddar" — so stripping all of them turned "all the
+   * cheddars" into a request for the whole cheese case.
+   */
+  const residual = text
+    .replace(WANTS_THE_LOT_ALL, " ")
+    .replace(new RegExp(`\\b(${shelf.label}|${shelf.id})(s|es)?\\b`, "g"), " ");
+  const singular = singulars(residual);
+  return pool.some((product) => score(product, residual) > 0 || score(product, singular) > 0);
+}
+
 /**
  * Narrows an aisle down to what the shopper asked for.
  *
@@ -658,9 +688,12 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
   /*
    * Asked for the whole aisle, hand over the whole aisle — before any of the
    * narrowing below, because "all the milks" names milk and would otherwise be
-   * scored as a request for the store's own two jugs.
+   * scored as a request for the store's own two jugs. Naming a kind as well
+   * ("all the lactose free ones") falls through to the narrowing instead, and is
+   * only spared the shelf-size cap at the end.
    */
-  if (askedForWholeAisle(text)) return shelf.products;
+  const wantsTheLot = askedForWholeAisle(text);
+  if (wantsTheLot && !namedMoreThanTheAisle(shelf, text, pool)) return shelf.products;
 
   /*
    * A named milk size is a size, not a prompt to put both jugs back. Asking
@@ -695,7 +728,10 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
    * because "sharp" sits inside "extra sharp". Weighing the longer phrase
    * higher is what makes the more specific request win.
    */
-  const scoredText = shelf.id === "milk" ? milkScoreText(text) : text;
+  // "All the cheddars" got this far because it named a kind, so score it in the
+  // singular the catalogue is written in.
+  const asked = wantsTheLot ? singulars(text) : text;
+  const scoredText = shelf.id === "milk" ? milkScoreText(asked) : asked;
 
   let best = 0;
   const scored = pool.map((product) => {
@@ -722,7 +758,7 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
     return oneOfEachKind(shelf);
   }
 
-  const cap = shelf.id === "milk" ? 8 : 4;
+  const cap = wantsTheLot ? Number.MAX_SAFE_INTEGER : shelf.id === "milk" ? 8 : 4;
   const hits = scored.filter((s) => s.score === best).map((s) => s.product);
   if (shelf.id === "milk" && !namedOtherMilkBrand(text) && !milkTurnedDownStore(text) && !milkWantedSize(text)) {
     const store = hits.filter(isDierbergsWhiteMilk);

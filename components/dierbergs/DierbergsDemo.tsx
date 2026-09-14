@@ -42,6 +42,22 @@ export type MerchView = null | ShelfId | "staples" | "checkout";
 
 // Left on deliberately: this demo is driven on machines we cannot attach a
 // debugger to, so the console is the only trace of where a run stopped.
+/*
+ * The heading has to say what is actually up there.
+ *
+ * "Our Dierbergs milk" over all twenty-two cartons is the shelf's old lie told
+ * in a different place: it claims a selection to somebody who asked to see
+ * everything and was given it.
+ */
+function headingFor(aisle: ShelfId, products: DemoProduct[]): string {
+  const shelf = shelfById(aisle);
+  if (products.length === 1) return `${products[0].name}.`;
+  if (shelf && products.length >= shelf.products.length) {
+    return `All the ${shelf.label} we carry.`;
+  }
+  return shelf?.heading ?? "Here you are.";
+}
+
 // A microphone that reopens a beat early can catch the tail of the shopper's
 // own confirmation. Anything that is mostly words we just said is not a request.
 function echoesSelf(heard: string, spoken: string[]): boolean {
@@ -569,11 +585,7 @@ export default function DierbergsDemo() {
       } else if (turn.aisle && turn.products.length) {
         setView(turn.aisle);
         setShelfItems(turn.products);
-        setMerchHeading(
-          turn.products.length === 1
-            ? `${turn.products[0].name}.`
-            : shelfById(turn.aisle)?.heading ?? "Here you are."
-        );
+        setMerchHeading(headingFor(turn.aisle, turn.products));
       }
 
       // "Two half gallons" is one carton asked for twice, not two cartons.
@@ -686,9 +698,7 @@ export default function DierbergsDemo() {
     setView((aisle as ShelfId) || picked[0].category);
     setShelfItems(picked);
     setRequested((was) => dedupe([...was, ...picked]));
-    setMerchHeading(
-      picked.length === 1 ? `${picked[0].name}.` : shelfById(aisle as ShelfId)?.heading ?? "Here you are."
-    );
+    setMerchHeading(headingFor((aisle as ShelfId) || (picked[0].category as ShelfId), picked));
     return `showing ${picked.map((p) => p.name).join(", ")}`;
   }, []);
 
@@ -746,9 +756,7 @@ export default function DierbergsDemo() {
     setView(view);
     setShelfItems(products);
     setRequested((was) => dedupe([...was, ...products]));
-    setMerchHeading(
-      products.length === 1 ? `${products[0].name}.` : shelfById(view)?.heading ?? "Here you are."
-    );
+    setMerchHeading(headingFor(view, products));
     /*
      * Every aisle's knowledge, not just the one on screen.
      *

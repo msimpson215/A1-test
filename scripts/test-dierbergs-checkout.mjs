@@ -126,6 +126,32 @@ check(
   "a full aisle is laid out as a wall rather than a scroll",
   (await page.$(".merch-grid-wall")) !== null
 );
+// "Our Dierbergs milk" over all twenty-two is the same wrong answer in words.
+check(
+  "and the heading says it is all of them",
+  /all the milk/i.test(await page.$eval(".merch-heading", (el) => el.innerText)),
+  await page.$eval(".merch-heading", (el) => el.innerText)
+);
+
+/*
+ * But "all" with a kind attached is all of that kind, not the cooler. Answering
+ * "anything else that's lactose free" with twenty-two cartons would be a worse
+ * failure than the two-carton shelf this replaced, and it is the same word doing
+ * the asking, so the two readings have to be told apart.
+ */
+await type("show me all the lactose free ones");
+await wait(1700);
+const lactoseFree = await cards();
+check(
+  // Three rather than seven, because saying "lactose free" also brings in the
+  // dietary shelf, which is choosier still. Either is a real answer; twenty-two
+  // is not.
+  "all of a kind is all of that kind, not the whole aisle",
+  lactoseFree.length >= 3 &&
+    lactoseFree.length <= 10 &&
+    !lactoseFree.some((n) => /dierbergs (whole|2%|1%|skim)/i.test(n)),
+  `${lactoseFree.length}: ${lactoseFree.slice(0, 3).join(", ")}`
+);
 
 /* And the same door in every other aisle, since the fault was never milk's. */
 for (const [aisle, said, least] of [
@@ -138,6 +164,18 @@ for (const [aisle, said, least] of [
   const all = await cards();
   check(`${aisle} opens up the same way`, all.length >= least, `${all.length} products`);
 }
+
+/* Plurals, which is how anybody asks for the lot, and which the catalogue's
+   singular keywords used to miss entirely — widening to the whole case rather
+   than to the kind that was named. */
+await type("show me all the cheddars");
+await wait(1700);
+const cheddars = await cards();
+check(
+  "asking for a kind in the plural finds the kind, not the case",
+  cheddars.length >= 10 && cheddars.length < 34 && /cheddar/i.test(cheddars[0] ?? ""),
+  `${cheddars.length}: ${cheddars[0]}`
+);
 
 /* -------------------------------------------------------------- the ending */
 
@@ -212,6 +250,106 @@ await page.click(".db-checkout-place");
 await wait(1500);
 const clicked = await page.$eval(".db-checkout-title", (el) => el.innerText).catch(() => "");
 check("and the button on the receipt places it as well", /order placed/i.test(clicked), clicked);
+
+/* ------------------------------------------------- and when GPT is the brain */
+
+/*
+ * Everything above ran with the parser standing in, which proves the shelf and
+ * the till but not the path a live shopper is actually on. On the live line the
+ * model decides, and it reaches the same two places by returning "checkout" and
+ * "order" from /api/understand. There is no key in this sandbox to ask a real
+ * model with, so what is checked here is the wiring this change owns: a
+ * model-shaped reply naming those actions has to move the screen and the order,
+ * with no help from the parser.
+ */
+await page.evaluate(() => {
+  window.__parserAsBrain = false;
+  window.__asModel = [];
+  const realFetch = window.fetch.bind(window);
+  window.fetch = (input, init) => {
+    const url = typeof input === "string" ? input : input?.url || "";
+    if (url.includes("/api/understand")) {
+      const action = window.__asModel.shift();
+      // Nothing queued means this turn is not the one being examined, so the
+      // brain is "unreachable" and the parser fixture handles it as before.
+      if (!action) return Promise.reject(new TypeError("no scripted model turn"));
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            action,
+            aisle: null,
+            products: [],
+            quantity: null,
+            remove: null,
+            say: "",
+            hint: "",
+            model: "gpt-test"
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+    }
+    if (url.includes("/api/tts") || url.includes("api.openai.com")) {
+      return Promise.reject(new TypeError("no neural voice in this test"));
+    }
+    return realFetch(input, init);
+  };
+});
+
+/* From a clean cart, so neither of the next two checks can pass on the strength
+   of an order that was already sitting there from the click above. */
+await page.click(".reset-demo");
+await wait(900);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(600);
+// Nothing queued, so this turn falls to the parser fixture and fills the shelf.
+await page.evaluate(() => {
+  window.__parserAsBrain = true;
+});
+await type("a half gallon of whole milk");
+await wait(1600);
+await page.click(".db-card .db-add");
+await wait(1600);
+await page.evaluate(() => {
+  window.__parserAsBrain = false;
+});
+check("a fresh cart to finish from", /1 item/.test(await cart()), await cart());
+check("and no order on it yet", (await page.$(".db-checkout-placed")) === null);
+
+await page.evaluate(() => {
+  window.__asModel = ["checkout"];
+});
+await type("right, that's me done");
+await wait(1800);
+check(
+  "a model asking for checkout puts the till up",
+  (await page.$(".db-checkout")) !== null
+);
+const modelSaid = await spoken();
+check(
+  "and the total is spoken by the shell, not left to the model",
+  /\$\d+\.\d\d/.test(modelSaid.split(" | ").slice(-1)[0] ?? ""),
+  modelSaid.split(" | ").slice(-1)[0]
+);
+check(
+  "with the brain badge showing a model rather than no GPT",
+  /gpt-test/i.test(await page.$eval(".axon-brain", (el) => el.innerText).catch(() => "")),
+  await page.$eval(".axon-brain", (el) => el.innerText).catch(() => "none")
+);
+
+await page.evaluate(() => {
+  window.__asModel = ["order"];
+});
+await type("go on then");
+await wait(1800);
+const modelPlaced = await page.$eval(".db-checkout-title", (el) => el.innerText).catch(() => "");
+check("and a model placing the order places it", /order placed/i.test(modelPlaced), modelPlaced);
+check(
+  "with the number read back",
+  /order D\d{4}/i.test((await spoken()).split(" | ").slice(-1)[0] ?? ""),
+  (await spoken()).split(" | ").slice(-1)[0]
+);
 
 check("no page errors", errors.length === 0, errors.slice(0, 2).join(" | "));
 
