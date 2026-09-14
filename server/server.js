@@ -540,14 +540,28 @@ app.post('/api/understand', async (req, res) => {
           content:
             `The aisles this store has:\n${index}\n\n` +
             // What someone who works this aisle knows. Sent for the aisle in
-            // play only, so a store of a hundred aisles costs no more than this.
+            // play only in a real store, and all four of them in this demo, where
+            // a question can cross two aisles in one sentence.
             (notes ? `What you know about this aisle:\n${notes}\n\n` : '') +
             `Products this could be about:\n${JSON.stringify(choices)}\n\n` +
             `Currently on the shelf: ${JSON.stringify(showing)}\n` +
             `Already in the cart: ${JSON.stringify(cart)}\n` +
             `Asked for earlier in this trip: ${JSON.stringify(req.body.asked || [])}`
         },
-        ...history.slice(-6),
+        /*
+         * The whole conversation the page kept, not the last three exchanges.
+         *
+         * This was the cap that mattered, and it was hiding behind the other one.
+         * The page was raised to remember forty messages and it changed nothing,
+         * because the server quietly trimmed to six on the way past — so eleven
+         * turns after somebody said they were lactose intolerant, asked which of
+         * these cheeses was safe for them, the model answered that it did not have
+         * the detail they had mentioned at the start. It was not being careful and
+         * it was not refusing. It genuinely had not been told.
+         *
+         * Denying something you were told is worse than any token it saves.
+         */
+        ...history.slice(-40),
         { role: 'user', content: said }
       ],
       response_format: {
