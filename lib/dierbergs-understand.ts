@@ -296,8 +296,19 @@ function locally(said: string, context: TurnContext): Turn {
         shelf.id === "milk" && req.intent === "ADD" && picked.length !== 1
           ? milkTheyMean(req.text)
           : null;
+      /*
+       * A brand said on its own, while a shelf is up, means the one on the
+       * shelf. "The Cabot, put it in the cart" narrows to two Cabots across the
+       * whole cheese aisle and so used to buy neither, but only one of them was
+       * on screen — and a shopper naming what they are looking at should not
+       * have to describe it more fully than the shelf already does.
+       */
+      const onScreen = picked.filter((p) => context.showing.some((s) => s.id === p.id));
       const one =
-        picked.length === 1 ? picked[0] : bySize ?? (already.length === 1 ? already[0] : null);
+        picked.length === 1
+          ? picked[0]
+          : bySize ??
+            (onScreen.length === 1 ? onScreen[0] : already.length === 1 ? already[0] : null);
 
       if (req.intent === "ADD" && one) {
         return {

@@ -65,6 +65,19 @@ const NUMBER_WORDS: Record<string, number> = {
  * talking, they are misheard.
  */
 export function countIn(raw: string): number {
+  return countSaid(raw) ?? 1;
+}
+
+/**
+ * The count they actually said, or null if they said none.
+ *
+ * The difference matters in one direction only, and it is the direction that
+ * was broken: "make it three" then "actually just one" has to come back down
+ * to one. Treating a missing number and a spoken "one" as the same thing means
+ * the second sentence reads as no instruction at all, and the cart stays at
+ * three while the shopper watches it not happen.
+ */
+export function countSaid(raw: string): number | null {
   const t = normalizeUtterance(raw)
     // The numbers that describe the product, out of the way first. No trailing
     // word boundary: "2%" is followed by a space, and % is not a word
@@ -77,12 +90,15 @@ export function countIn(raw: string): number {
     const n = Number(digits[1]);
     // "Add 24 gallons" is a dozen, not one. Clamping keeps a misheard number
     // from quietly becoming a single carton.
-    if (n >= 2) return Math.min(n, 12);
+    if (n >= 1) return Math.min(n, 12);
   }
   for (const [word, n] of Object.entries(NUMBER_WORDS)) {
-    if (n >= 2 && new RegExp(`\\b${word}\\b`).test(t)) return n;
+    // "A gallon" is an article, not a count: only the spoken word "one" counts
+    // as someone choosing the number one.
+    if (word === "a" || word === "an") continue;
+    if (new RegExp(`\\b${word}\\b`).test(t)) return n;
   }
-  return 1;
+  return null;
 }
 
 // The line between browsing and buying. "I need milk" asks to see milk; only an

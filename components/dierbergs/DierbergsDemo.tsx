@@ -8,7 +8,7 @@ import { dietaryAdvice, findProducts, payCents, shelfById, type ShelfId } from "
 import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
-import { countIn } from "@/lib/dierbergs-demo-intents";
+import { countSaid } from "@/lib/dierbergs-demo-intents";
 import {
   connectShopper,
   productsForModel,
@@ -387,8 +387,14 @@ export default function DierbergsDemo() {
    * second-guessing them.
    */
   const settleCount = useCallback(async (heard: string, subject?: DemoProduct) => {
-    const wanted = countIn(heard);
-    if (wanted < 2) return;
+    /*
+     * Only when a number was actually said. A count of one is an instruction
+     * like any other — "make it three" then "actually just one" has to come
+     * back down — but no number at all is not an instruction to hold one, or
+     * every ordinary add would start trimming the cart behind them.
+     */
+    const wanted = countSaid(heard);
+    if (wanted === null) return;
     const item = subject ?? cartNow.current[cartNow.current.length - 1];
     if (!item) return;
     const held = cartNow.current.filter((p) => p.id === item.id).length;
