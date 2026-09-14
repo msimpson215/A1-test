@@ -137,17 +137,23 @@ const currentWording = (text) =>
   text
     .split(/(?<=\.)\s+/)
     .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length > 30 && !/["'\u2019]/.test(sentence))
-    .sort((a, b) => b.length - a.length)[0];
+    .filter((sentence) => sentence.length > 30 && !/["'\u2019]/.test(sentence));
 
+/*
+ * Every sentence, not the longest one. Checking a single sentence per rule
+ * leaves the rest of it unguarded: change any other line and the check goes on
+ * passing, which is how this exact test failed to catch the thing it was
+ * written for the first time round.
+ */
 const everyRuleWording = Object.fromEntries(
-  named.map((name) => [name, currentWording(rules[name])]).filter(([, phrase]) => phrase)
+  named.map((name) => [name, currentWording(rules[name])]).filter(([, lines]) => lines.length)
 );
+const sentenceCount = Object.values(everyRuleWording).reduce((n, lines) => n + lines.length, 0);
 
 check(
-  "each rule has a phrase distinctive enough to look for",
-  Object.keys(everyRuleWording).length >= 6,
-  `${Object.keys(everyRuleWording).length} of ${named.length}`
+  "every rule has wording distinctive enough to look for",
+  Object.keys(everyRuleWording).length >= 6 && sentenceCount >= 12,
+  `${sentenceCount} sentences across ${Object.keys(everyRuleWording).length} rules`
 );
 
 /*
@@ -160,11 +166,12 @@ const treeIsClean = execSync("git status --porcelain", { encoding: "utf8" }).tri
 if (!treeIsClean) {
   console.log("SKIP  the committed bundle — still mid-edit, so it is expected to lag");
 } else {
-  for (const [name, phrase] of Object.entries(everyRuleWording)) {
+  for (const [name, lines] of Object.entries(everyRuleWording)) {
+    const missing = lines.filter((line) => !committedBundle.text.includes(line));
     check(
       `"${name}" reached the bundle, and not only the source`,
-      committedBundle.text.includes(phrase),
-      committedBundle.text.includes(phrase) ? "" : "committed without rebuilding the bundle"
+      missing.length === 0,
+      missing.length ? `committed without rebuilding: "${missing[0].slice(0, 60)}..."` : ""
     );
   }
 }
