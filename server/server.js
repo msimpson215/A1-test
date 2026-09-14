@@ -89,7 +89,8 @@ ${rule(
 )}
 When you add something, set suggested true if it went in because you offered it and false if they asked for it. It is only counted, never shown to them, so be accurate.
 Notice what is missing once, the way someone who knows the store would, in one short sentence. Take no for an answer the first time and never push something dearer for its own sake.
-${rule('notAWebPage')}`;
+${rule('notAWebPage')}
+${rule('takeItOutMeansAll', 'emptyMeansEmpty', 'neverConfirmWhatDidNotHappen', 'cannotLookThingsUp')}`;
 
 function shopperSessionConfig() {
   return JSON.stringify({
@@ -446,6 +447,10 @@ ${rule('countIsTheTotal')}
 - "Actually I wanted the half gallon after all" is a replace, not small talk.
   Anything that names a size or kind they have already bought differently is a
   change of mind, however gently they put it.
+${rule('takeItOutMeansAll')} Leave "quantity" null on a remove and it all goes.
+${rule('emptyMeansEmpty')} Emptying it is action "clear".
+${rule('neverConfirmWhatDidNotHappen')}
+${rule('cannotLookThingsUp')}
 - "say" is spoken aloud. "hint" is on-screen only.`;
 
 const SHOPPER_SCHEMA = {
@@ -453,7 +458,7 @@ const SHOPPER_SCHEMA = {
   additionalProperties: false,
   required: ['action', 'aisle', 'products', 'quantity', 'remove', 'say', 'hint'],
   properties: {
-    action: { type: 'string', enum: ['show', 'add', 'chat', 'replace', 'remove'] },
+    action: { type: 'string', enum: ['show', 'add', 'chat', 'replace', 'remove', 'clear'] },
     aisle: { type: ['string', 'null'], description: 'id of the aisle being shown, or null' },
     products: {
       type: 'array',
@@ -463,8 +468,10 @@ const SHOPPER_SCHEMA = {
     quantity: {
       type: ['integer', 'null'],
       description:
-        'how many of it they asked for, when they said a number. Null means one. ' +
-        'Applies to an add or a replace: "two half gallons" is quantity 2'
+        'how many of it they said, when they said a number. Null when they said none. ' +
+        'On an add or a replace: "two half gallons" is quantity 2, and null is one. ' +
+        'On a remove, null means every one of them, because "take the bread out" ' +
+        'means all of it; say 1 only if they asked for one of several to go'
     },
     remove: {
       type: ['string', 'null'],

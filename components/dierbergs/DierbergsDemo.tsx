@@ -8,7 +8,6 @@ import { dietaryAdvice, findProducts, payCents, shelfById, type ShelfId } from "
 import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
-import { countSaid } from "@/lib/dierbergs-demo-intents";
 import {
   connectShopper,
   productsForModel,
@@ -355,23 +354,45 @@ export default function DierbergsDemo() {
     [addProduct]
   );
 
-  const removeFromCart = useCallback((id: string): string => {
+  /* Emptying the cart without ending the visit: the shelf, the aisle and the
+     conversation all stay where they are. */
+  const emptyCart = useCallback(() => {
+    cartNow.current = [];
+    setCart([]);
+    suggestedRef.current = [];
+    setSuggested([]);
+    setPulse(true);
+    window.setTimeout(() => setPulse(false), 240);
+  }, []);
+
+  const removeFromCart = useCallback((id: string, howMany?: number): string => {
     const product = productById(id);
     const now = cartNow.current;
-    const at = now.map((p) => p.id).lastIndexOf(id);
-    if (at < 0) {
+    const held = now.filter((p) => p.id === id).length;
+    if (held === 0) {
       return product ? `${product.name} is not in the cart` : "no such product";
     }
-    const next = [...now.slice(0, at), ...now.slice(at + 1)];
+    /*
+     * All of them unless they named a number. Taking one loaf out of twelve and
+     * reporting the bread gone is the same lie as confirming an add that never
+     * happened, and it took four goes to undo.
+     */
+    const taking = Math.min(Math.max(Math.round(howMany ?? held) || held, 1), held);
+    let next = now;
+    for (let i = 0; i < taking; i += 1) {
+      const at = next.map((p) => p.id).lastIndexOf(id);
+      next = [...next.slice(0, at), ...next.slice(at + 1)];
+    }
     cartNow.current = next;
     setCart(next);
     setPulse(true);
     window.setTimeout(() => setPulse(false), 240);
 
     const total = next.reduce((sum, p) => sum + payCents(p), 0);
-    return `took ${product?.name ?? id} out. ${next.length} ${
-      next.length === 1 ? "item" : "items"
-    }, $${(total / 100).toFixed(2)}.`;
+    const still = next.filter((p) => p.id === id).length;
+    return `took ${taking} ${product?.name ?? id} out${
+      still ? `, ${still} still in the cart` : ""
+    }. ${next.length} ${next.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`;
   }, []);
 
   /*
@@ -386,37 +407,6 @@ export default function DierbergsDemo() {
    * the turn was already about, so it enforces their words rather than
    * second-guessing them.
    */
-  const settleCount = useCallback(async (heard: string, subject?: DemoProduct) => {
-    /*
-     * Only when a number was actually said. A count of one is an instruction
-     * like any other — "make it three" then "actually just one" has to come
-     * back down — but no number at all is not an instruction to hold one, or
-     * every ordinary add would start trimming the cart behind them.
-     */
-    const wanted = countSaid(heard);
-    if (wanted === null) return;
-    const item = subject ?? cartNow.current[cartNow.current.length - 1];
-    if (!item) return;
-    const held = cartNow.current.filter((p) => p.id === item.id).length;
-    if (held === 0 || held === wanted) return;
-    for (let i = held; i < wanted; i += 1) await addProduct(item, true);
-    for (let i = held; i > wanted; i -= 1) removeFromCart(item.id);
-    setPulse(true);
-    window.setTimeout(() => setPulse(false), 240);
-
-    /*
-     * And say it. The adds here are deliberately quiet, so that settling three
-     * cartons does not confirm three times — but quiet all the way through
-     * means the cart changed while the answer talked about something else, and
-     * a total that moves without being mentioned is the one people check twice.
-     */
-    const left = cartNow.current;
-    const total = left.reduce((sum, p) => sum + payCents(p), 0);
-    await say(
-      `That's ${wanted} of the ${item.name.replace(/\s+-\s+/g, ", ")} now.`,
-      `${left.length} ${left.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`
-    );
-  }, [addProduct, removeFromCart, say]);
 
   const onFlightDone = useCallback(() => {
     setFlight(null);
@@ -471,12 +461,20 @@ export default function DierbergsDemo() {
       }
 
       // "Two half gallons" is one carton asked for twice, not two cartons.
+      /*
+       * An unstated number is one when buying and everything when taking out.
+       * "Take the bread out" with twelve loaves in the cart used to remove a
+       * single loaf and announce the bread was gone, which is the same lie as
+       * confirming an add that never happened.
+       */
       const many = Math.min(Math.max(turn.quantity ?? 1, 1), 12);
 
-      if (turn.action === "add" && turn.products.length === 1) {
+      if (turn.action === "add" && turn.products.length >= 1) {
         // addMany speaks the confirmation itself, because it is the only thing
-        // that knows the cart total once all of this has gone in.
-        await addMany(turn.products[0], many);
+        // that knows the cart total once all of this has gone in. Several named
+        // in one breath go in quietly and are confirmed once, together.
+        for (const product of turn.products.slice(0, -1)) await addProduct(product, true);
+        await addMany(turn.products[turn.products.length - 1], many);
       } else if (turn.action === "replace" && turn.outgoing && turn.products.length === 1) {
         // The old one goes as the new one arrives, so a change of mind about
         // the size leaves one carton in the cart rather than two.
@@ -484,29 +482,36 @@ export default function DierbergsDemo() {
         await addMany(turn.products[0], many);
       } else if (turn.action === "remove" && turn.outgoing) {
         const gone = turn.outgoing;
-        removeFromCart(gone.id);
+        const held = cartNow.current.filter((p) => p.id === gone.id).length;
+        // No number named means all of them, because that is what "take the
+        // bread out" means to the person saying it.
+        const taking = Math.min(turn.quantity ?? held, held);
+        for (let i = 0; i < taking; i += 1) removeFromCart(gone.id);
+
         const left = cartNow.current;
         const total = left.reduce((sum, p) => sum + payCents(p), 0);
+        const still = left.filter((p) => p.id === gone.id).length;
+        const name = gone.name.replace(/\s+-\s+/g, ", ");
         await say(
-          `Done \u2014 the ${gone.name.replace(/\s+-\s+/g, ", ")} is out of your cart.`,
+          held === 0
+            ? `The ${name} was not in your cart.`
+            : still
+              ? `Took ${taking} out. There ${still === 1 ? "is" : "are"} still ${still} ${name} in there.`
+              : `Done \u2014 the ${name} is out of your cart.`,
           left.length
             ? `${left.length} ${left.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`
             : "Your cart is empty."
         );
+      } else if (turn.action === "clear") {
+        const had = cartNow.current.length;
+        emptyCart();
+        await say(
+          had ? "Right \u2014 your cart is empty again." : "Your cart is already empty.",
+          "Start wherever you like."
+        );
       } else {
         await say(turn.say, turn.hint);
       }
-
-      /*
-       * The subject is only the subject when something was bought. On a turn
-       * that answers rather than buys, products[0] is whatever went up on the
-       * shelf — not in the cart at all — and settling the count against it
-       * finds none of it held and does nothing. Which is how "actually just
-       * one" left three in the cart: the sentence was understood, the shelf
-       * moved, and the count it named was measured against the wrong carton.
-       */
-      const bought = turn.action === "add" || turn.action === "replace";
-      await settleCount(text, bought ? turn.products[0] ?? turn.outgoing : undefined);
 
       // Clear only once the answer is out, so the shopper sees what was heard
       // while it is being handled, and a second request starts from empty.
@@ -514,7 +519,7 @@ export default function DierbergsDemo() {
       exitBusy();
       log("done", turn.action);
     },
-    [addMany, addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, removeFromCart, say, settleCount, view]
+    [addMany, addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, emptyCart, removeFromCart, say, view]
   );
 
   /*
@@ -671,10 +676,30 @@ export default function DierbergsDemo() {
     [addToCart, removeFromCart]
   );
 
-  const tools = useRef({ findForModel, showProducts, addToCart, removeFromCart, replaceInCart });
+  const emptyCartForModel = useCallback((): string => {
+    const had = cartNow.current.length;
+    emptyCart();
+    return had ? `emptied the cart. 0 items $0.00.` : "the cart was already empty";
+  }, [emptyCart]);
+
+  const tools = useRef({
+    findForModel,
+    showProducts,
+    addToCart,
+    removeFromCart,
+    replaceInCart,
+    emptyCartForModel
+  });
   useEffect(() => {
-    tools.current = { findForModel, showProducts, addToCart, removeFromCart, replaceInCart };
-  }, [findForModel, showProducts, addToCart, removeFromCart, replaceInCart]);
+    tools.current = {
+      findForModel,
+      showProducts,
+      addToCart,
+      removeFromCart,
+      replaceInCart,
+      emptyCartForModel
+    };
+  }, [findForModel, showProducts, addToCart, removeFromCart, replaceInCart, emptyCartForModel]);
 
   const goLive = useCallback(async () => {
     if (live.current) {
@@ -695,7 +720,8 @@ export default function DierbergsDemo() {
           showProducts: (aisle, ids) => tools.current.showProducts(aisle, ids),
           addToCart: (id, quantity, suggested) =>
             tools.current.addToCart(id, quantity, suggested),
-          removeFromCart: (id) => tools.current.removeFromCart(id),
+          removeFromCart: (id, howMany) => tools.current.removeFromCart(id, howMany),
+          emptyCart: () => tools.current.emptyCartForModel(),
           replaceInCart: (outId, inId) => tools.current.replaceInCart(outId, inId)
         },
         {
@@ -709,8 +735,6 @@ export default function DierbergsDemo() {
             log("heard (live)", text);
             setLastHeard(text);
             dietaryShelfBackstop(text);
-            // Same wait as the shelf: Axon gets first go at it.
-            window.setTimeout(() => void settleCount(text), 2600);
           },
           onSaid: (text) => {
             setPrompt(text);

@@ -20,7 +20,7 @@ import {
 } from "@/data/dierbergs-catalogue";
 import { notesFor } from "@/data/dierbergs-aisle-notes";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { countIn, normalizeUtterance, parseRequest } from "./dierbergs-demo-intents";
+import { countSaid, normalizeUtterance, parseRequest } from "./dierbergs-demo-intents";
 
 /**
  * What the shopper's words came to.
@@ -29,7 +29,7 @@ import { countIn, normalizeUtterance, parseRequest } from "./dierbergs-demo-inte
  * acting on a turn no matter which one answered.
  */
 export type Turn = {
-  action: "show" | "add" | "chat" | "replace" | "remove";
+  action: "show" | "add" | "chat" | "replace" | "remove" | "clear";
   /** The aisle to put on the shelf. */
   aisle: ShelfId | "staples" | null;
   /** Products to show, the one to add, or the one to put in on a replace. */
@@ -37,7 +37,8 @@ export type Turn = {
   /** What leaves the cart on a replace or a remove. */
   outgoing?: DemoProduct;
   /** How many of it, when they asked for a number. One when unsaid. */
-  quantity?: number;
+  /** How many they said. Null when they said no number, which each action reads its own way. */
+  quantity?: number | null;
   /** Spoken aloud. */
   say: string;
   /** On screen only. */
@@ -68,8 +69,16 @@ const ENDPOINT = process.env.NEXT_PUBLIC_UNDERSTAND_ENDPOINT || "/api/understand
  * the question but a confident answer to a different one, and that is the kind
  * of reply someone repeats afterwards.
  */
-const TIMEOUT_MS = 6000;
-const TIMEOUT_NOTHING_TO_FALL_BACK_ON_MS = 15000;
+/*
+ * Both of these were far too short. Six seconds looked like a kindness and was
+ * not: a shopper mid-conversation kept getting the parser's aisle line instead
+ * of the answer, so a rambling sentence got "Which one would you like?" and
+ * whatever the model was about to say was thrown away a moment before it
+ * arrived. Waiting reads as slow. Being answered by the wrong thing reads as
+ * broken, and the shopper cannot tell it happened.
+ */
+const TIMEOUT_MS = 12000;
+const TIMEOUT_NOTHING_TO_FALL_BACK_ON_MS = 20000;
 
 /*
  * Whether there is anything to fall back on, asked of the fallback itself.
@@ -110,6 +119,20 @@ const JUST_THE_AISLE = new RegExp(
 function nothingToFallBackOn(said: string, fallback: Turn): boolean {
   if (fallback.action === "add") return false;
   if (!AISLE_OPENINGS.has(fallback.say)) return false;
+
+  /*
+   * The opening line is not proof it understood nothing. "The 2% please" and
+   * "skim milk" both come back with the opening sentence and the right cartons
+   * narrowed onto the shelf, and calling that a miss threw a good answer away.
+   * What settles it is the shelf: if it holds no more than the aisle would show
+   * to somebody who only said the aisle's name, the sentence taught it nothing.
+   */
+  const shelf = shelves.find((candidate) => candidate.id === fallback.aisle) ?? null;
+  if (shelf) {
+    const opening = narrowShelf(shelf, shelf.id).map((p) => p.id).join();
+    if (fallback.products.map((p) => p.id).join() !== opening) return false;
+  }
+
   const text = normalizeUtterance(said);
   if (REQUESTING.test(text)) return false;
   // "Milk" is not a question, it is the aisle, and the opening line is the best
@@ -262,12 +285,35 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
     // chosen one, and guessing is how a demo puts the wrong thing in the cart.
     // Same for a swap with nothing to swap out, or with nothing to put in.
     let action: Turn["action"] = body.action;
-    if ((action === "add" || action === "replace") && products.length !== 1) action = "show";
+    const meant = body.action;
+    /*
+     * One product, or the two or three someone names in a breath. "Two half
+     * gallons and a dozen eggs" is an ordinary sentence and used to buy the
+     * milk and silently drop the eggs. Past three it is not a shopper listing
+     * things, it is a model handing back a shelf, and that goes on the shelf.
+     */
+    if (action === "add" && (products.length === 0 || products.length > 3)) action = "show";
+    if (action === "replace" && products.length !== 1) action = "show";
     if ((action === "replace" || action === "remove") && !outgoing) {
       action = action === "replace" ? "add" : "chat";
     }
 
-    remember(said, body.say);
+    /*
+     * And do not read out the confirmation for something that did not happen.
+     *
+     * The line above is the safe half of this: an add with no product resolved
+     * becomes a look at the shelf rather than a guess at the cart. The unsafe
+     * half was that the model's own sentence went on being spoken regardless,
+     * so a shopper heard "Got it, that's in your cart" over a cart that had not
+     * moved. A wrong basket you were told about is recoverable. One you were
+     * told was right is not.
+     */
+    const say =
+      action === meant || !/\b(in your cart|added|out of your cart|got it|done)\b/i.test(body.say)
+        ? body.say
+        : "Which one did you mean?";
+
+    remember(said, say);
 
     /*
      * A number they actually said, kept sane. Nobody talks their way into a
@@ -275,7 +321,7 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
      * so it is capped rather than trusted.
      */
     const asked = Number(body.quantity);
-    const quantity = Number.isFinite(asked) ? Math.min(Math.max(Math.round(asked), 1), 12) : 1;
+    const quantity = Number.isFinite(asked) ? Math.min(Math.max(Math.round(asked), 1), 12) : null;
 
     return {
       action,
@@ -283,13 +329,30 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       products,
       outgoing,
       quantity,
-      say: body.say,
+      say,
       hint: body.hint,
       source: "model",
       model: body.model
     };
   } catch {
-    const turn = fallback;
+    /*
+     * The last hole in this, and the one that produced the worst sentence the
+     * demo has said: with the model unreachable and only an aisle opening to
+     * offer, asking why organic costs more got "Want to save money? Gallon or
+     * half gallon?". Saying nothing useful is forgivable and easily recovered
+     * from. Answering a different question with confidence is neither, because
+     * the shopper has no way of knowing it happened.
+     */
+    const turn = nothingToFallBackOn(said, fallback)
+      ? {
+          ...fallback,
+          action: "chat" as const,
+          products: [],
+          aisle: null,
+          say: "Sorry — I missed that one. Say it again?",
+          hint: "I have milk, bread, eggs and cheese here."
+        }
+      : fallback;
     remember(said, turn.say);
     return turn;
   }
@@ -379,7 +442,7 @@ function locally(said: string, context: TurnContext): Turn {
       if (req.intent === "ADD" && one) {
         return {
           action: "add",
-          quantity: countIn(req.text),
+          quantity: countSaid(req.text),
           // Leave the shelf be when the choice came from the list rather than
           // the words: they are looking at four cheddars and buying one. A
           // size, though, is words, and the carton has to be on screen to fly
@@ -614,6 +677,9 @@ function locally(said: string, context: TurnContext): Turn {
         say: "Happy to help. What would you like to get first?",
         hint: "Name one thing at a time and I'll pull it up."
       };
+
+    case "EMPTY_CART":
+      return { ...base, action: "clear", products: [], aisle: null, say: "", hint: "" };
 
     case "READ_BACK_CART": {
       const held = context.cart;

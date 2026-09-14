@@ -37,7 +37,8 @@ export type ShopperTools = {
   /** Put a product in the cart, resolving once it has landed there. */
   addToCart(productId: string, quantity?: number, suggested?: boolean): Promise<string>;
   /** Take a product back out of the cart. */
-  removeFromCart(productId: string): string;
+  removeFromCart(productId: string, howMany?: number): string;
+  emptyCart(): string;
   /** Swap one product for another, so a change of mind leaves one, not two. */
   replaceInCart(outProductId: string, inProductId: string): Promise<string>;
 };
@@ -87,7 +88,7 @@ store this size does. So when they ask for something, search for it in their
 own words — "lactose free half gallon", "sharp cheddar sliced" — and talk
 about what comes back. Never name a product, a price or a size you have not
 been told by a search: this store has thousands of items and inventing one is
-worse than saying you will check.
+the one unrecoverable mistake.
 
 Speak in the same breath as you act: use the hand first, then say your line in
 that same turn. Say what you are doing rather than what you found — "let me
@@ -95,8 +96,8 @@ pull up the half gallons" — because the words go out while the search is
 running. Then talk about what actually came back.
 
 ${rule("notAWebPage")} Your hands work the instant you use them and they tell
-you what happened, so never say something is still in progress or that you
-cannot see the screen yet. If a hand ever comes back with a problem, say
+you what happened, so never say something is still in progress. If a hand ever
+comes back with a problem, say
 plainly what did not work and offer to try it again.
 
 The aisles this store has stocked are listed below, with the kinds and brands
@@ -104,27 +105,24 @@ in each, so you know where to look and what words are worth searching. The
 products themselves you get by searching. If a search comes back empty, this
 store does not carry it: say so plainly. There is no Dierbergs quart.
 
-One product in each aisle is on this week's ad. A search result marks it with
-a "deal", which is its sale price, and "dealThrough", the day it ends. That
-mark is the only thing that makes something a special, however good a price
-looks. If they ask whether there is a special, search the aisle, then say what
-it is, what it costs, what it was, and when it ends, and offer it. If they say
-yes, add that product.
+One product in each aisle is on this week's ad. A search marks it with a
+"deal", its sale price, and "dealThrough", the day it ends. That mark is the
+only thing that makes something a special, however good a price looks. Asked
+about specials, search the aisle and say what it is, what it costs, what it
+was, when it ends, and offer it.
 
 If they ask for more than one of something, add it that many times with the
 quantity. If they ask for two different things, do both.
 
-When you add something, say whether it was your idea. Set suggested true if it
-went in because you offered it — the special you mentioned, the thing you
-noticed was missing — and false when they came in asking for it. This is only
-counted, never shown to them, so be accurate rather than flattering.
+When you add something, say whose idea it was: suggested true if it went in
+because you offered it, false when they asked for it. It is only counted, never
+shown to them, so be accurate rather than flattering.
 
-Do notice what is missing, once, the way someone who knows the store would.
-Taco shells and beef and no cheese is worth a word. So is the ad price on the
-eggs they were about to pay full price for. Say it in one short sentence, take
-no for an answer the first time, and never stack suggestions or push something
-dearer for its own sake. A shopper who feels sold to stops talking to you, and
-then you are worth nothing to anybody.
+Do notice what is missing, once, the way someone who knows the store would —
+taco shells and beef and no cheese is worth a word, so is an ad price they were
+about to miss. One short sentence, take no for an answer the first time, never
+stack suggestions or push something dearer for its own sake. A shopper who
+feels sold to stops talking to you.
 
 ${rule("noBrandFavour")} Suggest the one that actually suits what they asked
 for. The moment your advice can be bought it is worth nothing, to them or to
@@ -139,8 +137,7 @@ one carton, not two.
 leave what is already there alone.
 "Take that back out", "never mind the milk" — remove_from_cart.
 When it is ambiguous, the cart is the truth: say what is in it now and ask
-which way they want it. Never leave two cartons in there because they said two
-sizes.
+which way they want it.
 
 "That one", "the other one", "the cheaper one" refer to what is on the shelf.
 They should never have to say a full name twice. Wait until they have finished
@@ -168,6 +165,14 @@ ${rule("a2IsNotLactoseFree")}
 ${rule("showWhatYouName")}
 
 ${rule("countIsTheTotal")}
+
+${rule("takeItOutMeansAll")}
+
+${rule("emptyMeansEmpty")} That is what empty_cart is for.
+
+${rule("neverConfirmWhatDidNotHappen")}
+
+${rule("cannotLookThingsUp")}
 
 You are not expected to carry an aisle's knowledge in your head. Every search
 comes back with what someone who has worked that aisle for years would know
@@ -245,14 +250,26 @@ const TOOLS = [
   {
     type: "function",
     name: "remove_from_cart",
-    description: "Take a product back out of the customer's cart.",
+    description:
+      "Take a product back out of the customer's cart. Every one of them by default, because that is what taking something out means; pass how_many only if they asked for one of several to go.",
     parameters: {
       type: "object",
       properties: {
-        product_id: { type: "string", description: "id of the product to take out" }
+        product_id: { type: "string", description: "id of the product to take out" },
+        how_many: {
+          type: "number",
+          description: "how many to take out. Leave it out to take out all of them"
+        }
       },
       required: ["product_id"]
     }
+  },
+  {
+    type: "function",
+    name: "empty_cart",
+    description:
+      "Empty the cart completely. For \"scrap the lot\", \"start again\", \"empty it\". Nothing else empties a cart, and nothing in a sentence meant to cancel is a quantity.",
+    parameters: { type: "object", properties: {}, required: [] }
   },
   {
     type: "function",
@@ -508,6 +525,7 @@ export async function connectShopper(
       product_ids?: string[];
       product_id?: string;
       quantity?: number;
+      how_many?: number;
       suggested?: boolean;
       out_product_id?: string;
       in_product_id?: string;
@@ -525,7 +543,9 @@ export async function connectShopper(
       } else if (call.name === "add_to_cart" && args.product_id) {
         output = await tools.addToCart(args.product_id, args.quantity, args.suggested);
       } else if (call.name === "remove_from_cart" && args.product_id) {
-        output = tools.removeFromCart(args.product_id);
+        output = tools.removeFromCart(args.product_id, args.how_many);
+      } else if (call.name === "empty_cart") {
+        output = tools.emptyCart();
       } else if (call.name === "replace_in_cart" && args.in_product_id) {
         output = await tools.replaceInCart(args.out_product_id || "", args.in_product_id);
       }

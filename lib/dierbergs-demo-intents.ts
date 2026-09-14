@@ -18,6 +18,7 @@ export type DemoIntent =
   | "SHOW_STAPLES"
   | "HOW_IT_WORKS"
   | "READ_BACK_CART"
+  | "EMPTY_CART"
   | "SEVERAL_ITEMS"
   /** "Is there a special on eggs?" — the week's ad, not the whole aisle. */
   | "SPECIAL"
@@ -51,56 +52,60 @@ export function normalizeUtterance(raw: string): string {
 }
 
 const NUMBER_WORDS: Record<string, number> = {
-  a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5,
-  six: 6, seven: 7, eight: 8, nine: 9, ten: 10, dozen: 12,
+  one: 1, two: 2, three: 3, four: 4, five: 5,
+  six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
   couple: 2, pair: 2
 };
 
+/* Nouns a number can be counting. Deliberately not "eggs" on its own: a dozen
+   eggs is one carton, and treating the dozen as a count bought twelve boxes. */
+const COUNTABLE =
+  "(?:more\\s+)?(?:half\\s+gallons?|gallons?|quarts?|dozens?|cartons?|boxe?s?|packs?|packets?|loave?s?|loaf|blocks?|bags?|bottles?|jugs?|tubs?|slices?|of\\b)";
+
 /**
- * How many of it they asked for.
+ * How many of it they asked for, and nothing more.
  *
- * "Two half gallons" is one carton wanted twice. The number has to be read off
- * the sentence rather than assumed, and it has to ignore the numbers that are
- * part of a product: 2% is a kind of milk, 18 count is a box of eggs, and
- * neither is a quantity. Capped at a dozen, because past that they are not
- * talking, they are misheard.
+ * This used to take any number anywhere in the sentence, which is how a
+ * complaint became an order. "There are still five things in there, empty means
+ * empty" set the milk to five and made the cart bigger than the one being
+ * complained about; "that's a hundred and forty four eggs you clown" was read
+ * as four. So a number now has to be attached to something you can count, and
+ * where a sentence holds more than one, this gives up rather than picks — "make
+ * it three of them, no four" is exactly the sentence a regex should decline to
+ * have an opinion about, and the model is right there to read it properly.
  */
 export function countIn(raw: string): number {
   return countSaid(raw) ?? 1;
 }
 
-/**
- * The count they actually said, or null if they said none.
- *
- * The difference matters in one direction only, and it is the direction that
- * was broken: "make it three" then "actually just one" has to come back down
- * to one. Treating a missing number and a spoken "one" as the same thing means
- * the second sentence reads as no instruction at all, and the cart stays at
- * three while the shopper watches it not happen.
- */
+/** The count they said, or null when they said none, or none that is unambiguous. */
 export function countSaid(raw: string): number | null {
   const t = normalizeUtterance(raw)
     // The numbers that describe the product, out of the way first. No trailing
     // word boundary: "2%" is followed by a space, and % is not a word
     // character, so a boundary there never matches and the 2 survives as a
     // quantity — which is how "a gallon of 2% milk" asks for two gallons.
-    .replace(/\b\d+\s*(%|percent|count|ct|oz|ounces?|pack|inch)/g, " ")
-    .replace(/\bhalf (gallon|loaf|dozen)\b/g, " ");
-  const digits = t.match(/\b(\d{1,3})\b/);
-  if (digits) {
-    const n = Number(digits[1]);
-    // "Add 24 gallons" is a dozen, not one. Clamping keeps a misheard number
-    // from quietly becoming a single carton.
-    if (n >= 1) return Math.min(n, 12);
+    .replace(/\b\d+\s*(%|percent|count|ct|oz|ounces?|pack|inch)/g, " ");
+
+  const words = Object.keys(NUMBER_WORDS).join("|");
+  const found = new Set<number>();
+  for (const hit of t.matchAll(new RegExp(`\\b(\\d{1,3}|${words})\\s+${COUNTABLE}`, "g"))) {
+    /*
+     * A number that is taken back is not a number they asked for. "Make it
+     * three of them, no four" is attached and unambiguous by every measure a
+     * regex has, and it means four — so where anything after the count reads
+     * like a change of mind, this has no opinion and the model reads it.
+     */
+    if (TAKING_IT_BACK.test(t.slice(hit.index + hit[0].length))) return null;
+    const n = NUMBER_WORDS[hit[1]] ?? Number(hit[1]);
+    // Nobody talks their way into a hundred cartons; past a dozen it is misheard.
+    if (Number.isFinite(n) && n >= 1) found.add(Math.min(n, 12));
   }
-  for (const [word, n] of Object.entries(NUMBER_WORDS)) {
-    // "A gallon" is an article, not a count: only the spoken word "one" counts
-    // as someone choosing the number one.
-    if (word === "a" || word === "an") continue;
-    if (new RegExp(`\\b${word}\\b`).test(t)) return n;
-  }
-  return null;
+  return found.size === 1 ? [...found][0] : null;
 }
+
+/* A change of mind, mid-sentence. */
+const TAKING_IT_BACK = /\b(no|not|nope|actually|instead|sorry|forget|scratch|make that|i meant)\b/;
 
 // The line between browsing and buying. "I need milk" asks to see milk; only an
 // explicit add, a cart, or a plain yes puts something in it. Verbs like "need"
@@ -115,6 +120,14 @@ const CART_WORD = /\b(cart|basket|bag|checkout)\b/;
  * the cart as a whole, because "add the milk to my cart" also names the cart
  * and must stay a purchase.
  */
+/*
+ * Starting over. "There are still five things in there, empty means empty" is
+ * the sentence this exists for: it names a number, and reading that number as
+ * an order made the cart half again bigger than the one being complained about.
+ */
+const EMPTY_CART =
+  /\b(empty|clear|scrap|dump|bin|cancel) (it|them|the (cart|basket|lot|whole lot|order)|my (cart|basket|order)|everything)\b|\bempty means empty\b|\bstart (again|over)\b|\b(scrap|forget) the (lot|whole lot|whole thing)\b|\bnothing in it\b|\btake (it |everything )?all (out|off)\b/;
+
 const READ_BACK_CART =
   /\b(whats|what is|what.s) (in|on) (my|the) (cart|basket|bag)\b|\b(read|run) (back |through )?(my|the) (cart|basket|list)\b|\bhow much (is|does) (my|the) (cart|basket|total)\b|\bmy (cart|basket) total\b|\bwhats my total\b/;
 const CONFIRM = /^(yes|yep|yeah|yup|sure|ok|okay|do it|go ahead|please|that one|this one|the first one)\b/;
@@ -181,6 +194,9 @@ export function parseRequest(raw: string, current: ShelfId | null = null): Parse
   // with "which one would you like?" is how the fallback used to reply to a
   // shopper checking their own basket.
   if (READ_BACK_CART.test(text)) return { intent: "READ_BACK_CART", shelf: null, text };
+  // Emptying it. Kept above everything that reads a product out of a sentence,
+  // because the one thing this must never do is find an order inside a cancel.
+  if (EMPTY_CART.test(text)) return { intent: "EMPTY_CART", shelf: null, text };
   if (OPENING_A_LIST.test(text) || GOING_SHOPPING.test(text)) {
     return { intent: "SEVERAL_ITEMS", shelf: null, text };
   }

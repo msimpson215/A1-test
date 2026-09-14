@@ -53,7 +53,11 @@ const everywhere = [
   "countIsTheTotal",
   "noCodes",
   "askingIsNotBuying",
-  "notAWebPage"
+  "notAWebPage",
+  "takeItOutMeansAll",
+  "emptyMeansEmpty",
+  "neverConfirmWhatDidNotHappen",
+  "cannotLookThingsUp"
 ];
 
 for (const name of everywhere) {
