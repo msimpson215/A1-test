@@ -17,6 +17,8 @@
  */
 import fs from "node:fs";
 import {
+  asksForSpecial,
+  asksForValue,
   byValue,
   findProducts,
   payCents,
@@ -140,6 +142,25 @@ check(
 
 // ── The two questions ───────────────────────────────────────────────────────
 console.log("\n— the cheapest, and the best deal —");
+
+/*
+ * The two questions share a word, and routing on the word alone got this wrong in
+ * a way worth keeping a test for. "What's the best deal on milk? I'm trying to save
+ * money" matched the ad regex on "deal" and was answered out of the week's ad —
+ * which put a 7.0¢/oz carton next to a 2.7¢/oz one in front of somebody who had
+ * just said they were economising, both of them genuinely on the ad. Being
+ * advertised and being good value are different facts.
+ */
+for (const said of ["is there a special on eggs", "any deals on milk", "what's on sale"]) {
+  check(`“${said}” is a question about the ad`, asksForSpecial(said) && !asksForValue(said));
+}
+for (const said of [
+  "what's the best deal on milk? I'm trying to save money",
+  "which is the best value",
+  "what's the best price on milk"
+]) {
+  check(`“${said}” is a question about value`, asksForValue(said) && !asksForSpecial(said));
+}
 
 const cheapest = findProducts("what's the cheapest milk", "milk").products;
 check(

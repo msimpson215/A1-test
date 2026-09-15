@@ -92,9 +92,11 @@ const cellChecks = [
   ["what about a special on milk?", /whole milk/i, /3\.49/, 2],
   ["any specials on cheese?", /sargento|cheddar/i, /2\.99/, 1]
 ];
+const spokenFor = {};
 for (const [said, who, price, howMany] of cellChecks) {
   await type(said);
   const spoken = await line();
+  spokenFor[said] = spoken;
   const shelf = await names();
   check(
     `“${said}”`,
@@ -106,16 +108,37 @@ for (const [said, who, price, howMany] of cellChecks) {
   );
 }
 
-/* A second deal in an aisle has to be said as well as shown, or it is a saving
-   the shopper was never offered. */
-await type("what about a special on milk?");
-const milkDeals = await line();
+/* A second deal in an aisle has to be said as well as shown, or it is a saving the
+   shopper was never offered. Read it off the answer above rather than asking again,
+   because there is a clock running: the demo starts listening after its greeting,
+   this harness's recognizer is a stub that never calls back, and nine seconds in
+   the watchdog gives up and writes over the spoken line. Any check that spends
+   that budget on a question already answered will fail on the timer instead. */
+const milkDeals = spokenFor["what about a special on milk?"] ?? "";
 check(
   "both milk deals are named, the store's own and the brand",
   /dierbergs whole milk/i.test(milkDeals) &&
     /prairie farms/i.test(milkDeals) &&
     /4\.49/.test(milkDeals),
   milkDeals
+);
+
+/* "Best deal" shares a word with the ad and is not a question about it. Answered
+   out of the ad, "what's the best deal on milk? I'm trying to save money" came back
+   with a 7.0¢/oz carton alongside a 2.7¢/oz one — both advertised, one nearly three
+   times the other per ounce. */
+await type("what's the best deal on milk? I'm trying to save money");
+const valueShelf = await names();
+check(
+  "the value question is answered on value, not out of the week's ad",
+  valueShelf.length === 3 && /whole milk/i.test(valueShelf[0]) && !valueShelf.some((n) => /prairie/i.test(n)),
+  valueShelf.join(", ") || "(empty)"
+);
+const perOunce = await page.$$eval(".db-unit", (els) => els.map((e) => e.textContent.trim()));
+check(
+  "and the per-ounce price is on the card, so the answer can be checked",
+  perOunce.length === 3 && perOunce[0] === "2.7¢/oz",
+  perOunce.join(", ") || "(no unit prices)"
 );
 
 /* 2. The card says Special, with the old price struck through. */

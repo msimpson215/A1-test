@@ -128,9 +128,24 @@ function everySpecial(): Special[] {
 const SPECIAL_ASKED =
   /\b(specials?|sales?|on sale|deals?|discount|coupon|promo|weekly ad|marked down|anything cheap)\b/;
 
-/** "Is there a special on eggs?" — asking about the ad rather than the aisle. */
+/**
+ * "Is there a special on eggs?" — asking about the ad rather than the aisle.
+ *
+ * Not "what's the best deal on milk?", which shares the word and means something
+ * else entirely. Answering that one out of the ad put a 7.0¢/oz carton in front of
+ * somebody who had just said they were trying to save money, next to a 2.7¢/oz one:
+ * both on the ad, one of them nearly three times the price of the other. Being on
+ * the ad and being the best value are different facts and shoppers asking for the
+ * second do not want the first.
+ */
 export function asksForSpecial(text: string): boolean {
-  return SPECIAL_ASKED.test(plain(text));
+  const plainText = plain(text);
+  return SPECIAL_ASKED.test(plainText) && !asksForValue(plainText);
+}
+
+/** "What's the best deal on milk? I'm trying to save money." */
+export function asksForValue(text: string): boolean {
+  return BEST_VALUE.test(plain(text));
 }
 
 /** The aisle's headline deal, which is what a general question gets offered. */
