@@ -266,10 +266,16 @@ check(
  * meant answering that out of half the knowledge with nothing to say the other
  * half existed. The per-aisle helper stays for the store-sized version, and the
  * scaling arithmetic below still holds; the demo simply sends the lot.
+ *
+ * It arrives with the session now rather than with every search. Same knowledge,
+ * and no longer conditional on the model choosing to run a keyword search to get
+ * at it — which was the point: nothing in this repo should stand between a
+ * question and the model's own reading of it.
  */
 check(
-  "the search hands over every aisle's knowledge, not just the one on screen",
-  /allNotes\(\)/.test(fs.readFileSync("components/dierbergs/DierbergsDemo.tsx", "utf8"))
+  "every aisle's knowledge is in the session, not waiting behind a search",
+  /allNotes\(\)/.test(realtime) &&
+    !/allNotes\(\)/.test(fs.readFileSync("components/dierbergs/DierbergsDemo.tsx", "utf8"))
 );
 check(
   "and the model is told to trust it over what it thinks it knows",

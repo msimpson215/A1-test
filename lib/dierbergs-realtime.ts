@@ -1,4 +1,5 @@
-import { aisleIndex, specialFor, specialPriceFor, type ShelfId } from "@/data/dierbergs-catalogue";
+import { aisleIndex, specialFor, specialPriceFor, wholeStore, type ShelfId } from "@/data/dierbergs-catalogue";
+import { allNotes } from "@/data/dierbergs-aisle-notes";
 import type { DemoProduct } from "@/data/dierbergs-demo-products";
 import { forSpeaking } from "./dierbergs-pronounce";
 import { recordUsage } from "./dierbergs-spend";
@@ -82,19 +83,18 @@ yourself with that line.
 Open with: "Welcome to Dierbergs. How can I help you with your shopping
 today?" Then stop and listen.
 
-Your hands: find_products looks something up in the store's own catalogue,
-puts what it finds on the shelf they can see, and tells you exactly what is
-there — names, sizes, prices and any deal. add_to_cart puts one in the cart.
-remove_from_cart takes one back out. replace_in_cart swaps one for another in
-a single move. show_products re-arranges the shelf using ids you have already
-been told, for narrowing down what is in front of them.
+Your hands: show_products puts things on the shelf they can see, naming ids from
+the store below — that is how you answer "what have you got", "show me all the
+milks", "just the lactose free ones". add_to_cart puts one in the cart.
+remove_from_cart takes one back out. replace_in_cart swaps one for another in a
+single move. empty_cart clears it. find_products is a keyword search over the
+same store, there if you want it, but you can already see everything and your
+reading of what they meant is better than its.
 
-You do not hold the catalogue. You look things up, the way anyone working in a
-store this size does. So when they ask for something, search for it in their
-own words — "lactose free half gallon", "sharp cheddar sliced" — and talk
-about what comes back. Never name a product, a price or a size you have not
-been told by a search: this store has thousands of items and inventing one is
-the one unrecoverable mistake.
+You hold the whole store: every item below, with its kind, brand, size, price and
+any deal. Work from it and decide for yourself what belongs on the shelf. Never
+name a product, a price or a size that is not in it — inventing one is the one
+unrecoverable mistake — but everything in it is yours to talk about and to put up.
 
 Speak in the same breath as you act: use the hand first, then say your line in
 that same turn. Say what you are doing rather than what you found — "let me
@@ -206,7 +206,7 @@ const TOOLS = [
     type: "function",
     name: "find_products",
     description:
-      "Look something up in the store's catalogue and put what you find on the shelf. Say it the way the shopper said it. Returns the products now on the shelf, with their ids, sizes, prices and any deal.",
+      "Keyword search over the same store you already hold, if you would rather let it pick. Prefer show_products with ids you chose yourself: you can see everything, and this cannot read a sentence.",
     parameters: {
       type: "object",
       properties: {
@@ -227,7 +227,7 @@ const TOOLS = [
     type: "function",
     name: "show_products",
     description:
-      "Re-arrange the shelf using ids a search has already given you, to narrow down what is in front of them. To find something new, use find_products.",
+      "Put products on the shelf they can see, naming ids from the store you were given. This is how you show anything: a spread to choose from, everything of one kind, or the single one they settled on.",
     parameters: {
       type: "object",
       properties: {
@@ -442,7 +442,22 @@ export async function connectShopper(
       type: "session.update",
       session: {
         type: "realtime",
-        instructions: `${BRIEF}\n\nThe aisles:\n${aisleIndex()}`,
+        /*
+         * The store itself, not an index of it.
+         *
+         * This used to open with aisle names and counts, which is right for a
+         * real chain of forty thousand items and wrong for four aisles of a
+         * hundred and five. While it was an index, the only way the model could
+         * see a product was to call find_products — so a shopper asking an LLM
+         * "what else have you got" got a keyword matcher's answer, and the
+         * matcher's blind spots read as the model being stupid.
+         */
+        instructions: [
+          BRIEF,
+          `The aisles:\n${aisleIndex()}`,
+          `The whole store, every item:\n${productsForModel(wholeStore())}`,
+          `What you know about these aisles:\n${allNotes()}`
+        ].join("\n\n"),
         tools: TOOLS,
         tool_choice: "auto"
       }

@@ -183,18 +183,34 @@ check(
 check("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200));
 
 /*
- * The spoken line's opening instructions, at the source: an index and how to
- * search, never the catalogue. A regression here is somebody pasting the store
- * back into the prompt, which works right up until the store is real.
+ * The spoken line's opening instructions, at the source.
+ *
+ * This used to assert the opposite: an index and how to search, never the store,
+ * because a chain of forty thousand items cannot be held in a prompt. That is
+ * still true of a chain, and `aisleIndexFrom` is still tested against a thousand
+ * aisles in the cost suite. It was the wrong call for four aisles and a hundred
+ * and five items, and the cost of it was not tokens. While the model held only an
+ * index, the only way it could see a product was to call find_products — a
+ * keyword matcher in this repo — so a shopper asking an LLM "what else have you
+ * got" got a regex's reading of the sentence, and the regex's blind spots (it
+ * could not match a plural) read as the model being stupid.
  */
 const realtime = fs.readFileSync("lib/dierbergs-realtime.ts", "utf8");
 check(
-  "the voice session opens with the aisle index, not the catalogue",
-  /instructions: `\$\{BRIEF\}[^`]*aisleIndex\(\)/.test(realtime) && !/catalogueForModel/.test(realtime)
+  "the voice session opens with the whole store, not an index of it",
+  /instructions: \[/.test(realtime) &&
+    /productsForModel\(wholeStore\(\)\)/.test(realtime) &&
+    /allNotes\(\)/.test(realtime)
 );
 check(
-  "and it is told to look products up",
-  /find_products/.test(realtime) && /You do not hold the catalogue/.test(realtime)
+  "and it is told the store is its own to work from",
+  /You hold the whole store/.test(realtime) && !/You do not hold the catalogue/.test(realtime)
+);
+check(
+  // The matcher is still there and still reachable; what changed is that nothing
+  // forces the model through it.
+  "with the keyword search demoted to something it may use, not must",
+  /Prefer show_products with ids you chose yourself/.test(realtime)
 );
 
 await browser.close();

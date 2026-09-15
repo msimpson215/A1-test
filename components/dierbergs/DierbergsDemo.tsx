@@ -154,7 +154,15 @@ export default function DierbergsDemo() {
   // Everything on the go from other aisles stays visible as a reminder while
   // the grid is showing one aisle.
   const onTheList = dedupe([...cart, ...requested]);
-  const alsoRequested = view && view !== "staples" ? onTheList.filter((p) => p.category !== view) : [];
+  /*
+   * The last few things they were looking at elsewhere, not everything they have
+   * ever seen. Now that a shopper can ask for a whole aisle, "everything seen so
+   * far" is thirty cartons, and a sidebar of thirty is not a reminder.
+   */
+  const alsoRequested =
+    view && view !== "staples" && view !== "checkout"
+      ? onTheList.filter((p) => p.category !== view).slice(-4)
+      : [];
 
   useEffect(() => {
     primeVoices();
@@ -697,7 +705,9 @@ export default function DierbergsDemo() {
 
     setView((aisle as ShelfId) || picked[0].category);
     setShelfItems(picked);
-    setRequested((was) => dedupe([...was, ...picked]));
+    // Browsing a whole aisle is not asking for thirty things. Only a shelf small
+    // enough to have been a choice goes on the list they are working through.
+    if (picked.length <= 8) setRequested((was) => dedupe([...was, ...picked]));
     setMerchHeading(headingFor((aisle as ShelfId) || (picked[0].category as ShelfId), picked));
     return `showing ${picked.map((p) => p.name).join(", ")}`;
   }, []);
@@ -758,18 +768,11 @@ export default function DierbergsDemo() {
     setRequested((was) => dedupe([...was, ...products]));
     setMerchHeading(headingFor(view, products));
     /*
-     * Every aisle's knowledge, not just the one on screen.
-     *
-     * Looking it up per aisle is right for a hundred departments and wrong for
-     * four: a shopper who says they cannot drink milk and then asks about cheese
-     * has crossed two aisles in one breath, and handing over one aisle's notes
-     * meant answering that out of half the knowledge with no sign the other half
-     * existed. The whole lot is about fifteen hundred tokens.
+     * Only what changed on screen. The store and every aisle's notes are in the
+     * session now, so repeating them here would send the same fifteen hundred
+     * tokens back on every search for nothing.
      */
-    return [
-      `on the shelf now: ${productsForModel(products)}`,
-      `what you know about this store's aisles:\n${allNotes()}`
-    ].join("\n\n");
+    return `on the shelf now: ${productsForModel(products)}`;
   }, []);
 
   const addToCart = useCallback(

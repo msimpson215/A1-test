@@ -1122,6 +1122,22 @@ export function aisleIndex(): string {
   return aisleIndexFrom(shelves);
 }
 
+/*
+ * Every product in the store, once each.
+ *
+ * The index above is the right thing to hand a model that is shopping a real
+ * chain, where forty thousand items cannot be held in a prompt. It is the wrong
+ * thing to hand this one. Four aisles and a hundred and five items fit, and
+ * while they did not fit, every "what else have you got" had to go through a
+ * keyword matcher in this file — so a shopper asking an LLM a question got a
+ * regex's answer to it.
+ */
+export function wholeStore(): DemoProduct[] {
+  const seen = new Map<string, DemoProduct>();
+  for (const shelf of shelves) for (const product of shelf.products) seen.set(product.id, product);
+  return [...seen.values()];
+}
+
 export function shelfRespondsTo(shelf: Shelf, text: string): boolean {
   if (CHEAPEST.test(text) || DEAREST.test(text)) return true;
   if (
