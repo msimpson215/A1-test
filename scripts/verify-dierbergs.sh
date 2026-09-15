@@ -21,6 +21,10 @@ echo "── arithmetic and business model (no browser)"
 npm run --silent demo:cost
 echo
 
+echo "── this week's ad, and what a thing costs per ounce (no browser)"
+npm run --silent demo:value
+echo
+
 FAILED=0
 for suite in consistency demo milk milk-talk depth packshots scale voice-fallback neural-voice cells aisles specials checkout conversation realtime; do
   file="scripts/test-dierbergs-${suite}.mjs"

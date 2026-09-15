@@ -58,7 +58,8 @@ const everywhere = [
   "emptyMeansEmpty",
   "neverConfirmWhatDidNotHappen",
   "cannotLookThingsUp",
-  "showThemAllIfAsked"
+  "showThemAllIfAsked",
+  "ownBrandFirstNeverBought"
 ];
 
 for (const name of everywhere) {

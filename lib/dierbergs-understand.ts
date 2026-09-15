@@ -12,9 +12,10 @@ import {
   payCents,
   shelfById,
   shelves,
-  specialFor,
+  specialsFor,
   specialLine,
   specialPriceFor,
+  unitPrice,
   type ShelfId
 } from "@/data/dierbergs-catalogue";
 import { allNotes } from "@/data/dierbergs-aisle-notes";
@@ -97,9 +98,14 @@ function payload(products: DemoProduct[]) {
     form: p.form,
     size: p.size,
     price: p.price,
+    // What it works out at per ounce or per egg, ad price counted. Given rather
+    // than left to the model because this store writes "64 oz", "0.5 gal" and
+    // "96 fl oz" for overlapping things, and a wrong answer about saving money is
+    // the one a shopper checks.
+    unit: unitPrice(p) ?? undefined,
     aisle: p.category,
-    // Only ever set on the one product per aisle that is on the ad, so the
-    // model cannot decide anything else is a deal.
+    // Only ever set on what is actually on the ad, so the model cannot decide
+    // anything else is a deal.
     deal: specialPriceFor(p.id) ?? undefined,
     diet: p.dietary?.length ? p.dietary : undefined
   }));
@@ -473,14 +479,15 @@ function locally(said: string, context: TurnContext): Turn {
     }
 
     /*
-     * The week's ad. Put the one item up on its own and offer it, so a plain
-     * "yes" afterwards has exactly one thing to mean. With no aisle in play,
-     * read the four out and let them pick.
+     * The week's ad: everything in that aisle that is on it, not just the
+     * headline. An aisle holding two deals used to sound like an aisle holding
+     * one, which is a saving the shopper was never offered. With no aisle in
+     * play, read the headlines out and let them pick.
      */
     case "SPECIAL": {
       const shelf = shelfById(req.shelf);
-      const found = shelf ? specialFor(shelf.id) : null;
-      if (!shelf || !found) {
+      const found = shelf ? specialsFor(shelf.id) : [];
+      if (!shelf || !found.length) {
         return {
           ...base,
           action: "chat",
@@ -491,9 +498,9 @@ function locally(said: string, context: TurnContext): Turn {
       return {
         action: "show",
         aisle: shelf.id,
-        products: [found.product],
+        products: found.map(({ product }) => product),
         say: specialLine(shelf.id),
-        hint: `On special through ${found.special.through}. Say yes and I'll add it.`,
+        hint: `On special through ${found[0].special.through}. Say yes and I'll add it.`,
         source: "local"
       };
     }

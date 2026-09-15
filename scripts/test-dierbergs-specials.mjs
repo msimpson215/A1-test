@@ -83,22 +83,40 @@ await page.waitForSelector(".axon-strip-input");
 await wait(800);
 
 /* 1. A special on each cell, in his words. */
+// One special each, except milk, which now has two: the store's own and a
+// Prairie Farms. An aisle can hold more than one deal because a real ad does, and
+// because "the store's own brand is the deal every week" is a slogan, not an ad.
 const cellChecks = [
-  ["is there a special on eggs?", /18 count|eggland/i, /5\.49/],
-  ["is there a special on bread?", /nature/i, /3\.99/],
-  ["what about a special on milk?", /whole milk/i, /3\.49/],
-  ["any specials on cheese?", /sargento|cheddar/i, /2\.99/]
+  ["is there a special on eggs?", /18 count|eggland/i, /5\.49/, 1],
+  ["is there a special on bread?", /nature/i, /3\.99/, 1],
+  ["what about a special on milk?", /whole milk/i, /3\.49/, 2],
+  ["any specials on cheese?", /sargento|cheddar/i, /2\.99/, 1]
 ];
-for (const [said, who, price] of cellChecks) {
+for (const [said, who, price, howMany] of cellChecks) {
   await type(said);
   const spoken = await line();
   const shelf = await names();
   check(
     `“${said}”`,
-    who.test(spoken) && price.test(spoken) && /through Saturday/i.test(spoken) && shelf.length === 1,
+    who.test(spoken) &&
+      price.test(spoken) &&
+      /through Saturday/i.test(spoken) &&
+      shelf.length === howMany,
     `${spoken} · shelf: ${shelf.join(", ") || "(empty)"}`
   );
 }
+
+/* A second deal in an aisle has to be said as well as shown, or it is a saving
+   the shopper was never offered. */
+await type("what about a special on milk?");
+const milkDeals = await line();
+check(
+  "both milk deals are named, the store's own and the brand",
+  /dierbergs whole milk/i.test(milkDeals) &&
+    /prairie farms/i.test(milkDeals) &&
+    /4\.49/.test(milkDeals),
+  milkDeals
+);
 
 /* 2. The card says Special, with the old price struck through. */
 await type("is there a special on eggs?");

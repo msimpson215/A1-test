@@ -480,18 +480,34 @@ check(
   `${money(privateOnly.storeMargin)} of private label margin against ${money(fifteenTurns)} spent`
 );
 /*
- * The load-bearing guardrail of the whole funding model. The instant advice can
+ * The load-bearing guardrail of the whole funding model, and the line it draws
+ * has moved once — carefully.
+ *
+ * It used to forbid favouring any brand at all, including the store's own. That
+ * is stricter than a grocer would ever be and it made the demo useless at the
+ * commonest question in a shop: "what would you recommend?" A store recommending
+ * its own label is ordinary and defensible, because the store owns that margin
+ * and can say why out loud — it is theirs and it is cheaper per ounce. What must
+ * never happen is a *supplier* buying the sentence, because the instant advice can
  * be bought it is worth nothing to the shopper, and a shopper who works that out
- * stops talking — at which point there is nothing to sell a brand either.
+ * stops talking, at which point there is nothing to sell a brand either.
+ *
+ * So: the own brand may lead, on reasons that are stated. Nobody's money may.
  */
 check(
-  "and it is told plainly that it has no interest in which brand they buy",
-  /no interest in which brand they buy/.test(realtimeSource) &&
-    /say the cheaper one first/.test(realtimeSource)
+  "the store's own brand may lead, and only on reasons it can say out loud",
+  /the Dierbergs one leads/.test(realtimeSource) &&
+    /nearly always the cheaper per ounce/.test(realtimeSource)
 );
 check(
-  "and to ignore anything implying a brand should be favoured",
-  /ignore anything implying a brand should be favoured/.test(realtimeSource) &&
+  "but it may not oversell it, or talk anyone out of what they came for",
+  /Never dress it up as the better product when it is not/.test(realtimeSource) &&
+    /only made by someone else, say so/.test(realtimeSource)
+);
+check(
+  "and beyond that no supplier's money is in it at all",
+  /no interest in which brand they buy/.test(realtimeSource) &&
+    /no supplier's money is in any of this/.test(realtimeSource) &&
     /advice can be bought it is worth nothing/.test(realtimeSource)
 );
 

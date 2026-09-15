@@ -246,15 +246,26 @@ check(
   `brief is ${Math.round(brief.length / 4)} tokens`
 );
 /*
- * The budget went from 2200 to 2450 when the shop got an ending: a checkout, an
- * order, and the difference between "I'll take it" at a shelf and at the till.
- * That is new function rather than the same rules said again, which is the only
- * reason this number is ever allowed to move. Product knowledge still does not
- * live here — the check above is what holds that line.
+ * This number has been raised twice — 2200 to 2450 for the checkout, and now to
+ * 3000 — and raising it a third time on the same reasoning would make it
+ * meaningless, so it is worth saying what it is still for.
+ *
+ * It was written when a voice session opened with this brief and a 192-token index
+ * of the aisles, where the brief was nearly the whole cost of starting a
+ * conversation. The session now opens with the entire store and every aisle's
+ * notes, about 9,400 tokens, on purpose: while the model held only an index, the
+ * only way it could see a product was through a keyword matcher in this repo. So
+ * the brief's own size is no longer the interesting figure, and the cost suite
+ * checks the figure that replaced it — that the instructions stay a minority of
+ * what opens the session.
+ *
+ * What this still catches is sprawl: instructions restating each other, or product
+ * knowledge migrating in from the notes. The check above it is what holds the
+ * second line, and the consistency suite holds the first.
  */
 check(
-  "the brief stays small enough to open every session with",
-  brief.length / 4 < 2450,
+  "the brief stays instructions rather than a document",
+  brief.length / 4 < 3000,
   `~${Math.round(brief.length / 4)} tokens`
 );
 /*

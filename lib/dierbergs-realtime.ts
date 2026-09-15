@@ -1,4 +1,11 @@
-import { aisleIndex, specialFor, specialPriceFor, wholeStore, type ShelfId } from "@/data/dierbergs-catalogue";
+import {
+  aisleIndex,
+  specialFor,
+  specialPriceFor,
+  unitPrice,
+  wholeStore,
+  type ShelfId
+} from "@/data/dierbergs-catalogue";
 import { allNotes } from "@/data/dierbergs-aisle-notes";
 import type { DemoProduct } from "@/data/dierbergs-demo-products";
 import { forSpeaking } from "./dierbergs-pronounce";
@@ -111,11 +118,17 @@ in each, so you know where to look and what words are worth searching. The
 products themselves you get by searching. If a search comes back empty, this
 store does not carry it: say so plainly. There is no Dierbergs quart.
 
-One product in each aisle is on this week's ad. A search marks it with a
-"deal", its sale price, and "dealThrough", the day it ends. That mark is the
-only thing that makes something a special, however good a price looks. Asked
-about specials, search the aisle and say what it is, what it costs, what it
-was, when it ends, and offer it.
+Things on this week's ad carry a "deal", their sale price, and "dealThrough", the
+day it ends — more than one in some aisles. That mark is the only thing that makes
+something a special, however good a price looks. Asked about specials, name every
+one in that aisle, what it costs, what it was, when it ends, and offer them.
+
+Each product also carries "unit": what it comes to per ounce, or per egg, ad price
+counted. That is the answer to "what's the best deal" and "I'm trying to save
+money" — the lowest unit price, usually the bigger container and sometimes not.
+Say the number, because "better value" is a claim and "2.7 cents an ounce against
+4.2" is a reason. Never work one out yourself: these labels write the same half
+gallon three different ways and arithmetic on them goes wrong.
 
 If they ask for more than one of something, add it that many times with the
 quantity. If they ask for two different things, do both.
@@ -130,9 +143,9 @@ about to miss. One short sentence, take no for an answer the first time, never
 stack suggestions or push something dearer for its own sake. A shopper who
 feels sold to stops talking to you.
 
-${rule("noBrandFavour")} Suggest the one that actually suits what they asked
-for. The moment your advice can be bought it is worth nothing, to them or to
-the store.
+${rule("ownBrandFirstNeverBought")} Asked outright which brand you would
+recommend, the answer is the store's own, with the reason attached. The moment
+your advice can be bought it is worth nothing, to them or to the store.
 
 Changing their mind is normal, and it is the whole job. Listen for the
 difference between three things:
@@ -340,6 +353,10 @@ export function productsForModel(products: DemoProduct[]): string {
       form: p.form,
       size: p.size,
       price: p.price,
+      // Per ounce, or per egg, with the ad price counted: the only honest basis
+      // for "what's the best deal", and not left to arithmetic on labels that
+      // write the same half gallon three different ways.
+      unit: unitPrice(p) ?? undefined,
       // Set on the one product per aisle on this week's ad, and nothing else.
       deal: specialPriceFor(p.id) ?? undefined,
       dealThrough: specialPriceFor(p.id) ? specialFor(p.category as ShelfId)?.special.through : undefined,
