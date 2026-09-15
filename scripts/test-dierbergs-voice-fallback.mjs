@@ -7,6 +7,10 @@ const harness = (mode) => {
   window.__spoken = [];
   window.__script = [];
   window.__mode = mode;
+  // This suite cuts the network on purpose, and a shopper who loses the network
+  // now gets told so rather than answered by the parser. Drive the parser as a
+  // fixture instead, which is the only thing it is still for.
+  window.__parserAsBrain = true;
   // No microphone, so the live voice line cannot open. That is the point:
   // these suites cover the typed path a machine without one falls back to.
   Object.defineProperty(navigator, "mediaDevices", {
@@ -117,6 +121,18 @@ const browser = await puppeteer.launch({ executablePath: "/usr/bin/google-chrome
   await page.click(".axon-strip-send");
   await new Promise(r => setTimeout(r, 1500));
   check("typing still works after voice fails", (await page.$$(".db-card")).length === 3);
+  /*
+   * And it must own up to which brain answered.
+   *
+   * The voice badge was the only thing on screen and it spoke about the voice:
+   * "Browser voice" meant the speech came from the browser, which is true
+   * whether GPT did all the thinking behind it or none of it. So the one
+   * question that matters — am I talking to GPT — had no answer anywhere on the
+   * page, and the badge did not so much as flicker when GPT dropped out.
+   */
+  const brain = await page.$eval(".axon-brain", e => e.textContent.trim());
+  check("the strip names the brain, not just the voice", /no gpt/i.test(brain), brain);
+  check("and marks it as down", await page.$eval(".axon-brain", e => e.className.includes("is-down")));
   await page.close();
 }
 

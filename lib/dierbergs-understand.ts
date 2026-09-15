@@ -2,7 +2,6 @@ import {
   aisleIndex,
   allSpecialsLine,
   dietaryAdvice,
-  findProducts,
   LACTOSE_LINE,
   milkAskedForQuart,
   milkForLactose,
@@ -10,16 +9,18 @@ import {
   milkTheyMean,
   milkWantedSize,
   narrowShelf,
+  payCents,
   shelfById,
   shelves,
-  specialFor,
+  specialsFor,
   specialLine,
   specialPriceFor,
+  unitPrice,
   type ShelfId
 } from "@/data/dierbergs-catalogue";
-import { notesFor } from "@/data/dierbergs-aisle-notes";
+import { allNotes } from "@/data/dierbergs-aisle-notes";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
-import { countIn, parseRequest } from "./dierbergs-demo-intents";
+import { countSaid, parseRequest } from "./dierbergs-demo-intents";
 
 /**
  * What the shopper's words came to.
@@ -28,7 +29,7 @@ import { countIn, parseRequest } from "./dierbergs-demo-intents";
  * acting on a turn no matter which one answered.
  */
 export type Turn = {
-  action: "show" | "add" | "chat" | "replace" | "remove";
+  action: "show" | "add" | "chat" | "replace" | "remove" | "clear" | "checkout" | "order";
   /** The aisle to put on the shelf. */
   aisle: ShelfId | "staples" | null;
   /** Products to show, the one to add, or the one to put in on a replace. */
@@ -36,7 +37,8 @@ export type Turn = {
   /** What leaves the cart on a replace or a remove. */
   outgoing?: DemoProduct;
   /** How many of it, when they asked for a number. One when unsaid. */
-  quantity?: number;
+  /** How many they said. Null when they said no number, which each action reads its own way. */
+  quantity?: number | null;
   /** Spoken aloud. */
   say: string;
   /** On screen only. */
@@ -52,10 +54,22 @@ export type TurnContext = {
   onList: DemoProduct[];
   /** The aisle already on the shelf, which is what makes "the jumbo ones" mean something. */
   current: ShelfId | null;
+  /** Whether the till is on screen, which is what makes "we'll take it" the order. */
+  atCheckout?: boolean;
 };
 
 const ENDPOINT = process.env.NEXT_PUBLIC_UNDERSTAND_ENDPOINT || "/api/understand";
-const TIMEOUT_MS = 6000;
+
+/*
+ * One number, because there is only one thing worth waiting for.
+ *
+ * This used to be two, and choosing between them meant asking a parser whether
+ * it had a good enough answer to be worth cutting the model off for. There is
+ * no such answer. Nothing here is allowed to reply in the model's place, so the
+ * only question left is how long a person will sit still, and twenty seconds is
+ * longer than anybody waits before saying something again.
+ */
+const TIMEOUT_MS = 20000;
 
 const everyProduct = new Map<string, DemoProduct>();
 for (const shelf of shelves) {
@@ -84,9 +98,14 @@ function payload(products: DemoProduct[]) {
     form: p.form,
     size: p.size,
     price: p.price,
+    // What it works out at per ounce or per egg, ad price counted. Given rather
+    // than left to the model because this store writes "64 oz", "0.5 gal" and
+    // "96 fl oz" for overlapping things, and a wrong answer about saving money is
+    // the one a shopper checks.
+    unit: unitPrice(p) ?? undefined,
     aisle: p.category,
-    // Only ever set on the one product per aisle that is on the ad, so the
-    // model cannot decide anything else is a deal.
+    // Only ever set on what is actually on the ad, so the model cannot decide
+    // anything else is a deal.
     deal: specialPriceFor(p.id) ?? undefined,
     diet: p.dietary?.length ? p.dietary : undefined
   }));
@@ -111,10 +130,23 @@ const history: Spoken[] = [];
 let swaps = 0;
 let swapping: ShelfId | null = null;
 
+/*
+ * How many turns in a row the model has not answered.
+ *
+ * One is a blip. Several in a row means it is not coming back this minute, and
+ * the shopper has to be told — because the alternative is what happened: the
+ * rate limit was spent, every request came back in a tenth of a second, and
+ * fourteen turns of a real conversation were answered with the aisle menu in a
+ * confident voice. Nothing looked broken from outside, which is exactly what
+ * made it unrecoverable: there was nothing for the shopper to react to.
+ */
+let modelMisses = 0;
+
 export function forgetConversation(): void {
   history.length = 0;
   swaps = 0;
   swapping = null;
+  modelMisses = 0;
 }
 
 /** Everything the store stocks, by the id the model chooses it with. */
@@ -140,20 +172,27 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       signal: controller.signal,
       body: JSON.stringify({
         said,
-        // The aisle index is cheap and constant. The shortlist is what this
-        // sentence could be about, plus everything already in play, so "the
-        // other one" and "take the cheddar out" still have something to mean.
         index: aisleIndex(),
-        choices: payload(
-          uniqueById([
-            ...findProducts(said, context.current, 12).products,
-            ...context.showing,
-            ...context.cart,
-            ...context.onList
-          ])
-        ),
-        // What someone who works this aisle knows, for the aisle in play only.
-        notes: notesFor(findProducts(said, context.current, 12).aisle ?? context.current),
+        /*
+         * The whole store, because this store is a hundred and five items.
+         *
+         * This used to be a shortlist: the twelve products a search thought the
+         * sentence was about, plus whatever was on screen or in the cart. That
+         * is the right design for a real chain and the wrong one here, because
+         * every failure it causes looks like stupidity. Ask for something the
+         * search ranked thirteenth and the model is not choosing badly between
+         * the options — it never saw the thing, and it has no way to know that,
+         * so it answers confidently about the wrong carton.
+         *
+         * At fifty tokens each the lot comes to about five thousand, which is a
+         * fraction of a cent a turn. The shortlist machinery stays where it is
+         * for the store-sized version; it is simply not what a four-aisle demo
+         * should be gambling its answers on.
+         */
+        choices: payload(uniqueById([...everyProduct.values()])),
+        // Every aisle's knowledge, so a question that crosses two of them is not
+        // answered out of one.
+        notes: allNotes(),
         showing: context.showing.map((p) => p.id),
         cart: context.cart.map((p) => p.id),
         asked: context.onList.map((p) => p.id),
@@ -161,7 +200,12 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       })
     }).finally(() => clearTimeout(timer));
 
-    if (!response.ok) throw new Error(`understand ${response.status}`);
+    if (!response.ok) {
+      // Carry the reason out, so "out of credit" can be said as that rather
+      // than shown as a shopper's assistant that has quietly gone simple.
+      const reason = await response.json().then((b) => b?.reason || "").catch(() => "");
+      throw new Error(reason ? `understand ${response.status} ${reason}` : `understand ${response.status}`);
+    }
     const body = await response.json();
 
     let products = (body.products as string[])
@@ -196,12 +240,36 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
     // chosen one, and guessing is how a demo puts the wrong thing in the cart.
     // Same for a swap with nothing to swap out, or with nothing to put in.
     let action: Turn["action"] = body.action;
-    if ((action === "add" || action === "replace") && products.length !== 1) action = "show";
+    const meant = body.action;
+    /*
+     * One product, or the two or three someone names in a breath. "Two half
+     * gallons and a dozen eggs" is an ordinary sentence and used to buy the
+     * milk and silently drop the eggs. Past three it is not a shopper listing
+     * things, it is a model handing back a shelf, and that goes on the shelf.
+     */
+    if (action === "add" && (products.length === 0 || products.length > 3)) action = "show";
+    if (action === "replace" && products.length !== 1) action = "show";
     if ((action === "replace" || action === "remove") && !outgoing) {
       action = action === "replace" ? "add" : "chat";
     }
 
-    remember(said, body.say);
+    /*
+     * And do not read out the confirmation for something that did not happen.
+     *
+     * The line above is the safe half of this: an add with no product resolved
+     * becomes a look at the shelf rather than a guess at the cart. The unsafe
+     * half was that the model's own sentence went on being spoken regardless,
+     * so a shopper heard "Got it, that's in your cart" over a cart that had not
+     * moved. A wrong basket you were told about is recoverable. One you were
+     * told was right is not.
+     */
+    const say =
+      action === meant || !/\b(in your cart|added|out of your cart|got it|done)\b/i.test(body.say)
+        ? body.say
+        : "Which one did you mean?";
+
+    modelMisses = 0;
+    remember(said, say);
 
     /*
      * A number they actually said, kept sane. Nobody talks their way into a
@@ -209,7 +277,7 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
      * so it is capped rather than trusted.
      */
     const asked = Number(body.quantity);
-    const quantity = Number.isFinite(asked) ? Math.min(Math.max(Math.round(asked), 1), 12) : 1;
+    const quantity = Number.isFinite(asked) ? Math.min(Math.max(Math.round(asked), 1), 12) : null;
 
     return {
       action,
@@ -217,13 +285,59 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
       products,
       outgoing,
       quantity,
-      say: body.say,
+      say,
       hint: body.hint,
       source: "model",
       model: body.model
     };
-  } catch {
-    const turn = locally(said, context);
+  } catch (why) {
+    /*
+     * Without GPT, this says one thing: that GPT is not there.
+     *
+     * There is one brain and it is GPT. What used to sit underneath it was a
+     * hand-written parser, and when the model could not be reached the parser
+     * answered in its place, in the same voice, with nothing on screen to say
+     * the brain had changed. Every embarrassing sentence came from there:
+     * aisle menus read out to somebody asking why cheese hardens, a food
+     * safety question answered with "Want to save money?", the onboarding
+     * tutorial recited forty turns into a conversation. None of it was the
+     * model. It was regular expressions doing an impression of one.
+     *
+     * The impression is what has to go, not the quality of it. So nothing is
+     * shown, nothing is said beyond the failure itself, and above all nothing
+     * is bought: the cart cannot move unless GPT asked for it to.
+     */
+    modelMisses += 1;
+
+    /*
+     * The suites are the exception, and they are the only one.
+     *
+     * Ten of them cut the network and drive the demo through the parser, which
+     * is how the cart, the shelves and the flying packshots get tested without
+     * a key or a bill. That is a fixture and a good one. What it must never be
+     * is what a shopper gets, so it is opt-in, off unless a test names it, and
+     * nothing in the product sets it.
+     */
+    if (typeof window !== "undefined" && (window as { __parserAsBrain?: boolean }).__parserAsBrain) {
+      const fixture = locally(said, context);
+      remember(said, fixture.say);
+      return fixture;
+    }
+
+    const turn: Turn = {
+      action: "chat",
+      aisle: null,
+      products: [],
+      outgoing: undefined,
+      quantity: null,
+      say: /insufficient_quota|credit|billing|quota/i.test(String(why))
+        ? "I can't think at all right now \u2014 the store's OpenAI account is out of credit."
+        : modelMisses >= 2
+          ? "I still can't reach GPT. It's the brain that's missing, not the shelves."
+          : "I can't reach GPT just now, and I won't guess in its place.",
+      hint: "Nothing goes in or out of your cart while I'm like this.",
+      source: "local"
+    };
     remember(said, turn.say);
     return turn;
   }
@@ -231,8 +345,15 @@ export async function understand(said: string, context: TurnContext): Promise<Tu
 
 function remember(said: string, reply: string): void {
   history.push({ role: "user", content: said }, { role: "assistant", content: reply });
-  // Enough for "the cheapest one" to refer back, short enough to stay quick.
-  if (history.length > 12) history.splice(0, history.length - 12);
+  /*
+   * Six exchanges was enough for "the cheapest one" to refer back to and not
+   * much else. A conversation where somebody mentions being lactose intolerant
+   * at the start and asks about cheese ten turns later is an ordinary
+   * conversation, and forgetting the first half of it is the single most
+   * obviously-not-ChatGPT thing this could do. Forty messages of grocery talk is
+   * a few thousand tokens.
+   */
+  if (history.length > 40) history.splice(0, history.length - 40);
 }
 
 /**
@@ -261,7 +382,7 @@ const AISLE_AND = `${AISLE_NAMES.slice(0, -1).join(", ")} and ${AISLE_NAMES.at(-
 
 /** The parser, in the same shape, for when the model cannot be reached. */
 function locally(said: string, context: TurnContext): Turn {
-  const req = parseRequest(said, context.current);
+  const req = parseRequest(said, context.current, context.atCheckout ?? false);
   const base = { source: "local" as const, products: [] as DemoProduct[], aisle: null };
   // Anything that is not another correction ends the run of them.
   if (req.intent !== "REPLACE") {
@@ -296,13 +417,24 @@ function locally(said: string, context: TurnContext): Turn {
         shelf.id === "milk" && req.intent === "ADD" && picked.length !== 1
           ? milkTheyMean(req.text)
           : null;
+      /*
+       * A brand said on its own, while a shelf is up, means the one on the
+       * shelf. "The Cabot, put it in the cart" narrows to two Cabots across the
+       * whole cheese aisle and so used to buy neither, but only one of them was
+       * on screen — and a shopper naming what they are looking at should not
+       * have to describe it more fully than the shelf already does.
+       */
+      const onScreen = picked.filter((p) => context.showing.some((s) => s.id === p.id));
       const one =
-        picked.length === 1 ? picked[0] : bySize ?? (already.length === 1 ? already[0] : null);
+        picked.length === 1
+          ? picked[0]
+          : bySize ??
+            (onScreen.length === 1 ? onScreen[0] : already.length === 1 ? already[0] : null);
 
       if (req.intent === "ADD" && one) {
         return {
           action: "add",
-          quantity: countIn(req.text),
+          quantity: countSaid(req.text),
           // Leave the shelf be when the choice came from the list rather than
           // the words: they are looking at four cheddars and buying one. A
           // size, though, is words, and the carton has to be on screen to fly
@@ -347,14 +479,15 @@ function locally(said: string, context: TurnContext): Turn {
     }
 
     /*
-     * The week's ad. Put the one item up on its own and offer it, so a plain
-     * "yes" afterwards has exactly one thing to mean. With no aisle in play,
-     * read the four out and let them pick.
+     * The week's ad: everything in that aisle that is on it, not just the
+     * headline. An aisle holding two deals used to sound like an aisle holding
+     * one, which is a saving the shopper was never offered. With no aisle in
+     * play, read the headlines out and let them pick.
      */
     case "SPECIAL": {
       const shelf = shelfById(req.shelf);
-      const found = shelf ? specialFor(shelf.id) : null;
-      if (!shelf || !found) {
+      const found = shelf ? specialsFor(shelf.id) : [];
+      if (!shelf || !found.length) {
         return {
           ...base,
           action: "chat",
@@ -365,9 +498,9 @@ function locally(said: string, context: TurnContext): Turn {
       return {
         action: "show",
         aisle: shelf.id,
-        products: [found.product],
+        products: found.map(({ product }) => product),
         say: specialLine(shelf.id),
-        hint: `On special through ${found.special.through}. Say yes and I'll add it.`,
+        hint: `On special through ${found[0].special.through}. Say yes and I'll add it.`,
         source: "local"
       };
     }
@@ -537,6 +670,34 @@ function locally(said: string, context: TurnContext): Turn {
         say: "Happy to help. What would you like to get first?",
         hint: "Name one thing at a time and I'll pull it up."
       };
+
+    case "EMPTY_CART":
+      return { ...base, action: "clear", products: [], aisle: null, say: "", hint: "" };
+
+    /* The shell does the arithmetic and the speaking for both of these, because
+       it is the only thing that knows what is in the cart as of this moment. */
+    case "CHECKOUT":
+      return { ...base, action: "checkout", products: [], aisle: null, say: "", hint: "" };
+
+    case "PLACE_ORDER":
+      return { ...base, action: "order", products: [], aisle: null, say: "", hint: "" };
+
+    case "READ_BACK_CART": {
+      const held = context.cart;
+      const total = held.reduce((sum, item) => sum + payCents(item), 0);
+      return {
+        ...base,
+        action: "chat",
+        say: held.length
+          ? `You have ${held.length} ${held.length === 1 ? "item" : "items"}: ${held
+              .map((item) => item.name.replace(/\s+-\s+/g, ", "))
+              .join(", ")}. That is $${(total / 100).toFixed(2)}.`
+          : "Your cart is empty at the moment.",
+        hint: held.length
+          ? "Say what else you need, or name something to take out."
+          : "Ask for a grocery and the shelves change."
+      };
+    }
 
     case "HOW_IT_WORKS":
       return {

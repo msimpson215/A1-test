@@ -78,6 +78,11 @@ await page.setViewport({ width: 1440, height: 900 });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.evaluateOnNewDocument(fakeSpeech);
+// The parser stands in for the model here. That is a fixture, not what a
+// shopper gets: with no flag an unreachable model says so and touches nothing.
+await page.evaluateOnNewDocument(() => {
+  window.__parserAsBrain = true;
+});
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
 
 const cart = () => page.$eval(".db-cart", (el) => el.innerText.replace(/\s+/g, " ").trim());
@@ -174,10 +179,18 @@ check(
 );
 check("asking did not buy anything", (await cart()) === "0 items $0.00", await cart());
 check(
-  "it asks if they want to save money",
-  /save money/i.test(await page.evaluate(() => window.__spoken.join(" "))) &&
+  // The opening used to be "want to save money?", which said why the two jugs
+  // were up but not that the shopper was being shown a selection. Naming the
+  // special and naming the way past it are both the offer now.
+  "it offers the store's own on special, and a size",
+  /special/i.test(await page.evaluate(() => window.__spoken.join(" "))) &&
     /gallon/i.test(await page.evaluate(() => window.__spoken.join(" "))),
   await page.evaluate(() => window.__spoken.slice(-1)[0])
+);
+check(
+  "and the screen offers the whole case to anyone who wants it",
+  /all the milks/i.test(await page.$eval(".axon-strip-hint, .axon-strip-sub", (el) => el.innerText)),
+  await page.$eval(".axon-strip-hint, .axon-strip-sub", (el) => el.innerText)
 );
 check(
   "the input clears so the next request starts empty",
@@ -460,6 +473,40 @@ if (skimIdx >= 0) {
   await wait(2800);
 }
 check("skim goes in the cart", (await cart()) === "1 item $4.24", await cart());
+
+/*
+ * A stated number is the total in the cart, not an amount to add to it.
+ *
+ * This is the oldest complaint about the demo and it kept coming back, because
+ * what was covered was the number being read correctly out of the sentence and
+ * never what the cart did with it afterwards. One carton already in there and a
+ * stated count of two finished with three — the count was right and it was piled
+ * on top of the one already held.
+ */
+await page.click(".reset-demo");
+await wait(400);
+await page.click(".shopper-nav-pill");
+await page.waitForSelector(".axon-strip-input");
+await wait(700);
+await type("I need milk.");
+await wait(1600);
+await type("A half gallon of two percent.");
+await wait(1800);
+const twoPct = await cards();
+const twoPctIdx = twoPct.findIndex((n) => /Dierbergs 2% Milk - Half/i.test(n));
+if (twoPctIdx >= 0) {
+  const btns = await page.$$(".db-card .db-add");
+  await btns[twoPctIdx].click();
+  await wait(2800);
+}
+check("one half gallon is in the cart to start", (await cart()) === "1 item $2.69", await cart());
+await type("I'll take two half gallons of two percent.");
+await wait(3000);
+check(
+  "a count of two over a cart holding one ends with two, not three",
+  (await cart()) === "2 items $5.38",
+  await cart()
+);
 
 // The hint line under the prompt comes and goes as the conversation moves on.
 // If the copy column is allowed to resize with it, the strip breathes on every

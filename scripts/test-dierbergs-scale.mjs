@@ -86,6 +86,11 @@ await page.setViewport({ width: 1440, height: 900 });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.evaluateOnNewDocument(captureModel);
+// The parser stands in for the model here. That is a fixture, not what a
+// shopper gets: with no flag an unreachable model says so and touches nothing.
+await page.evaluateOnNewDocument(() => {
+  window.__parserAsBrain = true;
+});
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
 await page.click(".shopper-nav-pill");
 await page.waitForSelector(".axon-strip-input");
@@ -108,19 +113,32 @@ const stocked = (fs.readFileSync("data/dierbergs-cells.ts", "utf8").match(/^\s*i
 
 await type("do you have any lactose free milk");
 let ask = await lastAsk();
+/*
+ * The demo sends the whole store, on purpose.
+ *
+ * A shortlist is the right design for a chain and the wrong one for four aisles,
+ * because every miss it causes is invisible from both ends. Ask for the thing the
+ * search ranked thirteenth and the model is not choosing badly between what it
+ * was shown — it never saw the item, cannot know that, and answers confidently
+ * about the wrong carton. At about fifty tokens an item the lot is a fraction of
+ * a cent a turn.
+ *
+ * The shortlist machinery is still here and still tested below, because it is
+ * what a real store would use. It is just not what this demo gambles on.
+ */
 check(
-  "the model is sent a shortlist, not the store",
-  ask && ask.body.choices.length > 0 && ask.body.choices.length <= 20,
-  `${ask?.body.choices.length} products of ${stocked}+ stocked`
+  "the model is sent the whole store, not a shortlist of it",
+  ask && ask.body.choices.length >= stocked,
+  `${ask?.body.choices.length} products, ${stocked}+ stocked`
 );
 check(
-  "and the shortlist is what the sentence is about",
+  "so what the sentence is about cannot be missing from it",
   ask.body.choices.some((p) => /lactaid|prairie farms|fairlife/i.test(p.name)),
   ask.body.choices.map((p) => p.name).join(" | ").slice(0, 130)
 );
 check(
-  "and the request stays small enough to send on every sentence",
-  ask.bytes < 6000,
+  "and the request is still small enough to send on every sentence",
+  ask.bytes < 60000,
   `${(ask.bytes / 1024).toFixed(1)}kB`
 );
 check(
@@ -130,15 +148,13 @@ check(
 );
 check("and the old whole-catalogue payload is gone", ask.body.aisles === undefined);
 
-/* Different words, different shortlist: this is a search, not a fixed list. */
+/* A question about another aisle has that aisle to answer out of. */
 await type("what sharp cheddar do you have");
 ask = await lastAsk();
-// The search hits come first; what was already in play trails behind them, on
-// purpose, so a follow-up about the milk still has the milk to point at.
 check(
-  "another aisle searches that aisle, and its hits lead the list",
-  ask.body.choices.slice(0, 3).every((p) => p.aisle === "cheese" && /cheddar/i.test(p.name)),
-  ask.body.choices.map((p) => `${p.aisle}:${p.name}`).join(" | ").slice(0, 150)
+  "a question about another aisle has that aisle in front of it",
+  ask.body.choices.some((p) => p.aisle === "cheese" && /sharp cheddar/i.test(p.name)),
+  ask.body.choices.filter((p) => p.aisle === "cheese").length + " cheeses on the list"
 );
 
 /* What is in play stays in play, or "the other one" means nothing. */
@@ -146,35 +162,55 @@ const onShelf = await page.$$eval(".db-card .db-name", (els) => els.map((e) => e
 await type("how much is that one");
 ask = await lastAsk();
 check(
-  "whatever is on the shelf stays on the shortlist",
+  "whatever is on the shelf is on the list",
   onShelf.length > 0 && onShelf.every((name) => ask.body.choices.some((p) => p.name === name)),
   `${onShelf.length} on the shelf, ${ask.body.choices.length} on the list`
 );
 
-/* Nothing this store carries. */
+/*
+ * Nothing this store carries. Sending everything makes this cleaner rather than
+ * murkier: there is no near-miss padding to mistake for stock, because the model
+ * is looking at the entire catalogue and goat milk is not in it.
+ */
 await type("do you have any goat milk");
 ask = await lastAsk();
 check(
-  "a request for something unstocked does not pad the list with near misses",
-  ask.body.choices.length <= 20,
-  `${ask.body.choices.length} products`
+  "something unstocked is absent from the list, not approximated in it",
+  !ask.body.choices.some((p) => /goat/i.test(p.name)),
+  `${ask.body.choices.length} products, none of them goat`
 );
 
 check("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200));
 
 /*
- * The spoken line's opening instructions, at the source: an index and how to
- * search, never the catalogue. A regression here is somebody pasting the store
- * back into the prompt, which works right up until the store is real.
+ * The spoken line's opening instructions, at the source.
+ *
+ * This used to assert the opposite: an index and how to search, never the store,
+ * because a chain of forty thousand items cannot be held in a prompt. That is
+ * still true of a chain, and `aisleIndexFrom` is still tested against a thousand
+ * aisles in the cost suite. It was the wrong call for four aisles and a hundred
+ * and five items, and the cost of it was not tokens. While the model held only an
+ * index, the only way it could see a product was to call find_products — a
+ * keyword matcher in this repo — so a shopper asking an LLM "what else have you
+ * got" got a regex's reading of the sentence, and the regex's blind spots (it
+ * could not match a plural) read as the model being stupid.
  */
 const realtime = fs.readFileSync("lib/dierbergs-realtime.ts", "utf8");
 check(
-  "the voice session opens with the aisle index, not the catalogue",
-  /instructions: `\$\{BRIEF\}[^`]*aisleIndex\(\)/.test(realtime) && !/catalogueForModel/.test(realtime)
+  "the voice session opens with the whole store, not an index of it",
+  /instructions: \[/.test(realtime) &&
+    /productsForModel\(wholeStore\(\)\)/.test(realtime) &&
+    /allNotes\(\)/.test(realtime)
 );
 check(
-  "and it is told to look products up",
-  /find_products/.test(realtime) && /You do not hold the catalogue/.test(realtime)
+  "and it is told the store is its own to work from",
+  /You hold the whole store/.test(realtime) && !/You do not hold the catalogue/.test(realtime)
+);
+check(
+  // The matcher is still there and still reachable; what changed is that nothing
+  // forces the model through it.
+  "with the keyword search demoted to something it may use, not must",
+  /Prefer show_products with ids you chose yourself/.test(realtime)
 );
 
 await browser.close();

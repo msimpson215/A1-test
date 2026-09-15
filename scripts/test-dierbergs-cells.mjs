@@ -31,6 +31,12 @@ await page.setViewport({ width: 1440, height: 900 });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 
+// The parser stands in for the model here, which is a fixture and not
+// what a shopper gets: without this flag an unreachable model says so
+// and touches nothing.
+await page.evaluateOnNewDocument(() => {
+  window.__parserAsBrain = true;
+});
 await page.evaluateOnNewDocument(() => {
   window.__spoken = [];
   // No microphone, so no live voice line: every request goes down the typed

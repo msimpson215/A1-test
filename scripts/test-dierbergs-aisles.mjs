@@ -69,6 +69,11 @@ await page.setViewport({ width: 1440, height: 900 });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.evaluateOnNewDocument(fakeSpeech);
+// The parser stands in for the model here. That is a fixture, not what a
+// shopper gets: with no flag an unreachable model says so and touches nothing.
+await page.evaluateOnNewDocument(() => {
+  window.__parserAsBrain = true;
+});
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
 
 const cards = () => page.$$eval(".db-card .db-name", (els) => els.map((e) => e.textContent.trim()));
@@ -116,8 +121,10 @@ for (const aisle of aisles) {
   );
   check(
     `"${aisle.ask}" asks which one`,
+    // Milk opens on the store's own two jugs and says they are on special;
+    // every other aisle opens on a spread and asks which.
     milkAsk
-      ? /save money/i.test(await spoken())
+      ? /on special/i.test(await spoken())
       : /which would you like/i.test(await spoken())
   );
   check(`"${aisle.ask}" buys nothing on its own`, (await cart()) === "0 items $0.00", await cart());

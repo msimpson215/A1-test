@@ -185,6 +185,52 @@ check(
   (await lastSaid()).slice(0, 110)
 );
 
+/*
+ * Milk carries two deals now, the store's own and a Prairie Farms, so an answer
+ * that names one and stops is a saving the shopper was never offered.
+ */
+await type("what's on special in the milk");
+const milkAd = await lastSaid();
+check(
+  "both milk deals get named, not just the store's own",
+  /dierbergs/i.test(milkAd) && /prairie farms/i.test(milkAd),
+  milkAd.slice(0, 160)
+);
+
+// ── Money, which is what a shopper is really asking about ───────────────────
+/*
+ * The value question and the price question are different questions. The cheapest
+ * milk here is a $2.69 half gallon; the best deal is the $3.49 gallon, at 2.7 cents
+ * an ounce against 4.2. An answer worth anything says the per-ounce number, because
+ * "better value" is a claim and a number is a reason.
+ */
+await type("what's the best deal on milk? I'm trying to save money");
+const deal = await lastSaid();
+check(
+  "the best deal is answered on value, with the number said",
+  /gallon/i.test(deal) && /(per ounce|an ounce|\/oz|¢)/i.test(deal),
+  deal.slice(0, 200)
+);
+check(
+  "and it is the gallon rather than the smallest price tag",
+  /3\.49|gallon/i.test(deal) && !/^.{0,80}2\.69/.test(deal),
+  deal.slice(0, 200)
+);
+
+/* Asked outright, the answer is the store's own — with the reason attached. */
+await type("what brand would you recommend?");
+const brand = await lastSaid();
+check(
+  "asked which brand, it recommends Dierbergs",
+  /dierbergs/i.test(brand),
+  brand.slice(0, 200)
+);
+check(
+  "and gives a reason rather than just asserting it",
+  /(cheaper|less|price|ounce|our own|store|value|\$|¢)/i.test(brand),
+  brand.slice(0, 200)
+);
+
 // ── Dietary, which is the change made today ────────────────────────────────
 await type("I'm lactose intolerant");
 const lactoseShelf = await names();

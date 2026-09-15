@@ -86,25 +86,71 @@ export type Special = {
   ask: string;
 };
 
-export const specials: Record<ShelfId, Special> = {
-  eggs: { productId: "eggs-eb-large-18", nowCents: 549, through: "Saturday", ask: "Want those?" },
-  milk: { productId: "dierbergs-whole-gal", nowCents: 349, through: "Saturday", ask: "Want one?" },
-  bread: { productId: "natures-own-thick", nowCents: 399, through: "Saturday", ask: "Want it?" },
-  cheese: { productId: "sargento-sharp", nowCents: 299, through: "Saturday", ask: "Want it?" }
+/*
+ * The week's ad. More than one thing per aisle, because a real one has more than
+ * one thing per aisle, and because the store's own brand being the deal every
+ * single time is not a weekly ad, it is a slogan. The first in each aisle is the
+ * headline — what gets offered when somebody asks the aisle generally — and the
+ * rest are there to be found and to be talked about.
+ */
+export const specials: Record<ShelfId, Special[]> = {
+  eggs: [{ productId: "eggs-eb-large-18", nowCents: 549, through: "Saturday", ask: "Want those?" }],
+  milk: [
+    { productId: "dierbergs-whole-gal", nowCents: 349, through: "Saturday", ask: "Want one?" },
+    /*
+     * A brand that is not the store's, on the ad, at a real saving. This is what
+     * makes "what's the best deal on milk" a question worth asking rather than one
+     * with a foregone answer, and it is the case that has to stay honest: the
+     * store's own leads because it is the store's and it is cheaper, never because
+     * a supplier paid for the sentence.
+     */
+    { productId: "milk-pf-lf-whole", nowCents: 449, through: "Saturday", ask: "Want one?" }
+  ],
+  bread: [{ productId: "natures-own-thick", nowCents: 399, through: "Saturday", ask: "Want it?" }],
+  cheese: [{ productId: "sargento-sharp", nowCents: 299, through: "Saturday", ask: "Want it?" }]
 };
+
+/** Every special in one aisle, headline first. */
+export function specialsFor(id: ShelfId): Array<{ product: DemoProduct; special: Special }> {
+  return specials[id]
+    .map((special) => {
+      const product = cells[id].find((p) => p.id === special.productId);
+      return product ? { product, special } : null;
+    })
+    .filter((found): found is { product: DemoProduct; special: Special } => Boolean(found));
+}
+
+/** Every special in the store, for anyone who asks what is on the ad. */
+function everySpecial(): Special[] {
+  return Object.values(specials).flat();
+}
 
 const SPECIAL_ASKED =
   /\b(specials?|sales?|on sale|deals?|discount|coupon|promo|weekly ad|marked down|anything cheap)\b/;
 
-/** "Is there a special on eggs?" — asking about the ad rather than the aisle. */
+/**
+ * "Is there a special on eggs?" — asking about the ad rather than the aisle.
+ *
+ * Not "what's the best deal on milk?", which shares the word and means something
+ * else entirely. Answering that one out of the ad put a 7.0¢/oz carton in front of
+ * somebody who had just said they were trying to save money, next to a 2.7¢/oz one:
+ * both on the ad, one of them nearly three times the price of the other. Being on
+ * the ad and being the best value are different facts and shoppers asking for the
+ * second do not want the first.
+ */
 export function asksForSpecial(text: string): boolean {
-  return SPECIAL_ASKED.test(plain(text));
+  const plainText = plain(text);
+  return SPECIAL_ASKED.test(plainText) && !asksForValue(plainText);
 }
 
+/** "What's the best deal on milk? I'm trying to save money." */
+export function asksForValue(text: string): boolean {
+  return BEST_VALUE.test(plain(text));
+}
+
+/** The aisle's headline deal, which is what a general question gets offered. */
 export function specialFor(id: ShelfId): { product: DemoProduct; special: Special } | null {
-  const special = specials[id];
-  const product = cells[id].find((p) => p.id === special.productId);
-  return product ? { product, special } : null;
+  return specialsFor(id)[0] ?? null;
 }
 
 function dollars(cents: number): string {
@@ -113,7 +159,7 @@ function dollars(cents: number): string {
 
 /** The ad price for one product, for the card. Null when it is not on the ad. */
 export function specialPriceFor(productId: string): string | null {
-  for (const special of Object.values(specials)) {
+  for (const special of everySpecial()) {
     if (special.productId === productId) return dollars(special.nowCents);
   }
   return null;
@@ -126,20 +172,27 @@ export function specialPriceFor(productId: string): string | null {
  * total goes through here so the saving is real at the register.
  */
 export function payCents(product: DemoProduct): number {
-  for (const special of Object.values(specials)) {
+  for (const special of everySpecial()) {
     if (special.productId === product.id) return special.nowCents;
   }
   return product.priceCents;
 }
 
-/** What to say when they ask about one aisle's special. */
+/** What to say when they ask about one aisle's specials — all of them. */
 export function specialLine(id: ShelfId): string {
-  const found = specialFor(id);
-  if (!found) return "";
-  const { product, special } = found;
-  return `Yes \u2014 the ${product.shortName} is ${dollars(special.nowCents)} through ${
-    special.through
-  }, down from ${product.price}. ${special.ask}`;
+  const found = specialsFor(id);
+  if (!found.length) return "";
+  const [head, ...rest] = found;
+  const first = `Yes \u2014 the ${head.product.shortName} is ${dollars(head.special.nowCents)} through ${
+    head.special.through
+  }, down from ${head.product.price}.`;
+  // Naming only the headline and stopping is how an aisle with two deals in it
+  // sounds like an aisle with one.
+  const others = rest.map(
+    ({ product, special }) =>
+      ` The ${product.shortName} is on it too, ${dollars(special.nowCents)} from ${product.price}.`
+  );
+  return `${first}${others.join("")} ${head.special.ask}`;
 }
 
 /** What to say when they ask what is on special without naming an aisle. */
@@ -156,14 +209,94 @@ export function allSpecialsLine(): string {
 
 const shelfOrder: ShelfId[] = ["milk", "eggs", "bread", "cheese"];
 
+/*
+ * What a thing costs per ounce, or per egg.
+ *
+ * "What's the best deal on milk?" is a question about value, and value is the one
+ * thing the shelf prices do not show. Worse, this store writes its sizes five
+ * ways: "128 oz", "1 gal", "0.5 gal", "96 fl oz", "227 g". A half gallon appears
+ * as "64 oz" on the store's own carton and "0.5 gal" on Prairie Farms', so
+ * anything comparing them by their labels is comparing nothing. Left to work it
+ * out from the strings a model will get it right most times and confidently wrong
+ * the rest, and a wrong answer about saving money is the one a shopper checks.
+ *
+ * So it is worked out here, once, from the ad price rather than the shelf price —
+ * a deal that does not move the unit price is not a deal.
+ */
+const OUNCES_PER_GALLON = 128;
+const OUNCES_PER_GRAM = 0.0352739619;
+
+function amountIn(size: string): { count: number; unit: "oz" | "each" } | null {
+  const text = size.trim().toLowerCase();
+  if (!text) return null;
+  const number = Number.parseFloat(text);
+  if (!Number.isFinite(number) || number <= 0) return null;
+  if (/\bgal(lon)?s?\b/.test(text)) return { count: number * OUNCES_PER_GALLON, unit: "oz" };
+  if (/\bg\b|gram/.test(text)) return { count: number * OUNCES_PER_GRAM, unit: "oz" };
+  if (/\b(fl\s*)?oz\b|ounce/.test(text)) return { count: number, unit: "oz" };
+  // "12 ct" is a dozen eggs or a pack of ten slices: the unit is the thing itself.
+  if (/\bct\b|count|pack/.test(text)) return { count: number, unit: "each" };
+  return null;
+}
+
+/** Cents per ounce, or per item, with what it actually rings up at. */
+function unitCents(product: DemoProduct): { per: number; unit: "oz" | "each" } | null {
+  const amount = amountIn(product.size);
+  if (!amount) return null;
+  return { per: payCents(product) / amount.count, unit: amount.unit };
+}
+
+/** "3.5\u00a2/oz", or "46\u00a2 each" for anything counted. Null when the size does not say. */
+export function unitPrice(product: DemoProduct): string | null {
+  const found = unitCents(product);
+  if (!found) return null;
+  if (found.unit === "each") {
+    return found.per >= 100
+      ? `${dollars(Math.round(found.per))} each`
+      : `${Math.round(found.per)}\u00a2 each`;
+  }
+  return `${found.per.toFixed(1)}\u00a2/oz`;
+}
+
+/*
+ * Best value first.
+ *
+ * Only within one unit: bread comes as a 20 oz loaf and a pack of 10 rolls, and
+ * "cents per ounce" against "cents per roll" is not a comparison, it is two
+ * numbers side by side. So whichever unit most of the aisle is measured in wins,
+ * and anything measured the other way sits this question out rather than turning
+ * up at the top of it looking like a bargain.
+ */
+export function byValue(pool: DemoProduct[]): DemoProduct[] {
+  const priced = pool
+    .map((product) => ({ product, ...(unitCents(product) ?? { per: null, unit: null }) }))
+    .filter((row): row is { product: DemoProduct; per: number; unit: "oz" | "each" } => row.per !== null);
+  if (!priced.length) return [];
+  const ounces = priced.filter((row) => row.unit === "oz").length;
+  const unit: "oz" | "each" = ounces >= priced.length - ounces ? "oz" : "each";
+  return priced
+    .filter((row) => row.unit === unit)
+    .sort((a, b) => a.per - b.per)
+    .map((row) => row.product);
+}
+
 export const shelves: Shelf[] = [
   {
     id: "milk",
     label: "milk",
     words: ["milk"],
     heading: "Our Dierbergs milk.",
-    ask: "Want to save money? Our Dierbergs milk comes in a gallon or a half gallon. Which size?",
-    askHint: "Name a size, or say if you want another brand.",
+    /*
+     * The opening offer, and the way out of it.
+     *
+     * Two jugs is the right thing to open with and it was the only thing anyone
+     * ever saw, because nothing on screen said the case held twenty more. Asked
+     * to see all the milks the shelf put the same two up again, so the store
+     * looked like it stocked two. The hint now names the sentence that opens the
+     * whole case, because a way out nobody is told about is not a way out.
+     */
+    ask: "Our own Dierbergs milk is on special right now \u2014 would you like to try that? Gallon or half gallon?",
+    askHint: "Name a size, or say \u201cshow me all the milks\u201d to see the whole case.",
     products: milkCell,
     kindOf: milkKind,
     spread: ["whole", "2%", "1%", "skim", "chocolate", "lactose-free", "organic", "filtered"],
@@ -605,6 +738,73 @@ export function shelvesNamedIn(text: string): Shelf[] {
 
 const CHEAPEST = /\b(cheapest|least expensive|lowest price|budget|on a budget)\b/;
 const DEAREST = /\b(most expensive|priciest|dearest|best one|nicest|fanciest)\b/;
+/*
+ * "What's the best deal on milk?" is not "what's the cheapest milk?".
+ *
+ * The cheapest milk in this store is a $2.69 half gallon. The best deal is a
+ * $3.49 gallon: nearly a penny and a half less per ounce, and on the ad. Someone
+ * with three dollars in their pocket wants the first answer and someone trying to
+ * spend less on milk this month wants the second, and handing either of them the
+ * other one is a wrong answer to the question they asked.
+ */
+const BEST_VALUE =
+  /\b(best (deal|value|buy)|better value|good value|best price|save (money|some money)|saving money|trying to save|most for (my|your) money|bang for|per ounce|cheaper per|best deals?)\b/;
+
+/*
+ * "Show me all the milks."
+ *
+ * Every aisle opens on a small, chosen handful, and that is the right way to
+ * open — twenty-two cartons at somebody who said "milk" is a wall, not an
+ * answer. But it left no way out. Asked to see all the milks the shelf put up
+ * the same two Dierbergs jugs it always did, so the store looked like it
+ * stocked two milks, and the more plainly you asked the more it insisted.
+ *
+ * So this is the escape hatch, and it is deliberately generous about how it
+ * might be said. Anyone who has been shown a handful and wants the rest asks in
+ * whatever words come to hand, and being ignored twice is how a person decides
+ * the thing is broken.
+ */
+const WANTS_THE_LOT =
+  /\b(all|every|everything|the lot|the rest|full (list|range|selection)|what else|anything else|others|rest of (them|the)|show me them all|see them all|whole (lot|range|selection))\b/;
+
+/** Whether they asked to be shown the whole aisle rather than a selection. */
+export function askedForWholeAisle(raw: string): boolean {
+  const text = plain(raw);
+  // "All of it" about one carton is not a request for the cooler, and neither is
+  // "is that all?" — a question about the shelf they are looking at.
+  if (/\bis that all\b/.test(text)) return false;
+  return WANTS_THE_LOT.test(text);
+}
+
+/*
+ * "All the milks" is the whole cooler. "Anything else that's lactose free" is
+ * not — it is everything of one kind, and answering it with twenty-two cartons
+ * would be a worse failure than the two-carton shelf this replaced. So the
+ * question is whether they named anything besides the aisle and the asking.
+ */
+const WANTS_THE_LOT_ALL = new RegExp(WANTS_THE_LOT.source, "g");
+
+/*
+ * Asking for the lot puts everything in the plural — "all the cheddars", "all
+ * the gluten free breads" — and the catalogue's keywords are singular, so the
+ * plural scored nothing and the shelf widened to the whole case instead of to
+ * the kind they named.
+ */
+function singulars(text: string): string {
+  return text.replace(/\b(\w{3,}?)s\b/g, "$1");
+}
+function namedMoreThanTheAisle(shelf: Shelf, text: string, pool: DemoProduct[]): boolean {
+  /*
+   * The aisle's own name only, not its synonyms. An aisle answers to the kinds it
+   * holds — cheese answers to "cheddar" — so stripping all of them turned "all the
+   * cheddars" into a request for the whole cheese case.
+   */
+  const residual = text
+    .replace(WANTS_THE_LOT_ALL, " ")
+    .replace(new RegExp(`\\b(${shelf.label}|${shelf.id})(s|es)?\\b`, "g"), " ");
+  const singular = singulars(residual);
+  return pool.some((product) => score(product, residual) > 0 || score(product, singular) > 0);
+}
 
 /**
  * Narrows an aisle down to what the shopper asked for.
@@ -619,6 +819,25 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
 
   if (CHEAPEST.test(text)) return [least(pool)];
   if (DEAREST.test(text)) return [most(pool)];
+  /*
+   * Three, best value first, so the answer carries its own reason: a gallon at 2.7
+   * cents an ounce against a half gallon at 4.2 is an argument a shopper can
+   * check, where one card on its own is only an assertion.
+   */
+  if (BEST_VALUE.test(text)) {
+    const ranked = byValue(pool);
+    if (ranked.length) return ranked.slice(0, 3);
+  }
+
+  /*
+   * Asked for the whole aisle, hand over the whole aisle — before any of the
+   * narrowing below, because "all the milks" names milk and would otherwise be
+   * scored as a request for the store's own two jugs. Naming a kind as well
+   * ("all the lactose free ones") falls through to the narrowing instead, and is
+   * only spared the shelf-size cap at the end.
+   */
+  const wantsTheLot = askedForWholeAisle(text);
+  if (wantsTheLot && !namedMoreThanTheAisle(shelf, text, pool)) return shelf.products;
 
   /*
    * A named milk size is a size, not a prompt to put both jugs back. Asking
@@ -653,7 +872,10 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
    * because "sharp" sits inside "extra sharp". Weighing the longer phrase
    * higher is what makes the more specific request win.
    */
-  const scoredText = shelf.id === "milk" ? milkScoreText(text) : text;
+  // "All the cheddars" got this far because it named a kind, so score it in the
+  // singular the catalogue is written in.
+  const asked = wantsTheLot ? singulars(text) : text;
+  const scoredText = shelf.id === "milk" ? milkScoreText(asked) : asked;
 
   let best = 0;
   const scored = pool.map((product) => {
@@ -680,7 +902,7 @@ export function narrowShelf(shelf: Shelf, text: string): DemoProduct[] {
     return oneOfEachKind(shelf);
   }
 
-  const cap = shelf.id === "milk" ? 8 : 4;
+  const cap = wantsTheLot ? Number.MAX_SAFE_INTEGER : shelf.id === "milk" ? 8 : 4;
   const hits = scored.filter((s) => s.score === best).map((s) => s.product);
   if (shelf.id === "milk" && !namedOtherMilkBrand(text) && !milkTurnedDownStore(text) && !milkWantedSize(text)) {
     const store = hits.filter(isDierbergsWhiteMilk);
@@ -943,7 +1165,15 @@ export function findProducts(
       : shelfById(aisleHint) ?? named.find((s) => shelfRespondsTo(s, text)) ?? null;
 
   if (shelf) {
-    return { products: narrowShelf(shelf, text).slice(0, limit), aisle: shelf.id };
+    /*
+     * The limit is there to keep a shelf readable, and it has to lose to somebody
+     * asking for the whole aisle. Trimming "show me all the milks" back to eight
+     * is the same answer as before with extra steps: they asked to see everything
+     * and got a selection, with nothing to say a selection was made.
+     */
+    const narrowed = narrowShelf(shelf, text);
+    const room = askedForWholeAisle(text) ? narrowed.length : limit;
+    return { products: narrowed.slice(0, room), aisle: shelf.id };
   }
 
   let best = 0;
@@ -1034,6 +1264,22 @@ export function aisleIndexFrom(list: Shelf[], budget = INDEX_BUDGET): string {
 
 export function aisleIndex(): string {
   return aisleIndexFrom(shelves);
+}
+
+/*
+ * Every product in the store, once each.
+ *
+ * The index above is the right thing to hand a model that is shopping a real
+ * chain, where forty thousand items cannot be held in a prompt. It is the wrong
+ * thing to hand this one. Four aisles and a hundred and five items fit, and
+ * while they did not fit, every "what else have you got" had to go through a
+ * keyword matcher in this file — so a shopper asking an LLM a question got a
+ * regex's answer to it.
+ */
+export function wholeStore(): DemoProduct[] {
+  const seen = new Map<string, DemoProduct>();
+  for (const shelf of shelves) for (const product of shelf.products) seen.set(product.id, product);
+  return [...seen.values()];
 }
 
 export function shelfRespondsTo(shelf: Shelf, text: string): boolean {

@@ -21,8 +21,12 @@ echo "── arithmetic and business model (no browser)"
 npm run --silent demo:cost
 echo
 
+echo "── this week's ad, and what a thing costs per ounce (no browser)"
+npm run --silent demo:value
+echo
+
 FAILED=0
-for suite in consistency demo milk milk-talk depth packshots scale voice-fallback neural-voice cells aisles specials conversation realtime; do
+for suite in consistency demo milk milk-talk depth packshots scale voice-fallback neural-voice cells aisles specials checkout conversation realtime; do
   file="scripts/test-dierbergs-${suite}.mjs"
   [ -f "$file" ] || continue
   echo "── ${suite}"
@@ -37,3 +41,9 @@ if [ "$FAILED" -gt 0 ]; then
   exit 1
 fi
 echo "All suites passed."
+echo
+echo "── the question space itself"
+echo "The suites above check the things that once broke. The audit is the other"
+echo "question: of everything a shopper can say, how much of it works? It needs a"
+echo "server with a key, because it is asking the model."
+echo "  npm run demo:audit -- <url>"
