@@ -47,7 +47,17 @@
     o.insertBefore(wrap, o.firstChild)
   }
 
+  function ensureHint() {
+    var o = document.getElementById('vox-overlay')
+    if (!o || o.querySelector('.vox-hint')) return
+    var hint = document.createElement('div')
+    hint.className = 'vox-hint'
+    hint.textContent = 'Tap the orb to stop. Click anywhere to go back to the website.'
+    o.appendChild(hint)
+  }
+
   ensureEnergyField()
+  ensureHint()
 
   function closeMobileMenu() {
     var menu = document.getElementById('mobileMenu')
@@ -95,6 +105,7 @@
     }
 
     ensureEnergyField()
+    ensureHint()
     greetingFinished = false
     o.classList.add('open')
     o.style.display = 'flex'

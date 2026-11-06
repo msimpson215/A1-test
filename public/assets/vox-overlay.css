@@ -8,7 +8,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.94);
+  background: rgba(0, 0, 0, 0.55);
 }
 
 #vox-overlay.open {
@@ -22,6 +22,7 @@
 }
 
 .vox-energy {
+  display: none !important;
   position: absolute;
   inset: 0;
   display: flex;
@@ -72,7 +73,24 @@
   height: min(420px, 60vh);
   border: none;
   background: transparent;
+  color-scheme: normal;
   overflow: visible;
+}
+
+.vox-hint {
+  position: relative;
+  z-index: 2;
+  margin-top: -40px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-family: 'Barlow', Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  pointer-events: none;
 }
 
 #vox-close-btn {
