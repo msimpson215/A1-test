@@ -72,6 +72,11 @@ await page.setViewport({ width: 1440, height: 900 });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.evaluateOnNewDocument(parserOnly);
+// The parser stands in for the model here. That is a fixture, not what a
+// shopper gets: with no flag an unreachable model says so and touches nothing.
+await page.evaluateOnNewDocument(() => {
+  window.__parserAsBrain = true;
+});
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
 
 const names = () => page.$$eval(".db-card .db-name", (els) => els.map((e) => e.textContent.trim()));
@@ -240,14 +245,48 @@ check(
   !/pasture raised/.test(brief) && !/pumpernickel/.test(brief) && !/dusted with starch/.test(brief),
   `brief is ${Math.round(brief.length / 4)} tokens`
 );
+/*
+ * This number has been raised twice — 2200 to 2450 for the checkout, and now to
+ * 3000 — and raising it a third time on the same reasoning would make it
+ * meaningless, so it is worth saying what it is still for.
+ *
+ * It was written when a voice session opened with this brief and a 192-token index
+ * of the aisles, where the brief was nearly the whole cost of starting a
+ * conversation. The session now opens with the entire store and every aisle's
+ * notes, about 9,400 tokens, on purpose: while the model held only an index, the
+ * only way it could see a product was through a keyword matcher in this repo. So
+ * the brief's own size is no longer the interesting figure, and the cost suite
+ * checks the figure that replaced it — that the instructions stay a minority of
+ * what opens the session.
+ *
+ * What this still catches is sprawl: instructions restating each other, or product
+ * knowledge migrating in from the notes. The check above it is what holds the
+ * second line, and the consistency suite holds the first.
+ */
 check(
-  "the brief stays small enough to open every session with",
-  brief.length / 4 < 2200,
+  "the brief stays instructions rather than a document",
+  brief.length / 4 < 3000,
   `~${Math.round(brief.length / 4)} tokens`
 );
+/*
+ * Every aisle's knowledge, not just the one on screen.
+ *
+ * Per-aisle lookup is the right design at a hundred departments and the wrong one
+ * at four. A shopper who says they cannot drink milk and then asks about cheese
+ * has crossed two aisles in one sentence, and handing over one aisle's notes
+ * meant answering that out of half the knowledge with nothing to say the other
+ * half existed. The per-aisle helper stays for the store-sized version, and the
+ * scaling arithmetic below still holds; the demo simply sends the lot.
+ *
+ * It arrives with the session now rather than with every search. Same knowledge,
+ * and no longer conditional on the model choosing to run a keyword search to get
+ * at it — which was the point: nothing in this repo should stand between a
+ * question and the model's own reading of it.
+ */
 check(
-  "the search hands the aisle's knowledge over with its products",
-  /notesFor\(/.test(fs.readFileSync("components/dierbergs/DierbergsDemo.tsx", "utf8"))
+  "every aisle's knowledge is in the session, not waiting behind a search",
+  /allNotes\(\)/.test(realtime) &&
+    !/allNotes\(\)/.test(fs.readFileSync("components/dierbergs/DierbergsDemo.tsx", "utf8"))
 );
 check(
   "and the model is told to trust it over what it thinks it knows",
@@ -255,7 +294,7 @@ check(
 );
 check(
   "the typed path gets the same knowledge as the spoken one",
-  /notes: notesFor\(/.test(fs.readFileSync("lib/dierbergs-understand.ts", "utf8")) &&
+  /notes: allNotes\(\)/.test(fs.readFileSync("lib/dierbergs-understand.ts", "utf8")) &&
     /What you know about this aisle/.test(fs.readFileSync("server/server.js", "utf8"))
 );
 

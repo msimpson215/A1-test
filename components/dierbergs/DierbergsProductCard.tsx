@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { specialPriceFor } from "@/data/dierbergs-catalogue";
+import { specialPriceFor, unitPrice } from "@/data/dierbergs-catalogue";
 import type { DemoProduct } from "@/data/dierbergs-demo-products";
 
 type Props = {
@@ -83,7 +83,13 @@ export default function DierbergsProductCard({
         <div className="db-price">{product.price}</div>
       )}
       <div className="db-name">{product.name}</div>
-      <div className="db-size">{product.size}</div>
+      {/* Size, and what that works out at per ounce, the way a shelf tag does it.
+          Told out loud that the gallon is the better deal, a shopper's next move
+          is to look for the number, and a claim they cannot check is a claim. */}
+      <div className="db-size">
+        {product.size}
+        {unitPrice(product) ? <span className="db-unit">{unitPrice(product)}</span> : null}
+      </div>
 
       <div className="db-card-foot">
         <span className="db-aisle">

@@ -57,6 +57,11 @@ await page.setViewport({ width: 1440, height: 900 });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.evaluateOnNewDocument(parserOnly);
+// The parser stands in for the model here. That is a fixture, not what a
+// shopper gets: with no flag an unreachable model says so and touches nothing.
+await page.evaluateOnNewDocument(() => {
+  window.__parserAsBrain = true;
+});
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
 
 const line = () => page.$eval(".axon-strip-prompt", (el) => el.textContent.trim());
@@ -78,22 +83,63 @@ await page.waitForSelector(".axon-strip-input");
 await wait(800);
 
 /* 1. A special on each cell, in his words. */
+// One special each, except milk, which now has two: the store's own and a
+// Prairie Farms. An aisle can hold more than one deal because a real ad does, and
+// because "the store's own brand is the deal every week" is a slogan, not an ad.
 const cellChecks = [
-  ["is there a special on eggs?", /18 count|eggland/i, /5\.49/],
-  ["is there a special on bread?", /nature/i, /3\.99/],
-  ["what about a special on milk?", /whole milk/i, /3\.49/],
-  ["any specials on cheese?", /sargento|cheddar/i, /2\.99/]
+  ["is there a special on eggs?", /18 count|eggland/i, /5\.49/, 1],
+  ["is there a special on bread?", /nature/i, /3\.99/, 1],
+  ["what about a special on milk?", /whole milk/i, /3\.49/, 2],
+  ["any specials on cheese?", /sargento|cheddar/i, /2\.99/, 1]
 ];
-for (const [said, who, price] of cellChecks) {
+const spokenFor = {};
+for (const [said, who, price, howMany] of cellChecks) {
   await type(said);
   const spoken = await line();
+  spokenFor[said] = spoken;
   const shelf = await names();
   check(
     `“${said}”`,
-    who.test(spoken) && price.test(spoken) && /through Saturday/i.test(spoken) && shelf.length === 1,
+    who.test(spoken) &&
+      price.test(spoken) &&
+      /through Saturday/i.test(spoken) &&
+      shelf.length === howMany,
     `${spoken} · shelf: ${shelf.join(", ") || "(empty)"}`
   );
 }
+
+/* A second deal in an aisle has to be said as well as shown, or it is a saving the
+   shopper was never offered. Read it off the answer above rather than asking again,
+   because there is a clock running: the demo starts listening after its greeting,
+   this harness's recognizer is a stub that never calls back, and nine seconds in
+   the watchdog gives up and writes over the spoken line. Any check that spends
+   that budget on a question already answered will fail on the timer instead. */
+const milkDeals = spokenFor["what about a special on milk?"] ?? "";
+check(
+  "both milk deals are named, the store's own and the brand",
+  /dierbergs whole milk/i.test(milkDeals) &&
+    /prairie farms/i.test(milkDeals) &&
+    /4\.49/.test(milkDeals),
+  milkDeals
+);
+
+/* "Best deal" shares a word with the ad and is not a question about it. Answered
+   out of the ad, "what's the best deal on milk? I'm trying to save money" came back
+   with a 7.0¢/oz carton alongside a 2.7¢/oz one — both advertised, one nearly three
+   times the other per ounce. */
+await type("what's the best deal on milk? I'm trying to save money");
+const valueShelf = await names();
+check(
+  "the value question is answered on value, not out of the week's ad",
+  valueShelf.length === 3 && /whole milk/i.test(valueShelf[0]) && !valueShelf.some((n) => /prairie/i.test(n)),
+  valueShelf.join(", ") || "(empty)"
+);
+const perOunce = await page.$$eval(".db-unit", (els) => els.map((e) => e.textContent.trim()));
+check(
+  "and the per-ounce price is on the card, so the answer can be checked",
+  perOunce.length === 3 && perOunce[0] === "2.7¢/oz",
+  perOunce.join(", ") || "(no unit prices)"
+);
 
 /* 2. The card says Special, with the old price struck through. */
 await type("is there a special on eggs?");

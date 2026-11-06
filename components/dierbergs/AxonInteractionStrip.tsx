@@ -20,6 +20,18 @@ type Props = {
   live?: boolean;
   /** Which voice is actually answering, so nobody has to guess. */
   engine?: "off" | "realtime" | "browser";
+  /**
+   * Which brain answered the last thing said, named. The model's own id when
+   * GPT answered, and null when it could not be reached.
+   *
+   * Separate from the voice on purpose, because the two are not the same
+   * question and running them together is what made this impossible to trust:
+   * "Browser voice" only ever meant the speech was coming from the browser
+   * instead of the live line, and GPT could be doing every bit of the thinking
+   * behind it. So a badge saying "browser" was read as "not ChatGPT", and worse,
+   * when GPT genuinely dropped out the badge did not change at all.
+   */
+  brain?: string | null;
 };
 
 export default function AxonInteractionStrip({
@@ -35,7 +47,8 @@ export default function AxonInteractionStrip({
   onToggleListen,
   disabled,
   live,
-  engine
+  engine,
+  brain
 }: Props) {
   return (
     <div
@@ -53,7 +66,14 @@ export default function AxonInteractionStrip({
           how this demo gets mistaken for a broken one. */}
       {engine && engine !== "off" ? (
         <span className={`axon-engine is-${engine}`}>
-          {engine === "realtime" ? "Axon" : "Browser voice"}
+          {engine === "realtime" ? "Axon voice" : "Browser voice"}
+        </span>
+      ) : null}
+
+      {/* And which brain, named, which is the question that actually matters. */}
+      {brain !== undefined ? (
+        <span className={`axon-brain${brain ? "" : " is-down"}`}>
+          {brain ? brain : "no GPT"}
         </span>
       ) : null}
 

@@ -1,4 +1,12 @@
-import { aisleIndex, specialFor, specialPriceFor, type ShelfId } from "@/data/dierbergs-catalogue";
+import {
+  aisleIndex,
+  specialFor,
+  specialPriceFor,
+  unitPrice,
+  wholeStore,
+  type ShelfId
+} from "@/data/dierbergs-catalogue";
+import { allNotes } from "@/data/dierbergs-aisle-notes";
 import type { DemoProduct } from "@/data/dierbergs-demo-products";
 import { forSpeaking } from "./dierbergs-pronounce";
 import { recordUsage } from "./dierbergs-spend";
@@ -37,9 +45,14 @@ export type ShopperTools = {
   /** Put a product in the cart, resolving once it has landed there. */
   addToCart(productId: string, quantity?: number, suggested?: boolean): Promise<string>;
   /** Take a product back out of the cart. */
-  removeFromCart(productId: string): string;
+  removeFromCart(productId: string, howMany?: number): string;
+  emptyCart(): string;
   /** Swap one product for another, so a change of mind leaves one, not two. */
   replaceInCart(outProductId: string, inProductId: string): Promise<string>;
+  /** Put the order on screen: every line, the ad savings, the total. */
+  showCheckout(): string;
+  /** Place it. Nothing is charged; it gives the shop an end and them a number. */
+  placeOrder(): string;
 };
 
 export type ShopperHandlers = {
@@ -48,6 +61,8 @@ export type ShopperHandlers = {
   onHeard(text: string): void;
   /** What the assistant said, for the strip. */
   onSaid(text: string): void;
+  /** Which model the line actually opened against, for the strip to name. */
+  onModel?(model: string): void;
   onError(message: string): void;
 };
 
@@ -75,19 +90,18 @@ yourself with that line.
 Open with: "Welcome to Dierbergs. How can I help you with your shopping
 today?" Then stop and listen.
 
-Your hands: find_products looks something up in the store's own catalogue,
-puts what it finds on the shelf they can see, and tells you exactly what is
-there — names, sizes, prices and any deal. add_to_cart puts one in the cart.
-remove_from_cart takes one back out. replace_in_cart swaps one for another in
-a single move. show_products re-arranges the shelf using ids you have already
-been told, for narrowing down what is in front of them.
+Your hands: show_products puts things on the shelf they can see, naming ids from
+the store below — that is how you answer "what have you got", "show me all the
+milks", "just the lactose free ones". add_to_cart puts one in the cart.
+remove_from_cart takes one back out. replace_in_cart swaps one for another in a
+single move. empty_cart clears it. find_products is a keyword search over the
+same store, there if you want it, but you can already see everything and your
+reading of what they meant is better than its.
 
-You do not hold the catalogue. You look things up, the way anyone working in a
-store this size does. So when they ask for something, search for it in their
-own words — "lactose free half gallon", "sharp cheddar sliced" — and talk
-about what comes back. Never name a product, a price or a size you have not
-been told by a search: this store has thousands of items and inventing one is
-worse than saying you will check.
+You hold the whole store: every item below, with its kind, brand, size, price and
+any deal. Work from it and decide for yourself what belongs on the shelf. Never
+name a product, a price or a size that is not in it — inventing one is the one
+unrecoverable mistake — but everything in it is yours to talk about and to put up.
 
 Speak in the same breath as you act: use the hand first, then say your line in
 that same turn. Say what you are doing rather than what you found — "let me
@@ -95,8 +109,8 @@ pull up the half gallons" — because the words go out while the search is
 running. Then talk about what actually came back.
 
 ${rule("notAWebPage")} Your hands work the instant you use them and they tell
-you what happened, so never say something is still in progress or that you
-cannot see the screen yet. If a hand ever comes back with a problem, say
+you what happened, so never say something is still in progress. If a hand ever
+comes back with a problem, say
 plainly what did not work and offer to try it again.
 
 The aisles this store has stocked are listed below, with the kinds and brands
@@ -104,31 +118,34 @@ in each, so you know where to look and what words are worth searching. The
 products themselves you get by searching. If a search comes back empty, this
 store does not carry it: say so plainly. There is no Dierbergs quart.
 
-One product in each aisle is on this week's ad. A search result marks it with
-a "deal", which is its sale price, and "dealThrough", the day it ends. That
-mark is the only thing that makes something a special, however good a price
-looks. If they ask whether there is a special, search the aisle, then say what
-it is, what it costs, what it was, and when it ends, and offer it. If they say
-yes, add that product.
+Things on this week's ad carry a "deal", their sale price, and "dealThrough", the
+day it ends — more than one in some aisles. That mark is the only thing that makes
+something a special, however good a price looks. Asked about specials, name every
+one in that aisle, what it costs, what it was, when it ends, and offer them.
+
+Each product also carries "unit": what it comes to per ounce, or per egg, ad price
+counted. That is the answer to "what's the best deal" and "I'm trying to save
+money" — the lowest unit price, usually the bigger container and sometimes not.
+Say the number, because "better value" is a claim and "2.7 cents an ounce against
+4.2" is a reason. Never work one out yourself: these labels write the same half
+gallon three different ways and arithmetic on them goes wrong.
 
 If they ask for more than one of something, add it that many times with the
 quantity. If they ask for two different things, do both.
 
-When you add something, say whether it was your idea. Set suggested true if it
-went in because you offered it — the special you mentioned, the thing you
-noticed was missing — and false when they came in asking for it. This is only
-counted, never shown to them, so be accurate rather than flattering.
+When you add something, say whose idea it was: suggested true if it went in
+because you offered it, false when they asked for it. It is only counted, never
+shown to them, so be accurate rather than flattering.
 
-Do notice what is missing, once, the way someone who knows the store would.
-Taco shells and beef and no cheese is worth a word. So is the ad price on the
-eggs they were about to pay full price for. Say it in one short sentence, take
-no for an answer the first time, and never stack suggestions or push something
-dearer for its own sake. A shopper who feels sold to stops talking to you, and
-then you are worth nothing to anybody.
+Do notice what is missing, once, the way someone who knows the store would —
+taco shells and beef and no cheese is worth a word, so is an ad price they were
+about to miss. One short sentence, take no for an answer the first time, never
+stack suggestions or push something dearer for its own sake. A shopper who
+feels sold to stops talking to you.
 
-${rule("noBrandFavour")} Suggest the one that actually suits what they asked
-for. The moment your advice can be bought it is worth nothing, to them or to
-the store.
+${rule("ownBrandFirstNeverBought")} Asked outright which brand you would
+recommend, the answer is the store's own, with the reason attached. The moment
+your advice can be bought it is worth nothing, to them or to the store.
 
 Changing their mind is normal, and it is the whole job. Listen for the
 difference between three things:
@@ -139,8 +156,7 @@ one carton, not two.
 leave what is already there alone.
 "Take that back out", "never mind the milk" — remove_from_cart.
 When it is ambiguous, the cart is the truth: say what is in it now and ask
-which way they want it. Never leave two cartons in there because they said two
-sizes.
+which way they want it.
 
 "That one", "the other one", "the cheaper one" refer to what is on the shelf.
 They should never have to say a full name twice. Wait until they have finished
@@ -167,7 +183,24 @@ ${rule("a2IsNotLactoseFree")}
 
 ${rule("showWhatYouName")}
 
+${rule("showThemAllIfAsked")}
+
 ${rule("countIsTheTotal")}
+
+${rule("takeItOutMeansAll")}
+
+${rule("emptyMeansEmpty")} That is what empty_cart is for.
+
+Shopping ends somewhere. When they are done — "that's everything", "check me out",
+"what's my total" — call show_checkout and read the total out, and the ad saving if
+there is one. Then wait. place_order only after they say yes to that total, and
+never on your own initiative. Mind which "I'll take it" you have: in front of a
+shelf it is the carton they are looking at, and only in front of the total is it
+the order.
+
+${rule("neverConfirmWhatDidNotHappen")}
+
+${rule("cannotLookThingsUp")}
 
 You are not expected to carry an aisle's knowledge in your head. Every search
 comes back with what someone who has worked that aisle for years would know
@@ -186,7 +219,7 @@ const TOOLS = [
     type: "function",
     name: "find_products",
     description:
-      "Look something up in the store's catalogue and put what you find on the shelf. Say it the way the shopper said it. Returns the products now on the shelf, with their ids, sizes, prices and any deal.",
+      "Keyword search over the same store you already hold, if you would rather let it pick. Prefer show_products with ids you chose yourself: you can see everything, and this cannot read a sentence.",
     parameters: {
       type: "object",
       properties: {
@@ -207,7 +240,7 @@ const TOOLS = [
     type: "function",
     name: "show_products",
     description:
-      "Re-arrange the shelf using ids a search has already given you, to narrow down what is in front of them. To find something new, use find_products.",
+      "Put products on the shelf they can see, naming ids from the store you were given. This is how you show anything: a spread to choose from, everything of one kind, or the single one they settled on.",
     parameters: {
       type: "object",
       properties: {
@@ -245,14 +278,26 @@ const TOOLS = [
   {
     type: "function",
     name: "remove_from_cart",
-    description: "Take a product back out of the customer's cart.",
+    description:
+      "Take a product back out of the customer's cart. Every one of them by default, because that is what taking something out means; pass how_many only if they asked for one of several to go.",
     parameters: {
       type: "object",
       properties: {
-        product_id: { type: "string", description: "id of the product to take out" }
+        product_id: { type: "string", description: "id of the product to take out" },
+        how_many: {
+          type: "number",
+          description: "how many to take out. Leave it out to take out all of them"
+        }
       },
       required: ["product_id"]
     }
+  },
+  {
+    type: "function",
+    name: "empty_cart",
+    description:
+      "Empty the cart completely. For \"scrap the lot\", \"start again\", \"empty it\". Nothing else empties a cart, and nothing in a sentence meant to cancel is a quantity.",
+    parameters: { type: "object", properties: {}, required: [] }
   },
   {
     type: "function",
@@ -267,6 +312,20 @@ const TOOLS = [
       },
       required: ["out_product_id", "in_product_id"]
     }
+  },
+  {
+    type: "function",
+    name: "show_checkout",
+    description:
+      "Put the order on screen with every line, what the week's ad saved them, and the total. For \"that's everything\", \"check me out\", \"what's my total\", \"I'm done\". Read the total out; do not place it until they say yes.",
+    parameters: { type: "object", properties: {}, required: [] }
+  },
+  {
+    type: "function",
+    name: "place_order",
+    description:
+      "Place the order, once they have said yes to it: \"okay we'll take it\", \"go ahead\", \"that's it, order it\". Gives back an order number to read out. Never place an order they have not agreed to.",
+    parameters: { type: "object", properties: {}, required: [] }
   }
 ];
 
@@ -294,6 +353,10 @@ export function productsForModel(products: DemoProduct[]): string {
       form: p.form,
       size: p.size,
       price: p.price,
+      // Per ounce, or per egg, with the ad price counted: the only honest basis
+      // for "what's the best deal", and not left to arithmetic on labels that
+      // write the same half gallon three different ways.
+      unit: unitPrice(p) ?? undefined,
       // Set on the one product per aisle on this week's ad, and nothing else.
       deal: specialPriceFor(p.id) ?? undefined,
       dealThrough: specialPriceFor(p.id) ? specialFor(p.category as ShelfId)?.special.through : undefined,
@@ -396,7 +459,22 @@ export async function connectShopper(
       type: "session.update",
       session: {
         type: "realtime",
-        instructions: `${BRIEF}\n\nThe aisles:\n${aisleIndex()}`,
+        /*
+         * The store itself, not an index of it.
+         *
+         * This used to open with aisle names and counts, which is right for a
+         * real chain of forty thousand items and wrong for four aisles of a
+         * hundred and five. While it was an index, the only way the model could
+         * see a product was to call find_products — so a shopper asking an LLM
+         * "what else have you got" got a keyword matcher's answer, and the
+         * matcher's blind spots read as the model being stupid.
+         */
+        instructions: [
+          BRIEF,
+          `The aisles:\n${aisleIndex()}`,
+          `The whole store, every item:\n${productsForModel(wholeStore())}`,
+          `What you know about these aisles:\n${allNotes()}`
+        ].join("\n\n"),
         tools: TOOLS,
         tool_choice: "auto"
       }
@@ -508,6 +586,7 @@ export async function connectShopper(
       product_ids?: string[];
       product_id?: string;
       quantity?: number;
+      how_many?: number;
       suggested?: boolean;
       out_product_id?: string;
       in_product_id?: string;
@@ -525,9 +604,15 @@ export async function connectShopper(
       } else if (call.name === "add_to_cart" && args.product_id) {
         output = await tools.addToCart(args.product_id, args.quantity, args.suggested);
       } else if (call.name === "remove_from_cart" && args.product_id) {
-        output = tools.removeFromCart(args.product_id);
+        output = tools.removeFromCart(args.product_id, args.how_many);
+      } else if (call.name === "empty_cart") {
+        output = tools.emptyCart();
       } else if (call.name === "replace_in_cart" && args.in_product_id) {
         output = await tools.replaceInCart(args.out_product_id || "", args.in_product_id);
+      } else if (call.name === "show_checkout") {
+        output = tools.showCheckout();
+      } else if (call.name === "place_order") {
+        output = tools.placeOrder();
       }
     } catch (error) {
       output = `that did not work: ${String(error)}`;
@@ -565,7 +650,9 @@ export async function connectShopper(
     close();
     throw new Error(await answer.text());
   }
+  const model = answer.headers.get("X-Realtime-Model");
   await pc.setRemoteDescription({ type: "answer", sdp: await answer.text() });
+  if (model) handlers.onModel?.(model);
 
   return {
     send(text: string) {

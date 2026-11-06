@@ -78,6 +78,11 @@ const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 if (process.env.TRACE) page.on("console", (m) => console.log("   [app]", m.text()));
 await page.evaluateOnNewDocument(fakeSpeech);
+// The parser stands in for the model here. That is a fixture, not what a
+// shopper gets: with no flag an unreachable model says so and touches nothing.
+await page.evaluateOnNewDocument(() => {
+  window.__parserAsBrain = true;
+});
 await page.goto(URL, { waitUntil: "networkidle0", timeout: 60000 });
 
 const cart = () => page.$eval(".db-cart", (el) => el.innerText.replace(/\s+/g, " ").trim());

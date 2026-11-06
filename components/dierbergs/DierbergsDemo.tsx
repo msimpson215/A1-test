@@ -5,10 +5,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { dierbergsLayout } from "@/data/dierbergs-layout";
 import { staplesProducts, type DemoProduct } from "@/data/dierbergs-demo-products";
 import { dietaryAdvice, findProducts, payCents, shelfById, type ShelfId } from "@/data/dierbergs-catalogue";
-import { notesFor } from "@/data/dierbergs-aisle-notes";
+import { allNotes } from "@/data/dierbergs-aisle-notes";
 import { asset } from "@/lib/asset-base";
 import { forgetConversation, productById, understand } from "@/lib/dierbergs-understand";
-import { countIn } from "@/lib/dierbergs-demo-intents";
 import {
   connectShopper,
   productsForModel,
@@ -39,10 +38,26 @@ import FlyingCartItem from "./FlyingCartItem";
 import type { OrbMood } from "./AxonOrb";
 
 export type DemoPhase = "idle" | "active" | "adding";
-export type MerchView = null | ShelfId | "staples";
+export type MerchView = null | ShelfId | "staples" | "checkout";
 
 // Left on deliberately: this demo is driven on machines we cannot attach a
 // debugger to, so the console is the only trace of where a run stopped.
+/*
+ * The heading has to say what is actually up there.
+ *
+ * "Our Dierbergs milk" over all twenty-two cartons is the shelf's old lie told
+ * in a different place: it claims a selection to somebody who asked to see
+ * everything and was given it.
+ */
+function headingFor(aisle: ShelfId, products: DemoProduct[]): string {
+  const shelf = shelfById(aisle);
+  if (products.length === 1) return `${products[0].name}.`;
+  if (shelf && products.length >= shelf.products.length) {
+    return `All the ${shelf.label} we carry.`;
+  }
+  return shelf?.heading ?? "Here you are.";
+}
+
 // A microphone that reopens a beat early can catch the tail of the shopper's
 // own confirmation. Anything that is mostly words we just said is not a request.
 function echoesSelf(heard: string, spoken: string[]): boolean {
@@ -87,7 +102,11 @@ const SPOKEN_WELCOME =
 // person to completely different pages and only one of them is ever the fix.
 const CREDIT_HINT =
   "Browser voice \u2014 Axon cannot open. The OpenAI account has no credit. Add credit at platform.openai.com.";
-const LIVE_FAILED_HINT = "Browser voice \u2014 Axon did not connect.";
+// The other two hints name a fix. This one only named the fault, which leaves a
+// shopper looking at a dead voice line with nothing to try. Pressing the mic
+// again now retries the live line, so say that, and say typing works meanwhile.
+const LIVE_FAILED_HINT =
+  "Browser voice \u2014 Axon did not connect. Type below, or press the mic to try the live line again.";
 const NO_KEY_HINT =
   "Browser voice \u2014 the server has no OpenAI key. Set OPENAI_API_KEY on it.";
 
@@ -135,7 +154,15 @@ export default function DierbergsDemo() {
   // Everything on the go from other aisles stays visible as a reminder while
   // the grid is showing one aisle.
   const onTheList = dedupe([...cart, ...requested]);
-  const alsoRequested = view && view !== "staples" ? onTheList.filter((p) => p.category !== view) : [];
+  /*
+   * The last few things they were looking at elsewhere, not everything they have
+   * ever seen. Now that a shopper can ask for a whole aisle, "everything seen so
+   * far" is thirty cartons, and a sidebar of thirty is not a reminder.
+   */
+  const alsoRequested =
+    view && view !== "staples" && view !== "checkout"
+      ? onTheList.filter((p) => p.category !== view).slice(-4)
+      : [];
 
   useEffect(() => {
     primeVoices();
@@ -167,6 +194,20 @@ export default function DierbergsDemo() {
     try {
       window.sessionStorage.setItem(CART_KEY, JSON.stringify(cart.map((p) => p.id)));
     } catch { /* private browsing, or a full quota: the cart still works */ }
+  }, [cart]);
+
+  /*
+   * Carry on shopping after saying yes, and the order re-opens.
+   *
+   * Otherwise the receipt goes on saying "Order placed" over a basket that kept
+   * growing, and the last thing anyone should be able to do here is hand
+   * somebody a confirmed order that is not the order they have.
+   */
+  useEffect(() => {
+    if (!orderRef.current) return;
+    if (cart.map((p) => p.id).join("|") === orderedIds.current) return;
+    orderRef.current = null;
+    setOrderNumber(null);
   }, [cart]);
 
   useEffect(() => {
@@ -210,6 +251,18 @@ export default function DierbergsDemo() {
   const suggestedRef = useRef<SuggestedUnit[]>([]);
   const [suggested, setSuggested] = useState<SuggestedUnit[]>([]);
   const [engine, setEngine] = useState<"off" | "realtime" | "browser">("off");
+  /*
+   * Which brain answered, named, or null when GPT could not be reached.
+   *
+   * undefined until something has been said, so the badge stays off during the
+   * greeting rather than announcing a model that has not been asked anything.
+   */
+  const [brain, setBrain] = useState<string | null | undefined>(undefined);
+  /* The order, once placed. A ref beside the state because a spoken "yes" and a
+     clicked button can both land before a render. */
+  const orderRef = useRef<string | null>(null);
+  const orderedIds = useRef("");
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
   const browserHint = () =>
     outOfCredit.current
@@ -355,49 +408,141 @@ export default function DierbergsDemo() {
     [addProduct]
   );
 
-  const removeFromCart = useCallback((id: string): string => {
+  /* Emptying the cart without ending the visit: the shelf, the aisle and the
+     conversation all stay where they are. */
+  const emptyCart = useCallback(() => {
+    cartNow.current = [];
+    setCart([]);
+    suggestedRef.current = [];
+    setSuggested([]);
+    setPulse(true);
+    window.setTimeout(() => setPulse(false), 240);
+  }, []);
+
+  const removeFromCart = useCallback((id: string, howMany?: number): string => {
     const product = productById(id);
     const now = cartNow.current;
-    const at = now.map((p) => p.id).lastIndexOf(id);
-    if (at < 0) {
+    const held = now.filter((p) => p.id === id).length;
+    if (held === 0) {
       return product ? `${product.name} is not in the cart` : "no such product";
     }
-    const next = [...now.slice(0, at), ...now.slice(at + 1)];
+    /*
+     * All of them unless they named a number. Taking one loaf out of twelve and
+     * reporting the bread gone is the same lie as confirming an add that never
+     * happened, and it took four goes to undo.
+     */
+    const taking = Math.min(Math.max(Math.round(howMany ?? held) || held, 1), held);
+    let next = now;
+    for (let i = 0; i < taking; i += 1) {
+      const at = next.map((p) => p.id).lastIndexOf(id);
+      next = [...next.slice(0, at), ...next.slice(at + 1)];
+    }
     cartNow.current = next;
     setCart(next);
     setPulse(true);
     window.setTimeout(() => setPulse(false), 240);
 
     const total = next.reduce((sum, p) => sum + payCents(p), 0);
-    return `took ${product?.name ?? id} out. ${next.length} ${
-      next.length === 1 ? "item" : "items"
-    }, $${(total / 100).toFixed(2)}.`;
+    const still = next.filter((p) => p.id === id).length;
+    return `took ${taking} ${product?.name ?? id} out${
+      still ? `, ${still} still in the cart` : ""
+    }. ${next.length} ${next.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`;
   }, []);
 
   /*
    * Makes the cart hold as many as they asked for.
    *
-   * A number is the count they want, not an instruction to add. "Make it two
-   * half gallons" said over a cart that already holds one is the case the model
-   * gets wrong about one time in three: it decides there is nothing to do and
-   * leaves it at one, which looks exactly like the feature not working.
+   * A number they said is the number they want in the cart, not a number to pile
+   * on top of what is already in it. One chocolate milk and "actually make it two
+   * of the chocolate" ended with three: the model reported a quantity of two,
+   * correctly, and this added two more. That is the oldest complaint about this
+   * demo and it keeps coming back, so it stops depending on whether the model
+   * phrased the number as a total or an increment. Whatever number arrives, the
+   * cart ends holding exactly that many.
    *
-   * Only ever acts on a number the shopper actually said, and only on the item
-   * the turn was already about, so it enforces their words rather than
-   * second-guessing them.
+   * Only when a number was actually said, and only for the item the turn was
+   * already about. Silence means one more, because saying "add the cheddar" twice
+   * is somebody who wants two.
    */
-  const settleCount = useCallback(async (heard: string, subject?: DemoProduct) => {
-    const wanted = countIn(heard);
-    if (wanted < 2) return;
-    const item = subject ?? cartNow.current[cartNow.current.length - 1];
-    if (!item) return;
-    const held = cartNow.current.filter((p) => p.id === item.id).length;
-    if (held === 0 || held === wanted) return;
-    for (let i = held; i < wanted; i += 1) await addProduct(item, true);
-    for (let i = held; i > wanted; i -= 1) removeFromCart(item.id);
-    setPulse(true);
-    window.setTimeout(() => setPulse(false), 240);
-  }, [addProduct, removeFromCart]);
+  const settleTo = useCallback(
+    async (product: DemoProduct, said: number | null | undefined, target: number) => {
+      if (said == null) return void (await addProduct(product));
+
+      const held = cartNow.current.filter((p) => p.id === product.id).length;
+      if (target > held) return void (await addMany(product, target - held));
+
+      for (let i = 0; i < held - target; i += 1) removeFromCart(product.id);
+      const now = cartNow.current;
+      const total = now.reduce((sum, p) => sum + payCents(p), 0);
+      await say(
+        target === 0
+          ? `${product.shortName} is out of your cart.`
+          : `You've got ${target} of the ${product.shortName}.`,
+        `${now.length} ${now.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`
+      );
+    },
+    [addMany, addProduct, removeFromCart, say]
+  );
+
+  /*
+   * The end of the shop, which the demo did not have.
+   *
+   * A cart was a number in the corner and there was nowhere for a conversation to
+   * finish, so five minutes of choosing milk ended with nothing to say yes to.
+   * The yes is the point: a store is not buying a nicer search box, it is buying
+   * completed baskets, and a demo that cannot be completed is not showing them
+   * the thing they would be paying for.
+   */
+  const showCheckout = useCallback((): string => {
+    const held = cartNow.current;
+    setView("checkout");
+    setMerchHeading("");
+    if (!held.length) return "the cart is empty, so there is nothing to check out";
+    const total = held.reduce((sum, p) => sum + payCents(p), 0);
+    const saved = held.reduce((sum, p) => sum + Math.max(0, p.priceCents - payCents(p)), 0);
+    return `showing the order: ${held.length} ${held.length === 1 ? "item" : "items"}, $${(
+      total / 100
+    ).toFixed(2)}${saved > 0 ? `, $${(saved / 100).toFixed(2)} saved on the ad` : ""}`;
+  }, []);
+
+  /*
+   * "Okay, we'll take it."
+   *
+   * No money moves and none pretends to. What it does is prove the conversation
+   * can reach an end, and give the shopper a number back — which is the moment a
+   * grocer recognises, because it is the only part of this they already have a
+   * process for.
+   */
+  const placeOrder = useCallback((): string => {
+    const held = cartNow.current;
+    if (!held.length) return "nothing in the cart, so no order was placed";
+    if (orderRef.current) return `order ${orderRef.current} is already placed`;
+    const number = `D${String(Math.floor(Math.random() * 9000) + 1000)}`;
+    orderRef.current = number;
+    orderedIds.current = held.map((p) => p.id).join("|");
+    setOrderNumber(number);
+    setView("checkout");
+    setMerchHeading("");
+    const total = held.reduce((sum, p) => sum + payCents(p), 0);
+    return `order ${number} placed: ${held.length} ${
+      held.length === 1 ? "item" : "items"
+    }, $${(total / 100).toFixed(2)}, ready for pickup`;
+  }, []);
+
+  /* The button on the receipt. Same order, same words back, so clicking and
+     saying it are the same act rather than two half-implemented ones. */
+  const placeOrderAloud = useCallback(async () => {
+    const held = cartNow.current;
+    if (!held.length || orderRef.current) return;
+    const total = held.reduce((sum, p) => sum + payCents(p), 0);
+    placeOrder();
+    await say(
+      `Done. Order ${orderRef.current}, $${(total / 100).toFixed(
+        2
+      )}, and it'll be ready for pickup. Thanks very much.`,
+      `Order ${orderRef.current}.`
+    );
+  }, [placeOrder, say]);
 
   const onFlightDone = useCallback(() => {
     setFlight(null);
@@ -430,10 +575,14 @@ export default function DierbergsDemo() {
         showing: merchProducts,
         cart,
         onList: onTheList,
-        current: view === "staples" ? null : view
+        // Neither the staples shelf nor the checkout page is an aisle, so
+        // neither is the aisle a clipped follow-up is about.
+        current: view === "staples" || view === "checkout" ? null : view,
+        atCheckout: view === "checkout"
       });
       log("heard", JSON.stringify(text), "->", turn.action, turn.aisle ?? "", `(${turn.source})`);
       setLastHeard(`${text} (${turn.action}${turn.aisle ? " " + turn.aisle : ""} \u00b7 ${turn.model ?? turn.source})`);
+      setBrain(turn.source === "model" ? turn.model ?? "GPT" : null);
 
       // Put the shelf up before speaking, so what the shopper is being told
       // about is already in front of them.
@@ -444,20 +593,24 @@ export default function DierbergsDemo() {
       } else if (turn.aisle && turn.products.length) {
         setView(turn.aisle);
         setShelfItems(turn.products);
-        setMerchHeading(
-          turn.products.length === 1
-            ? `${turn.products[0].name}.`
-            : shelfById(turn.aisle)?.heading ?? "Here you are."
-        );
+        setMerchHeading(headingFor(turn.aisle, turn.products));
       }
 
       // "Two half gallons" is one carton asked for twice, not two cartons.
+      /*
+       * An unstated number is one when buying and everything when taking out.
+       * "Take the bread out" with twelve loaves in the cart used to remove a
+       * single loaf and announce the bread was gone, which is the same lie as
+       * confirming an add that never happened.
+       */
       const many = Math.min(Math.max(turn.quantity ?? 1, 1), 12);
 
-      if (turn.action === "add" && turn.products.length === 1) {
+      if (turn.action === "add" && turn.products.length >= 1) {
         // addMany speaks the confirmation itself, because it is the only thing
-        // that knows the cart total once all of this has gone in.
-        await addMany(turn.products[0], many);
+        // that knows the cart total once all of this has gone in. Several named
+        // in one breath go in quietly and are confirmed once, together.
+        for (const product of turn.products.slice(0, -1)) await addProduct(product, true);
+        await settleTo(turn.products[turn.products.length - 1], turn.quantity, many);
       } else if (turn.action === "replace" && turn.outgoing && turn.products.length === 1) {
         // The old one goes as the new one arrives, so a change of mind about
         // the size leaves one carton in the cart rather than two.
@@ -465,20 +618,72 @@ export default function DierbergsDemo() {
         await addMany(turn.products[0], many);
       } else if (turn.action === "remove" && turn.outgoing) {
         const gone = turn.outgoing;
-        removeFromCart(gone.id);
+        const held = cartNow.current.filter((p) => p.id === gone.id).length;
+        // No number named means all of them, because that is what "take the
+        // bread out" means to the person saying it.
+        const taking = Math.min(turn.quantity ?? held, held);
+        for (let i = 0; i < taking; i += 1) removeFromCart(gone.id);
+
         const left = cartNow.current;
         const total = left.reduce((sum, p) => sum + payCents(p), 0);
+        const still = left.filter((p) => p.id === gone.id).length;
+        const name = gone.name.replace(/\s+-\s+/g, ", ");
         await say(
-          `Done \u2014 the ${gone.name.replace(/\s+-\s+/g, ", ")} is out of your cart.`,
+          held === 0
+            ? `The ${name} was not in your cart.`
+            : still
+              ? `Took ${taking} out. There ${still === 1 ? "is" : "are"} still ${still} ${name} in there.`
+              : `Done \u2014 the ${name} is out of your cart.`,
           left.length
             ? `${left.length} ${left.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(2)}.`
             : "Your cart is empty."
         );
+      } else if (turn.action === "clear") {
+        const had = cartNow.current.length;
+        emptyCart();
+        await say(
+          had ? "Right \u2014 your cart is empty again." : "Your cart is already empty.",
+          "Start wherever you like."
+        );
+      } else if (turn.action === "checkout") {
+        const held = cartNow.current;
+        showCheckout();
+        if (!held.length) {
+          await say("There's nothing in your cart yet.", "Ask me for a grocery and I'll pull it up.");
+        } else {
+          const total = held.reduce((sum, p) => sum + payCents(p), 0);
+          const saved = held.reduce((sum, p) => sum + Math.max(0, p.priceCents - payCents(p)), 0);
+          await say(
+            `That's ${held.length} ${held.length === 1 ? "item" : "items"}, $${(total / 100).toFixed(
+              2
+            )}${
+              saved > 0 ? `, and this week's ad saved you $${(saved / 100).toFixed(2)}` : ""
+            }. Shall I place it?`,
+            "Say \u201Cokay, we\u2019ll take it\u201D, or keep shopping."
+          );
+        }
+      } else if (turn.action === "order") {
+        const held = cartNow.current;
+        if (!held.length) {
+          showCheckout();
+          await say("There's nothing to order yet.", "Ask me for a grocery and I'll pull it up.");
+        } else {
+          const total = held.reduce((sum, p) => sum + payCents(p), 0);
+          const already = orderRef.current;
+          if (!already) placeOrder();
+          const number = orderRef.current;
+          await say(
+            already
+              ? `That one's already in \u2014 order ${already}.`
+              : `Done. Order ${number}, $${(total / 100).toFixed(
+                  2
+                )}, and it'll be ready for pickup. Thanks very much.`,
+            `Order ${number}.`
+          );
+        }
       } else {
         await say(turn.say, turn.hint);
       }
-
-      await settleCount(text, turn.products[0] ?? turn.outgoing);
 
       // Clear only once the answer is out, so the shopper sees what was heard
       // while it is being handled, and a second request starts from empty.
@@ -486,7 +691,7 @@ export default function DierbergsDemo() {
       exitBusy();
       log("done", turn.action);
     },
-    [addMany, addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, removeFromCart, say, settleCount, view]
+    [addMany, addProduct, cart, enterBusy, exitBusy, merchProducts, onTheList, emptyCart, removeFromCart, say, view]
   );
 
   /*
@@ -500,10 +705,10 @@ export default function DierbergsDemo() {
 
     setView((aisle as ShelfId) || picked[0].category);
     setShelfItems(picked);
-    setRequested((was) => dedupe([...was, ...picked]));
-    setMerchHeading(
-      picked.length === 1 ? `${picked[0].name}.` : shelfById(aisle as ShelfId)?.heading ?? "Here you are."
-    );
+    // Browsing a whole aisle is not asking for thirty things. Only a shelf small
+    // enough to have been a choice goes on the list they are working through.
+    if (picked.length <= 8) setRequested((was) => dedupe([...was, ...picked]));
+    setMerchHeading(headingFor((aisle as ShelfId) || (picked[0].category as ShelfId), picked));
     return `showing ${picked.map((p) => p.name).join(", ")}`;
   }, []);
 
@@ -528,9 +733,10 @@ export default function DierbergsDemo() {
    * guardrail, which overrode what the shopper had actually asked for.
    */
   const dietaryShelfBackstop = useCallback((heard: string) => {
-    // "staples" is the opening spread rather than a real aisle, so it counts as
-    // standing nowhere in particular.
-    const standing = viewNow.current === "staples" ? null : viewNow.current;
+    // Neither the opening spread nor the checkout page is a real aisle, so both
+    // count as standing nowhere in particular.
+    const standing =
+      viewNow.current === "staples" || viewNow.current === "checkout" ? null : viewNow.current;
     const advice = dietaryAdvice(heard, standing);
     if (!advice) return;
     const wanted = advice.products.map((p) => p.id);
@@ -560,22 +766,13 @@ export default function DierbergsDemo() {
     setView(view);
     setShelfItems(products);
     setRequested((was) => dedupe([...was, ...products]));
-    setMerchHeading(
-      products.length === 1 ? `${products[0].name}.` : shelfById(view)?.heading ?? "Here you are."
-    );
+    setMerchHeading(headingFor(view, products));
     /*
-     * The aisle's knowledge rides along with its products, rather than sitting
-     * in the standing instructions. A paragraph an aisle is nothing at four
-     * aisles and an impossible prompt at a hundred, so it is looked up for the
-     * aisle in play — the same reason the catalogue is.
+     * Only what changed on screen. The store and every aisle's notes are in the
+     * session now, so repeating them here would send the same fifteen hundred
+     * tokens back on every search for nothing.
      */
-    const notes = notesFor(view);
-    return [
-      `on the shelf now: ${productsForModel(products)}`,
-      notes ? `what you know about the ${view} aisle:\n${notes}` : ""
-    ]
-      .filter(Boolean)
-      .join("\n\n");
+    return `on the shelf now: ${productsForModel(products)}`;
   }, []);
 
   const addToCart = useCallback(
@@ -643,10 +840,43 @@ export default function DierbergsDemo() {
     [addToCart, removeFromCart]
   );
 
-  const tools = useRef({ findForModel, showProducts, addToCart, removeFromCart, replaceInCart });
+  const emptyCartForModel = useCallback((): string => {
+    const had = cartNow.current.length;
+    emptyCart();
+    return had ? `emptied the cart. 0 items $0.00.` : "the cart was already empty";
+  }, [emptyCart]);
+
+  const tools = useRef({
+    findForModel,
+    showProducts,
+    addToCart,
+    removeFromCart,
+    replaceInCart,
+    emptyCartForModel,
+    showCheckout,
+    placeOrder
+  });
   useEffect(() => {
-    tools.current = { findForModel, showProducts, addToCart, removeFromCart, replaceInCart };
-  }, [findForModel, showProducts, addToCart, removeFromCart, replaceInCart]);
+    tools.current = {
+      findForModel,
+      showProducts,
+      addToCart,
+      removeFromCart,
+      replaceInCart,
+      emptyCartForModel,
+      showCheckout,
+      placeOrder
+    };
+  }, [
+    findForModel,
+    showProducts,
+    addToCart,
+    removeFromCart,
+    replaceInCart,
+    emptyCartForModel,
+    showCheckout,
+    placeOrder
+  ]);
 
   const goLive = useCallback(async () => {
     if (live.current) {
@@ -667,8 +897,11 @@ export default function DierbergsDemo() {
           showProducts: (aisle, ids) => tools.current.showProducts(aisle, ids),
           addToCart: (id, quantity, suggested) =>
             tools.current.addToCart(id, quantity, suggested),
-          removeFromCart: (id) => tools.current.removeFromCart(id),
-          replaceInCart: (outId, inId) => tools.current.replaceInCart(outId, inId)
+          removeFromCart: (id, howMany) => tools.current.removeFromCart(id, howMany),
+          emptyCart: () => tools.current.emptyCartForModel(),
+          replaceInCart: (outId, inId) => tools.current.replaceInCart(outId, inId),
+          showCheckout: () => tools.current.showCheckout(),
+          placeOrder: () => tools.current.placeOrder()
         },
         {
           onState: (state) => {
@@ -681,13 +914,12 @@ export default function DierbergsDemo() {
             log("heard (live)", text);
             setLastHeard(text);
             dietaryShelfBackstop(text);
-            // Same wait as the shelf: Axon gets first go at it.
-            window.setTimeout(() => void settleCount(text), 2600);
           },
           onSaid: (text) => {
             setPrompt(text);
             setHint("Just talk \u2014 I'm listening.");
           },
+          onModel: (name) => setBrain(name),
           onError: (message) => {
             log("live error", message);
             setLastError(message);
@@ -730,40 +962,25 @@ export default function DierbergsDemo() {
   }, []);
 
   /*
-   * The voice line against what the basket has earned.
+   * The running cost of the live line, metered and reported and nothing else.
    *
-   * Spoken minutes are the cost of this whole idea, so they are metered. A
-   * growing cart keeps raising the allowance, which means a real shopper is
-   * never cut off; a cart that stays empty while the talking goes on hits the
-   * base allowance and the conversation moves to typing, which costs nothing.
+   * This used to close the line when the basket had not earned enough talking.
+   * That is a defensible thing to sell and an indefensible thing to demo: an
+   * empty cart buys about ninety seconds, so anyone actually testing it — asking
+   * what the milk is like, changing their mind twice, arguing — got hung up on
+   * mid-thought and moved to typing. From the outside that is exactly what a
+   * broken live model looks like, so the meter was making the demo lie about the
+   * product it exists to show.
+   *
+   * The numbers still run, and the diagnostics panel still reports them, because
+   * a store does need the cost as a bounded line item. It just does not get a
+   * vote on whether the conversation continues.
    */
-  const warned = useRef(false);
   useEffect(() => {
-    if (!liveOn) {
-      warned.current = false;
-      return;
-    }
+    if (!liveOn) return;
     const id = window.setInterval(() => {
-      const { verdict, left } = budgetNow(cartTotalCents);
-      if (verdict === "warn" && !warned.current) {
-        warned.current = true;
-        log("voice budget low", money(left));
-        setHint("We can keep talking a little longer \u2014 or type, which is quicker anyway.");
-        return;
-      }
-      if (verdict !== "spent") return;
-      log("voice budget spent", money(budgetNow(cartTotalCents).spent));
-      live.current?.close();
-      live.current = null;
-      setLiveOn(false);
-      setVoiceMode(false);
-      setEngine("browser");
-      setMood("resting");
-      setListening(false);
-      setPrompt("Let's carry on in writing \u2014 your cart is exactly as you left it.");
-      setHint("Type below. Add something and I can pick the conversation back up.");
-      inputRef.current?.focus();
-    }, 2000);
+      log("voice spend", money(budgetNow(cartTotalCents).spent));
+    }, 30000);
     return () => window.clearInterval(id);
   }, [liveOn, cartTotalCents]);
 
@@ -879,12 +1096,28 @@ export default function DierbergsDemo() {
       setLiveOn(false);
       return;
     }
-    // Already on the browser path. Pressing the mic must toggle listening,
-    // not retry Realtime — that puts "Connecting…" over the conversation.
-    if (fallback.current || outOfCredit.current || !realtimeSupported()) {
+    // Turning it off is only ever turning it off.
+    if (voiceMode) {
+      cancelSpeech();
+      setVoiceMode(false);
+      return;
+    }
+
+    /*
+     * Turning it back on tries GPT's live line again.
+     *
+     * It did not, and that was the whole of the complaint. One dropped
+     * connection set fallback for the session, and after that the mic could
+     * only toggle the browser's own speech recognition — so somebody who
+     * asked for Realtime, got a blip, and pressed the button again stayed on
+     * the typed path until they reloaded, with nothing saying so. A blip is
+     * not a verdict. An empty balance, a missing key and a browser with no
+     * WebRTC are verdicts, and those are the only reasons to stop trying.
+     */
+    if (outOfCredit.current || noKey.current || !realtimeSupported()) {
       if (!voiceAvailable) return;
       cancelSpeech();
-      setVoiceMode((on) => !on);
+      setVoiceMode(true);
       return;
     }
     cancelSpeech();
@@ -910,7 +1143,9 @@ export default function DierbergsDemo() {
     setLiveOn(false);
     fallback.current = false;
     outOfCredit.current = false;
+    noKey.current = false;
     setEngine("off");
+    setBrain(undefined);
     stopListening(recRef.current);
     recRef.current = null;
     setPhase("idle");
@@ -927,6 +1162,8 @@ export default function DierbergsDemo() {
     spokenRecently.current = [];
     setCart([]);
     cartNow.current = [];
+    setOrderNumber(null);
+    orderRef.current = null;
     suggestedRef.current = [];
     setSuggested([]);
     setPulse(false);
@@ -978,6 +1215,7 @@ export default function DierbergsDemo() {
                   disabled={phase === "adding"}
                   live={liveOn}
                   engine={engine}
+                  brain={brain}
                 />
               </motion.div>
               <motion.div
@@ -1011,8 +1249,11 @@ export default function DierbergsDemo() {
             alsoRequested={alsoRequested}
             selectedId={selectedId}
             cartIds={cartIds}
+            cart={cart}
+            orderNumber={orderNumber}
             onProductImage={setProductImage}
             onAdd={(p) => void addProduct(p)}
+            onPlaceOrder={() => void placeOrderAloud()}
           />
         </div>
       </div>

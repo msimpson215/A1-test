@@ -84,12 +84,14 @@ ${rule(
   'noDisclaimerThenAdvice',
   'a2IsNotLactoseFree',
   'showWhatYouName',
+  'showThemAllIfAsked',
   'countIsTheTotal',
-  'noBrandFavour'
+  'ownBrandFirstNeverBought'
 )}
 When you add something, set suggested true if it went in because you offered it and false if they asked for it. It is only counted, never shown to them, so be accurate.
 Notice what is missing once, the way someone who knows the store would, in one short sentence. Take no for an answer the first time and never push something dearer for its own sake.
-${rule('notAWebPage')}`;
+${rule('notAWebPage')}
+${rule('takeItOutMeansAll', 'emptyMeansEmpty', 'neverConfirmWhatDidNotHappen', 'cannotLookThingsUp')}`;
 
 function shopperSessionConfig() {
   return JSON.stringify({
@@ -99,14 +101,20 @@ function shopperSessionConfig() {
     instructions: AXON_SHOPPER_INSTRUCTIONS,
     audio: {
       input: {
-        transcription: { model: 'gpt-4o-mini-transcribe' },
+        // The full transcription model, not the mini. This is the demo's ears,
+        // and a cheaper pair of them mishears sizes and brand names — "half
+        // gallon" for "gallon" is a wrong carton on screen, and the shopper has
+        // no way to tell whether it misheard or misunderstood. Wrong is dearer
+        // than the model is.
+        transcription: { model: process.env.SHOPPER_TRANSCRIBE_MODEL || 'gpt-4o-transcribe' },
         turn_detection: {
           type: 'semantic_vad',
-          // How long it hangs back before deciding you have finished. 'low' was
-          // the cure for talking over him, and it cost most of the lag on every
-          // single turn: it waits to be very sure. 'medium' still lets a pause
-          // for thought pass without being pounced on.
-          eagerness: 'medium',
+          // How long it hangs back before deciding you have finished. 'low'
+          // waits until it is very sure, which is the cure for talking over
+          // somebody mid-sentence, and it costs a beat on every turn. Being
+          // interrupted is the complaint that made this demo feel robotic, and a
+          // beat of latency has never once been mistaken for rudeness.
+          eagerness: 'low',
           create_response: true,
           interrupt_response: true
         }
@@ -175,6 +183,14 @@ async function createRealtimeSession(sdp, res, desk, shopper) {
   const fd = new FormData();
   fd.set('sdp', sdp);
   fd.set('session', shopper ? shopperSessionConfig() : realtimeSessionConfig(desk));
+
+  // Name the model on the way back, so the page can put it on screen instead of
+  // asserting that a live line is "Axon" and leaving the shopper to take it on
+  // trust. The SDP body has no room for it and a second request to ask would be
+  // a second round trip on the slowest moment in the demo.
+  const chosen = shopper ? shopperRealtimeModel() : desk ? deskRealtimeModel() : 'gpt-realtime-1.5';
+  res.setHeader('Access-Control-Expose-Headers', 'X-Realtime-Model');
+  res.setHeader('X-Realtime-Model', chosen);
 
   const response = await fetch('https://api.openai.com/v1/realtime/calls', {
     method: 'POST',
@@ -357,8 +373,6 @@ function versionOf(id) {
 }
 
 let chatModelPromise = null;
-/** Whether this account's chat model takes a reasoning dial. Set by trying it. */
-let speedDial = true;
 
 async function pickChatModel(apiKey) {
   if (process.env.SHOPPER_MODEL) return process.env.SHOPPER_MODEL;
@@ -407,7 +421,7 @@ need to look, and let them narrow it down.
 - Only ever choose products from the list you are given, by their exact id. The
   ids are yours, not theirs: never say one out loud. Products are named by
   brand, kind and size.
-${rule('noCodes', 'askingIsNotBuying', 'noBrandFavour')}
+${rule('noCodes', 'askingIsNotBuying', 'ownBrandFirstNeverBought')}
 - "show" puts products on the shelf. "add" puts ONE product in the cart.
 - "replace" swaps one for another: put the id going IN in products, and the id
   coming OUT in "remove". Use it whenever they change their mind about a size,
@@ -428,7 +442,8 @@ ${rule(
   'theirAdviceWins',
   'readThePacket',
   'a2IsNotLactoseFree',
-  'showWhatYouName'
+  'showWhatYouName',
+  'showThemAllIfAsked'
 )}
   If your answer names products, they go in "products" with the aisle set,
   every time.
@@ -436,9 +451,16 @@ ${rule(
 ${rule('notAWebPage')}
 - "That one" and "the other one" refer to what is on the shelf.
 - Never invent a product, a price, or a size this store does not sell.
-- One product per aisle is on this week's ad: the only one with a "deal", which
-  is its sale price. If they ask about specials, name it, what it costs, what
-  it was, and offer it. Nothing without a "deal" is on special.
+- Anything on this week's ad carries a "deal", which is its sale price. Some
+  aisles have more than one. Asked about specials, name every one in that aisle,
+  what it costs, what it was, and offer them. Nothing without a "deal" is on
+  special, however good the price looks.
+- Every product carries "unit": what it works out at per ounce, or per egg, with
+  the ad price counted. That is the answer to "what's the best deal" and "I'm
+  trying to save money" — the lowest unit price, which is usually the bigger
+  container and sometimes is not. Say the number rather than claiming better
+  value, and do not recalculate it: these labels write their sizes five different
+  ways and arithmetic on them goes wrong.
 - If they ask for more than one of something, say how many in "quantity". Two
   half gallons is one product id with quantity 2, never the same id twice. If
   they ask for two different things, do all of it.
@@ -446,6 +468,17 @@ ${rule('countIsTheTotal')}
 - "Actually I wanted the half gallon after all" is a replace, not small talk.
   Anything that names a size or kind they have already bought differently is a
   change of mind, however gently they put it.
+${rule('takeItOutMeansAll')} Leave "quantity" null on a remove and it all goes.
+${rule('emptyMeansEmpty')} Emptying it is action "clear".
+${rule('neverConfirmWhatDidNotHappen')}
+${rule('cannotLookThingsUp')}
+- Shopping ends somewhere. "checkout" when they are done — "that's everything",
+  "check me out", "what's my total" — which puts the order on screen with the
+  total. "order" only once they have said yes to that total: "okay we'll take it",
+  "go ahead". Never "order" off your own bat, and never before they have seen it.
+  "I'll take it" in front of a shelf is the carton they are looking at; only in
+  front of the total is it the order. The screen does the arithmetic for both, so
+  leave "say" empty for them.
 - "say" is spoken aloud. "hint" is on-screen only.`;
 
 const SHOPPER_SCHEMA = {
@@ -453,7 +486,10 @@ const SHOPPER_SCHEMA = {
   additionalProperties: false,
   required: ['action', 'aisle', 'products', 'quantity', 'remove', 'say', 'hint'],
   properties: {
-    action: { type: 'string', enum: ['show', 'add', 'chat', 'replace', 'remove'] },
+    action: {
+      type: 'string',
+      enum: ['show', 'add', 'chat', 'replace', 'remove', 'clear', 'checkout', 'order']
+    },
     aisle: { type: ['string', 'null'], description: 'id of the aisle being shown, or null' },
     products: {
       type: 'array',
@@ -463,8 +499,10 @@ const SHOPPER_SCHEMA = {
     quantity: {
       type: ['integer', 'null'],
       description:
-        'how many of it they asked for, when they said a number. Null means one. ' +
-        'Applies to an add or a replace: "two half gallons" is quantity 2'
+        'how many of it they said, when they said a number. Null when they said none. ' +
+        'On an add or a replace: "two half gallons" is quantity 2, and null is one. ' +
+        'On a remove, null means every one of them, because "take the bread out" ' +
+        'means all of it; say 1 only if they asked for one of several to go'
     },
     remove: {
       type: ['string', 'null'],
@@ -500,15 +538,16 @@ app.post('/api/understand', async (req, res) => {
     const request = {
       model,
       /*
-       * Choosing a carton is not a reasoning problem.
+       * Let it think.
        *
-       * The newest model on the account answers this, and left to itself it
-       * will think about a half gallon of milk for several seconds while the
-       * shopper waits on a shelf that has not changed. Held low, and capped,
-       * because the answer is one sentence and a product id. Sent only to the
-       * models that take it, and dropped on a complaint.
+       * This was pinned low on the grounds that choosing a carton is not a
+       * reasoning problem. Choosing a carton is not; following somebody who
+       * takes a half gallon, swaps it for a gallon, changes their mind back and
+       * then asks for chocolate instead is, and that is the conversation this
+       * has to survive. The dial bought a second a turn and paid for it in the
+       * turns that came back subtly wrong, which is the expensive kind of wrong
+       * because nobody can see it happen.
        */
-      ...(speedDial && /^gpt-5/.test(model) ? { reasoning_effort: 'low' } : {}),
       // Room to spare. On these models the thinking is spent out of this
       // allowance too, and a turn that runs out of it comes back empty, which
       // would drop the shopper onto the parser mid-sentence.
@@ -520,14 +559,28 @@ app.post('/api/understand', async (req, res) => {
           content:
             `The aisles this store has:\n${index}\n\n` +
             // What someone who works this aisle knows. Sent for the aisle in
-            // play only, so a store of a hundred aisles costs no more than this.
+            // play only in a real store, and all four of them in this demo, where
+            // a question can cross two aisles in one sentence.
             (notes ? `What you know about this aisle:\n${notes}\n\n` : '') +
             `Products this could be about:\n${JSON.stringify(choices)}\n\n` +
             `Currently on the shelf: ${JSON.stringify(showing)}\n` +
             `Already in the cart: ${JSON.stringify(cart)}\n` +
             `Asked for earlier in this trip: ${JSON.stringify(req.body.asked || [])}`
         },
-        ...history.slice(-6),
+        /*
+         * The whole conversation the page kept, not the last three exchanges.
+         *
+         * This was the cap that mattered, and it was hiding behind the other one.
+         * The page was raised to remember forty messages and it changed nothing,
+         * because the server quietly trimmed to six on the way past — so eleven
+         * turns after somebody said they were lactose intolerant, asked which of
+         * these cheeses was safe for them, the model answered that it did not have
+         * the detail they had mentioned at the start. It was not being careful and
+         * it was not refusing. It genuinely had not been told.
+         *
+         * Denying something you were told is worse than any token it saves.
+         */
+        ...history.slice(-40),
         { role: 'user', content: said }
       ],
       response_format: {
@@ -544,21 +597,43 @@ app.post('/api/understand', async (req, res) => {
       });
 
     let upstream = await ask(request);
-    if (!upstream.ok && request.reasoning_effort) {
-      // This model does not take the dial. Losing the whole turn over a speed
-      // setting would drop the shopper onto the parser for no reason. Remembered
-      // so the retry is paid once and not on every sentence after it.
-      const complaint = await upstream.text();
-      console.error('Understand retry without reasoning_effort:', complaint.slice(0, 200));
-      speedDial = false;
-      delete request.reasoning_effort;
+
+    /*
+     * A rate limit is a queue, not an answer.
+     *
+     * These come back in about a tenth of a second, so a shopper mid-sentence
+     * got the parser's canned aisle line instantly and had no way of knowing
+     * the brain had not been asked. It happened for fourteen turns straight in
+     * one conversation and a page reload did not clear it, because nothing was
+     * broken — the minute's allowance was simply spent. Two short waits cost
+     * less than a conversation that goes on sounding confident with nothing
+     * behind it.
+     */
+    for (let attempt = 0; attempt < 2 && upstream.status === 429; attempt += 1) {
+      const askedFor = Number(upstream.headers.get('retry-after')) * 1000;
+      const pause = Number.isFinite(askedFor) && askedFor > 0 ? Math.min(askedFor, 4000) : 900 * (attempt + 1);
+      console.error(`Understand rate limited, waiting ${pause}ms`);
+      await new Promise((r) => setTimeout(r, pause));
       upstream = await ask(request);
     }
 
     if (!upstream.ok) {
       const detail = await upstream.text();
       console.error('Understand error:', upstream.status, detail.slice(0, 300));
-      return res.status(upstream.status).json({ error: 'understand failed' });
+      /*
+       * Say which 429 this is. Out of credit and asking too fast are the same
+       * status code and want opposite things from whoever is watching: one
+       * clears itself in a minute, the other never does until somebody pays.
+       * Reported for hours as a demo that had gone stupid, when the truth was
+       * a number on a billing page.
+       */
+      let reason = '';
+      try {
+        reason = String(JSON.parse(detail).error?.code || JSON.parse(detail).error?.type || '');
+      } catch {
+        reason = '';
+      }
+      return res.status(upstream.status).json({ error: 'understand failed', reason });
     }
 
     const body = await upstream.json();

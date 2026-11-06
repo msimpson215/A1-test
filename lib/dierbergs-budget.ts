@@ -6,12 +6,19 @@ import { spendReport } from "./dierbergs-spend";
  * Spoken minutes cost real money, and an open microphone is an open tab: a
  * shopper filling a three hundred dollar order is worth talking to for twenty
  * minutes, and someone with nothing in their cart at minute ten is not. So the
- * allowance starts small and grows with the basket, and when it runs out the
- * conversation moves to typing rather than ending. Nobody is cut off mid-shop,
- * because shopping is the thing that raises the ceiling.
+ * allowance starts small and grows with the basket, which is what makes the
+ * running cost a line item a store can be quoted rather than an unbounded risk
+ * they have to trust us about.
  *
- * This is what makes the running cost a line item a store can be quoted rather
- * than an unbounded risk they have to trust us about.
+ * It is a quote, and nothing here enforces it.
+ *
+ * It used to. The demo closed the live line when the basket had not earned
+ * enough talking, and an empty cart earns about ninety seconds — so anybody
+ * genuinely testing the thing, asking what the milk is like and changing their
+ * mind twice, got hung up on mid-thought and moved to typing. From the outside
+ * that is indistinguishable from the live model failing, which meant the meter
+ * was making the demo lie about the product it exists to show. Metering is an
+ * argument to have with a buyer, on paper, once they want it.
  */
 
 /** Dollars of voice granted before anything is in the cart. */
@@ -30,7 +37,7 @@ export const BASE_ALLOWANCE = 0.35;
 export const SHARE_OF_BASKET = 0.02;
 /** No basket buys more than this, so one session cannot run away. */
 export const CEILING = 6;
-/** Fraction of the allowance at which the shopper gets a quiet heads-up. */
+/** Fraction of the allowance at which the shopper would be given a heads-up. */
 export const WARN_AT = 0.75;
 
 export function allowanceFor(cartCents: number): number {

@@ -21,6 +21,35 @@ const check = (name, pass, detail = "") => {
 };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/*
+ * This is the one suite that needs a key, because it is the one suite testing
+ * the model rather than the parser underneath it. Run against a server without
+ * one, every sentence falls to the parser and four checks fail for a reason
+ * that has nothing to do with the code — and failures with nothing behind them
+ * are worse than no failures at all, because after a week of seeing them you
+ * stop reading the ones that matter.
+ */
+const understandIsLive = async () => {
+  try {
+    const origin = new URL(URL, "http://localhost").origin;
+    const response = await fetch(`${origin}/api/understand`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "milk" })
+    });
+    const body = await response.json().catch(() => ({}));
+    return !body?.error;
+  } catch {
+    return false;
+  }
+};
+
+if (!(await understandIsLive())) {
+  console.log(`SKIP  ${URL} has no key configured, and this suite tests the model itself.`);
+  console.log("      Every other suite covers the parser and runs without one.\n");
+  process.exit(0);
+}
+
 // Voice is muted, not the brain: /api/understand is the thing under test.
 const mute = () => {
   window.__spoken = [];

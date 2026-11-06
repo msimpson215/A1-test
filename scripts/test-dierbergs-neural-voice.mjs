@@ -103,6 +103,11 @@ const browser = await puppeteer.launch({
 
 const open = async (mode, key, voice) => {
   const page = await browser.newPage();
+  // The parser stands in for the model here: a fixture, not what a shopper
+  // gets. Without it an unreachable model says so and touches nothing.
+  await page.evaluateOnNewDocument(() => {
+    window.__parserAsBrain = true;
+  });
   await page.setViewport({ width: 1440, height: 900 });
   await page.evaluateOnNewDocument(harness, mode);
   if (key !== undefined) {
@@ -236,6 +241,11 @@ const SERVER_URL = process.argv[3];
 
 if (SERVER_URL) {
   const page = await browser.newPage();
+  // The parser stands in for the model here: a fixture, not what a shopper
+  // gets. Without it an unreachable model says so and touches nothing.
+  await page.evaluateOnNewDocument(() => {
+    window.__parserAsBrain = true;
+  });
   await page.setViewport({ width: 1440, height: 900 });
   await page.evaluateOnNewDocument(() => {
     window.__spoken = [];
@@ -304,6 +314,11 @@ if (SERVER_URL) {
 //    it, because nothing ever resolved the speech promise.
 {
   const page = await browser.newPage();
+  // The parser stands in for the model here: a fixture, not what a shopper
+  // gets. Without it an unreachable model says so and touches nothing.
+  await page.evaluateOnNewDocument(() => {
+    window.__parserAsBrain = true;
+  });
   await page.setViewport({ width: 1440, height: 900 });
   await page.evaluateOnNewDocument(() => {
     window.__spoken = [];

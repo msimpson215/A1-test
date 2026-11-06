@@ -57,6 +57,11 @@ const open = async ({ blockPackshots }) => {
   const page = await browser.newPage();
   await page.setViewport({ width: 1440, height: 900 });
   await page.evaluateOnNewDocument(parserOnly);
+// The parser stands in for the model here. That is a fixture, not what a
+// shopper gets: with no flag an unreachable model says so and touches nothing.
+await page.evaluateOnNewDocument(() => {
+  window.__parserAsBrain = true;
+});
   if (blockPackshots) {
     await page.setRequestInterception(true);
     page.on("request", (req) => {

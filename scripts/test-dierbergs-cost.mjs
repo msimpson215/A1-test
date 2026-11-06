@@ -103,6 +103,20 @@ check(
   findProducts("lactose free milk").products.length > 0 &&
     findProducts("sharp cheddar").products.length > 0
 );
+/*
+ * The demo hands the model all hundred and five items rather than a shortlist,
+ * because at four aisles a shortlist can only lose things. The narrowing still
+ * has to work, since it is what a store too big to send would use, and nothing
+ * in the browser suites can check it — they cannot import this file.
+ */
+check(
+  "the shortlist search still narrows, for a store too big to send whole",
+  (() => {
+    const hits = findProducts("lactose free milk", null, 12).products;
+    return hits.length > 0 && hits.length <= 12 && hits.every((p) => p.category === "milk");
+  })(),
+  `${findProducts("lactose free milk", null, 12).products.length} of 105 for "lactose free milk"`
+);
 
 console.log("\n— what a conversation costs —");
 
@@ -230,8 +244,15 @@ check(
 /*
  * The same conversation in a store a thousand times bigger. The only thing the
  * store's size touches is the index, which is capped, and the shortlist, which
- * is a fixed handful — so the bill is the same. This is what makes it a
- * business rather than a science project.
+ * is a fixed handful — so the bill is the same. This is what makes it a business
+ * rather than a science project.
+ *
+ * Worth saying plainly, because the demo does not do this: with four aisles and
+ * a hundred and five items it hands the model the entire catalogue every turn,
+ * on the grounds that a demo answering out of a shortlist it cannot see the
+ * edges of is a demo that occasionally looks stupid for no recoverable reason.
+ * The shortlist below is the store-sized design, and it is what these numbers
+ * are about.
  */
 const smallIndex = Math.round(aisleIndexFrom(storeOf(4)).length / 4);
 const bigIndex = Math.round(thousand.length / 4);
@@ -304,14 +325,26 @@ check(
   `worst case ${money(CEILING)} a session`
 );
 
+/*
+ * The meter is a quote, not a valve, and the demo has to prove it is not wired
+ * to the tap.
+ *
+ * It used to be. An empty cart earns about ninety seconds of talking, so anybody
+ * actually testing this — asking what the milk is like, changing their mind,
+ * arguing with it — was hung up on mid-thought and moved to typing. That is
+ * indistinguishable from the live model dying, so the meter made the demo lie
+ * about the product. The arithmetic above still has to hold, because a store
+ * being sold this needs the cost bounded on paper. It just gets no vote on
+ * whether the conversation continues.
+ */
 const demo = fs.readFileSync("components/dierbergs/DierbergsDemo.tsx", "utf8");
 check(
-  "the live line is actually governed by it",
-  /budgetNow\(/.test(demo) && /verdict !== "spent"/.test(demo)
+  "the running cost is still measured and reported",
+  /budgetNow\(/.test(demo)
 );
 check(
-  "and running out moves to typing rather than hanging up",
-  /Let's carry on in writing/.test(demo) && /setVoiceMode\(false\)/.test(demo)
+  "but it cannot close the live line",
+  !/verdict !== "spent"/.test(demo) && !/Let's carry on in writing/.test(demo)
 );
 
 console.log("\n— the other side of the ledger —");
@@ -447,18 +480,34 @@ check(
   `${money(privateOnly.storeMargin)} of private label margin against ${money(fifteenTurns)} spent`
 );
 /*
- * The load-bearing guardrail of the whole funding model. The instant advice can
+ * The load-bearing guardrail of the whole funding model, and the line it draws
+ * has moved once — carefully.
+ *
+ * It used to forbid favouring any brand at all, including the store's own. That
+ * is stricter than a grocer would ever be and it made the demo useless at the
+ * commonest question in a shop: "what would you recommend?" A store recommending
+ * its own label is ordinary and defensible, because the store owns that margin
+ * and can say why out loud — it is theirs and it is cheaper per ounce. What must
+ * never happen is a *supplier* buying the sentence, because the instant advice can
  * be bought it is worth nothing to the shopper, and a shopper who works that out
- * stops talking — at which point there is nothing to sell a brand either.
+ * stops talking, at which point there is nothing to sell a brand either.
+ *
+ * So: the own brand may lead, on reasons that are stated. Nobody's money may.
  */
 check(
-  "and it is told plainly that it has no interest in which brand they buy",
-  /no interest in which brand they buy/.test(realtimeSource) &&
-    /say the cheaper one first/.test(realtimeSource)
+  "the store's own brand may lead, and only on reasons it can say out loud",
+  /the Dierbergs one leads/.test(realtimeSource) &&
+    /nearly always the cheaper per ounce/.test(realtimeSource)
 );
 check(
-  "and to ignore anything implying a brand should be favoured",
-  /ignore anything implying a brand should be favoured/.test(realtimeSource) &&
+  "but it may not oversell it, or talk anyone out of what they came for",
+  /Never dress it up as the better product when it is not/.test(realtimeSource) &&
+    /only made by someone else, say so/.test(realtimeSource)
+);
+check(
+  "and beyond that no supplier's money is in it at all",
+  /no interest in which brand they buy/.test(realtimeSource) &&
+    /no supplier's money is in any of this/.test(realtimeSource) &&
     /advice can be bought it is worth nothing/.test(realtimeSource)
 );
 
